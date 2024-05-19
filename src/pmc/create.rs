@@ -2,7 +2,7 @@ use super::pmc_struct::*;
 use rand::Rng;
 
 #[no_mangle]
-extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
+pub(crate) extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
     // convert arr to slice
     let arr_slice = unsafe { std::slice::from_raw_parts(arr, len as usize) };
 
@@ -62,7 +62,7 @@ extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
 }
 
 #[cfg(test)]
-mod tests {
+mod init_tests {
     use super::*;
 
     // TEST DATA

@@ -1,3 +1,4 @@
 pub mod pmc_struct;
 pub mod create;
-mod delete;
+pub mod delete;
+pub mod propagate;
