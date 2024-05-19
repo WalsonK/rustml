@@ -1,7 +1,7 @@
 use super::pmc_struct::*;
 
 #[no_mangle]
-extern "C" fn propagate(model: &mut PMC, inputs: *const f32, inputs_len: i32, is_classification: bool) {
+pub(crate) extern "C" fn propagate(model: &mut PMC, inputs: *const f32, inputs_len: i32, is_classification: bool) {
     // Convert arr to slice
     let inputs_slice = unsafe { std::slice::from_raw_parts(inputs, inputs_len as usize) };
 
