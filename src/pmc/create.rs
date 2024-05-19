@@ -46,7 +46,15 @@ extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
         model.neuron_data.push(layer_data);
     }
 
-    
+    // Deltas Initialisation
+    for layer in 0..=model.layers {
+        let mut layer_deltas = Vec::new();
+        for _ in 0..=model.neurons_per_layer[layer]{
+            let delta: f32 = 0.0;
+            layer_deltas.push(delta);
+        }
+        model.deltas.push(layer_deltas);
+    }
 
 
     model
@@ -112,5 +120,18 @@ mod tests {
         assert_eq!(model.neuron_data[1], vec![1.0, 0.0, 0.0]);
         // Third Layer
         assert_eq!(model.neuron_data[2], vec![1.0, 0.0]);
+    }
+
+    #[test]
+    fn init_delta() {
+        let model = setup_model();
+        // Len
+        assert_eq!(model.deltas.len(), 3);
+        // First Layer
+        assert_eq!(model.deltas[0], vec![0.0, 0.0, 0.0, 0.0]);
+        // Second Layer
+        assert_eq!(model.deltas[1], vec![0.0, 0.0, 0.0]);
+        // Third Layer
+        assert_eq!(model.deltas[2], vec![0.0, 0.0]);
     }
 }
