@@ -6,7 +6,7 @@ extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
     // convert arr to slice
     let arr_slice = unsafe { std::slice::from_raw_parts(arr, len as usize) };
 
-    // init PMC
+    // PMC model Initialisation
     let mut model = Box::new(PMC {
         layers: (len - 1) as usize,
         neurons_per_layer: arr_slice.iter().map(|&x| x as usize).collect(),
@@ -15,7 +15,7 @@ extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
         deltas: Vec::new()
     });
 
-    // init Weights
+    // Weights Initialisation
     let mut rng = rand::thread_rng();
     for layer in 0..=model.layers {
         let mut layer_weights = Vec::new();
@@ -35,6 +35,19 @@ extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
             model.weights.push(layer_weights);
         }
     }
+
+    // Neuron Data Initialisation
+    for layer in 0..=model.layers {
+        let mut layer_data = Vec::new();
+        for i in 0..=model.neurons_per_layer[layer] {
+            let value = if i == 0 { 1.0 } else { 0.0 };
+            layer_data.push(value);
+        }
+        model.neuron_data.push(layer_data);
+    }
+
+    
+
 
     model
 
@@ -86,5 +99,18 @@ mod tests {
                 assert!(weight >= -1.0 && weight <= 1.0);
             }
         }
+    }
+
+    #[test]
+    fn init_neuron_data() {
+        let model = setup_model();
+        // Len
+        assert_eq!(model.neuron_data.len(), 3);
+        // First Layer
+        assert_eq!(model.neuron_data[0], vec![1.0, 0.0, 0.0, 0.0]);
+        // Second Layer
+        assert_eq!(model.neuron_data[1], vec![1.0, 0.0, 0.0]);
+        // Third Layer
+        assert_eq!(model.neuron_data[2], vec![1.0, 0.0]);
     }
 }
