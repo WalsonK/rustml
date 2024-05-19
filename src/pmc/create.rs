@@ -7,7 +7,7 @@ extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
     let arr_slice = unsafe { std::slice::from_raw_parts(arr, len as usize) };
 
     // init PMC
-    let model = Box::new(PMC {
+    let mut model = Box::new(PMC {
         layers: (len - 1) as usize,
         neurons_per_layer: arr_slice.iter().map(|&x| x as usize).collect(),
         weights : Vec::new(),
@@ -18,7 +18,22 @@ extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
     // init Weights
     let mut rng = rand::thread_rng();
     for layer in 0..=model.layers {
-        
+        let mut layer_weights = Vec::new();
+
+        if layer == 0 {
+            model.weights.push(layer_weights);
+        } else {
+            for _ in 0..=model.neurons_per_layer[layer - 1] {
+                let mut neuron_weights = Vec::new();
+
+                for j in 0..=model.neurons_per_layer[layer] {
+                    let weight = if j == 0 { 0.0f32 } else { rng.gen_range(-1.0..=1.0) };
+                    neuron_weights.push(weight);
+                }
+                layer_weights.push(neuron_weights);
+            }
+            model.weights.push(layer_weights);
+        }
     }
 
     model
@@ -29,15 +44,47 @@ extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn init_pmc() {
+    // TEST DATA
+    fn setup_model() -> Box<PMC> {
         // Init Data
-        let slice: &[i32] = &[10, 64, 32, 1];
+        let slice: &[i32] = &[3, 2, 1];
         let ptr: *const i32 = slice.as_ptr();
         let len: i32 = slice.len() as i32;
 
         let model = init(ptr, len);
+        model
+    }
 
-        assert_eq!(model.neurons_per_layer, vec![10, 64, 32, 1]);
+    #[test]
+    fn init_pmc() {
+        let model = setup_model();
+        assert_eq!(model.neurons_per_layer, vec![3, 2, 1]);
+    }
+
+    #[test]
+    fn init_weight() {
+        let model = setup_model();
+        // layers
+        assert_eq!(model.layers, 2);
+        // Weights[0]
+        assert!(model.weights[0].is_empty());
+        // Weights[1]
+        assert_eq!(model.weights[1].len(), 4);
+        for neuron_weights in &model.weights[1] {
+            assert_eq!(neuron_weights.len(), 3);
+            assert_eq!(neuron_weights[0], 0.0);
+            for &weight in &neuron_weights[1..] {
+                assert!(weight >= -1.0 && weight <= 1.0);
+            }
+        }
+        // Weights[2]
+        assert_eq!(model.weights[2].len(), 3);
+        for neuron_weights in &model.weights[2] {
+            assert_eq!(neuron_weights.len(), 2);
+            assert_eq!(neuron_weights[0], 0.0);
+            for &weight in &neuron_weights[1..] {
+                assert!(weight >= -1.0 && weight <= 1.0);
+            }
+        }
     }
 }
