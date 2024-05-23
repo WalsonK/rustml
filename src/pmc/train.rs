@@ -25,8 +25,8 @@ extern "C" fn train_pmc_model(model: &mut PMC,
         let rand_output = outputs[rand].clone();
 
         let rand_val  =  rng.gen_range(0..vals.0.len());
-        let val_rand_inputs = vals.0[rand_val].clone();
-        let val_rand_outputs = vals.1[rand_val].clone();
+        let _val_rand_inputs = vals.0[rand_val].clone();
+        let _val_rand_outputs = vals.1[rand_val].clone();
 
         let input_slice = rand_input.as_slice();
 
@@ -35,9 +35,9 @@ extern "C" fn train_pmc_model(model: &mut PMC,
 
         // Calc semi gradient last layer
         for j in 1..=model.neurons_per_layer[model.layers] {
-            model.deltas[model.layers][j] = (model.neuron_data[model.layers][j] - rand_output[j - 1]);
+            model.deltas[model.layers][j] = model.neuron_data[model.layers][j] - rand_output[j - 1];
             if is_classification {
-                model.deltas[model.layers][j] *= (1.0 - model.neuron_data[model.layers][j].powf(2.0));
+                model.deltas[model.layers][j] *= 1.0 - model.neuron_data[model.layers][j].powf(2.0);
             }
         }
 
