@@ -75,7 +75,7 @@ impl LineWorld {
 }
 
 #[cfg(test)]
-mod init_tests {
+mod tests {
     use super::*;
 
     fn setup_line_world() -> Box<LineWorld>{
