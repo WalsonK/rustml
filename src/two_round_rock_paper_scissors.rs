@@ -1,7 +1,7 @@
 use rand::Rng;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub(crate) enum Action {
+pub enum Action {
     Rock,
     Paper,
     Scissors,
@@ -17,14 +17,14 @@ impl Action {
     }
 }
 
-pub(crate) struct Agent;
+pub struct Agent;
 
 impl Agent {
     fn new() -> Self {
         Agent
     }
 
-    pub(crate) fn choose_action(&self) -> Action {
+    pub fn choose_action(&self) -> Action {
         // Here, you can implement any strategy for the agent
         let actions = [Action::Rock, Action::Paper, Action::Scissors];
         let random_index = rand::thread_rng().gen_range(0..3);
@@ -33,7 +33,7 @@ impl Agent {
 }
 
 
-pub(crate) struct Adversary {
+pub struct Adversary {
     first_action: Action,
 }
 
@@ -57,7 +57,7 @@ impl Adversary {
 }
 
 
-pub(crate) struct Environment {
+pub struct Environment {
     pub(crate) agent: Agent,
     adversary: Adversary,
     round: usize,
@@ -66,7 +66,7 @@ pub(crate) struct Environment {
 }
 
 impl Environment {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Environment {
             agent: Agent::new(),
             adversary: Adversary::new(),
@@ -76,7 +76,7 @@ impl Environment {
         }
     }
 
-    pub(crate) fn step(&mut self, agent_action: Action) -> (i32, bool) {
+    pub fn step(&mut self, agent_action: Action) -> (i32, bool) {
         let adversary_action = self.adversary.choose_action(self.round, agent_action);
         println!("Adversary chose {:?}", adversary_action);
         let result = agent_action.beats(adversary_action);
@@ -88,10 +88,56 @@ impl Environment {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_action_beats() {
+        assert_eq!(Action::Rock.beats(Action::Scissors), 1);
+        assert_eq!(Action::Scissors.beats(Action::Paper), 1);
+        assert_eq!(Action::Paper.beats(Action::Rock), 1);
+        assert_eq!(Action::Scissors.beats(Action::Rock), -1);
+        assert_eq!(Action::Paper.beats(Action::Scissors), -1);
+        assert_eq!(Action::Rock.beats(Action::Paper), -1);
+        assert_eq!(Action::Rock.beats(Action::Rock), 0);
+        assert_eq!(Action::Paper.beats(Action::Paper), 0);
+        assert_eq!(Action::Scissors.beats(Action::Scissors), 0);
+    }
+
+    #[test]
+    fn test_agent_choose_action() {
+        let agent = Agent::new();
+        let action = agent.choose_action();
+        assert!(matches!(action, Action::Rock | Action::Paper | Action::Scissors));
+    }
+
+    #[test]
+    fn test_adversary_choose_action() {
+        let mut adversary = Adversary::new();
+        let action = adversary.choose_action(0, Action::Rock);
+        assert!(matches!(action, Action::Rock | Action::Paper | Action::Scissors));
+        assert_eq!(adversary.choose_action(1, Action::Paper), Action::Rock);
+    }
+
+    #[test]
+    fn test_environment_step() {
+        let mut env = Environment::new();
+        let agent_action_round_1 = env.agent.choose_action();
+        println!("Agent chose {:?}", agent_action_round_1);
+        let (result_round_1, done) = env.step(agent_action_round_1);
+        assert_eq!(done, false);
+        env.adversary.first_action = agent_action_round_1;
+        let agent_action_round_2 = env.agent.choose_action();
+        let (result_round_2, done) = env.step(agent_action_round_2);
+        println!("Result: {}, Done: {}", result_round_2, done);
+        assert_eq!(done, true);
+    }
+}
 
 
 
-fn main() {
+/*fn main() {
     let mut env = Environment::new();
     let agent_action_round_1 = env.agent.choose_action();
     let (result_round_1, _) = env.step(agent_action_round_1);
@@ -104,6 +150,6 @@ fn main() {
     if done {
         println!("Game over. Total score: {}", env.agent_score);
     }
-}
+}*/
 
 
