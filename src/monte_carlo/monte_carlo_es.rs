@@ -110,12 +110,12 @@ impl MonteCarloESModel {
 
     fn find_best_action(&self, state: State) -> Action {
         let mut best_action = 0;
-        let mut best_value = f64::NEG_INFINITY;
+        let mut best_val = f64::NEG_INFINITY;
 
         for action in self.q_values.keys().filter_map(|&(s, a)| if s == state { Some(a) } else { None }) {
             let value = *self.q_values.get(&(state, action)).unwrap_or(&f64::NEG_INFINITY);
-            if value > best_value {
-                best_value = value;
+            if value > best_val {
+                best_val = value;
                 best_action = action;
             }
         }
