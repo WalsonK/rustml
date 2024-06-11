@@ -1,4 +1,3 @@
-
 pub struct PolicyIterationModel {
     pub num_states: usize,
     pub num_actions: usize,
