@@ -9,3 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 rand = "0.8.5"
 libloading = "0.8.3"
+
+[[bin]]
+name = "rustml"
+path = "src/main.rs"

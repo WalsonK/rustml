@@ -2,42 +2,45 @@ use std::fmt;
 use std::ops::RangeInclusive;
 use rand::Rng;
 
-pub(crate) const NB_PORTES: usize = 3;
 
-#[derive(Clone, Debug)]
+// #[derive(Clone, Debug)]
 pub struct MontyHall {
     pub winning_door: usize,
     pub chosen_door: Option<usize>,
     pub opened_door: Option<usize>,
+    pub nb_portes: usize
 }
 
 impl MontyHall {
-    pub fn new() -> Self {
+    pub fn new(nb_porte: usize) -> Box<MontyHall> {
         let mut rng = rand::thread_rng();
-        let winning_door = rng.gen_range(0..NB_PORTES);
+        let winning_door = rng.gen_range(0..nb_porte);
         println!("La porte gagnante est la porte {}", winning_door);
-        MontyHall {
+
+        let env = Box::new(MontyHall {
             winning_door,
             chosen_door: None,
             opened_door: None,
-        }
+            nb_portes: nb_porte
+        });
+        env
     }
 
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, nb_porte: usize) {
         let mut rng = rand::thread_rng();
-        self.winning_door = rng.gen_range(0..NB_PORTES);
+        self.winning_door = rng.gen_range(0..nb_porte);
         self.chosen_door = None;
         self.opened_door = None;
     }
 
-    fn valid_action(&self, action: usize) -> bool {
+    pub fn valid_action(&self, action: usize) -> bool {
         match self.chosen_door {
-            None => action < NB_PORTES,
+            None => action < self.nb_portes,
             Some(_) => self.opened_door.is_none(),
         }
     }
 
-    pub(crate) fn next_state(&mut self, action: usize) -> Result<(), ()> {
+    pub fn next_state(&mut self, action: usize) -> Result<(), ()> {
         if !self.valid_action(action) {
             return Err(());
         }
@@ -45,9 +48,9 @@ impl MontyHall {
             None => self.chosen_door = Some(action),
             Some(_) => {
                 let mut rng = rand::thread_rng();
-                let opened_door = (0..NB_PORTES)
+                let opened_door = (0..self.nb_portes)
                     .filter(|&x| x != self.winning_door && x != self.chosen_door.unwrap())
-                    .nth(rng.gen_range(0..NB_PORTES - 1))
+                    .nth(rng.gen_range(0..self.nb_portes - 1))
                     .unwrap();
                 self.opened_door = Some(opened_door);
             }
@@ -55,7 +58,7 @@ impl MontyHall {
         Ok(())
     }
 
-    fn reward(&self) -> f32 {
+    pub fn reward(&self) -> f32 {
         match (self.chosen_door, self.opened_door) {
             (Some(chosen), Some(_)) => {
                 if chosen == self.winning_door {
@@ -68,16 +71,28 @@ impl MontyHall {
         }
     }
 
+    pub fn step(&mut self, action: Self::Action) -> (Self::Reward, bool) {
+        if let Some(chosen_door) = self.chosen_door {
+            if chosen_door == action {
+                // Le joueur décide de ne pas changer de porte
+                return (self.reward(), self.done());
+            }
+        }
+        if let Err(_) = self.next_state(action) {
+            return (0.0, false);  // Return 0 reward and false if the action is invalid
+        }
+        (self.reward(), self.done())
+    }
 
-    fn done(&self) -> bool {
+    pub fn done(&self) -> bool {
         self.chosen_door.is_some() && self.opened_door.is_some()
     }
 }
 
 impl fmt::Display for MontyHall {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let chosen_door = self.chosen_door.unwrap_or(NB_PORTES);
-        let opened_door = self.opened_door.unwrap_or(NB_PORTES);
+        let chosen_door = self.chosen_door.unwrap_or(self.nb_portes);
+        let opened_door = self.opened_door.unwrap_or(self.nb_portes);
         write!(
             f,
             "Winning door: {}, Chosen door: {}, Opened door: {}",
@@ -86,6 +101,7 @@ impl fmt::Display for MontyHall {
     }
 }
 
+/*
 pub trait Env {
     type State;
     type Action;
@@ -106,7 +122,7 @@ impl Env for MontyHall {
     }
 
     fn action_range(&self) -> RangeInclusive<Self::Action> {
-        0..=NB_PORTES - 1
+        0..=self.nb_portes - 1
     }
 
     fn step(&mut self, action: Self::Action) -> (Self::Reward, bool) {
@@ -121,4 +137,4 @@ impl Env for MontyHall {
         }
         (self.reward(), self.done())
     }
-}
+}*/

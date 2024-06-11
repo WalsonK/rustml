@@ -1,12 +1,11 @@
-mod monty_hall;
-use crate::monty_hall::{Env, MontyHall, NB_PORTES};
+use rustml::environment::{monty_hall, lineworld, gridworld};
 use std::io;
 use rand::Rng;
 
 fn main() {
-    let mut monty_hall = MontyHall::new();
+    let mut monty_hall = monty_hall::MontyHall::new(3);
     println!("Bienvenue au jeu de Monty Hall!");
-    println!("Il y a {} portes. Une porte cache un prix.", NB_PORTES);
+    println!("Il y a {} portes. Une porte cache un prix.", monty_hall.nb_portes);
 
     // Choix initial du joueur
     loop {
@@ -14,9 +13,9 @@ fn main() {
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("Échec de la lecture de la ligne");
         let choice: usize = match input.trim().parse() {
-            Ok(num) if num < NB_PORTES => num,
+            Ok(num) if num < monty_hall.nb_portes => num,
             _ => {
-                println!("Entrée invalide, veuillez entrer un nombre entre 0 et {}.", NB_PORTES - 1);
+                println!("Entrée invalide, veuillez entrer un nombre entre 0 et {}.", monty_hall.nb_portes - 1);
                 continue;
             }
         };
@@ -31,9 +30,9 @@ fn main() {
 
     // Monty ouvre une porte
     let mut rng = rand::thread_rng();
-    let opened_door = (0..NB_PORTES)
+    let opened_door = (0..monty_hall.nb_portes)
         .filter(|&x| x != monty_hall.winning_door && x != monty_hall.chosen_door.unwrap())
-        .nth(rng.gen_range(0..NB_PORTES - 2))
+        .nth(rng.gen_range(0..monty_hall.nb_portes - 2))
         .unwrap();
     monty_hall.opened_door = Some(opened_door);
 
@@ -47,7 +46,7 @@ fn main() {
         let input = input.trim().to_lowercase();
         match input.as_str() {
             "oui" => {
-                let new_choice = (0..NB_PORTES)
+                let new_choice = (0..monty_hall.nb_portes)
                     .filter(|&x| x != monty_hall.chosen_door.unwrap() && x != monty_hall.opened_door.unwrap())
                     .next()
                     .unwrap();
