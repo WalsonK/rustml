@@ -1,5 +1,5 @@
 
-pub struct PolicyEvaluationModel {
+pub struct PolicyIterationModel {
     pub num_states: usize,
     pub num_actions: usize,
     pub rewards: usize,
@@ -9,9 +9,9 @@ pub struct PolicyEvaluationModel {
     pub policy: Vec<f32>
 }
 
-impl PolicyEvaluationModel {
-    fn new(s: usize, a: usize, r: usize, p: Vec<Vec<Vec<f32>>>, g: f32) -> Box<PolicyEvaluationModel> {
-        let mut pe_model = Box::new(PolicyEvaluationModel {
+impl PolicyIterationModel {
+    fn new(s: usize, a: usize, r: usize, p: Vec<Vec<Vec<f32>>>, g: f32) -> Box<PolicyIterationModel> {
+        let mut pi_model = Box::new(PolicyIterationModel {
             num_states: s,
             num_actions: a,
             rewards: r,
@@ -21,13 +21,11 @@ impl PolicyEvaluationModel {
             policy: vec![0.0; s]
         });
 
-        pe_model
+        pi_model
     }
 
     fn policy_evaluation(&self, theta: f32) {
         // let gamma: f32 = 0.999;
-
-
         loop {
             let mut delta = 0.0;
 
