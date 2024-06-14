@@ -6,6 +6,8 @@ pub struct MontyHall {
     pub chosen_door: Option<usize>,
     pub opened_door: Option<usize>,
     pub nb_portes: usize,
+    pub rewards: Vec<f32>,
+    pub probabilities: Vec<f32>,
 }
 
 impl MontyHall {
@@ -14,12 +16,30 @@ impl MontyHall {
         let winning_door = rng.gen_range(0..nb_portes);
         println!("La porte gagnante est la porte {}", winning_door);
 
-        Box::new(MontyHall {
+        let mut monty_hall = MontyHall {
             winning_door,
             chosen_door: None,
             opened_door: None,
             nb_portes,
-        })
+            rewards: Vec::new(),
+            probabilities: Vec::new(),
+        };
+
+        monty_hall.init_rewards();
+        monty_hall.init_probabilities();
+
+        Box::new(monty_hall)
+    }
+
+    pub fn init_rewards(&mut self) {
+        // Initialiser le tableau des récompenses
+        self.rewards = vec![0.0; self.nb_portes];
+        self.rewards[self.winning_door] = 1.0;
+    }
+
+    pub fn init_probabilities(&mut self) {
+        // Initialiser les probabilités pour chaque porte
+        self.probabilities = vec![1.0 / self.nb_portes as f32; self.nb_portes];
     }
 
     pub fn reset(&mut self) {
@@ -27,6 +47,8 @@ impl MontyHall {
         self.winning_door = rng.gen_range(0..self.nb_portes);
         self.chosen_door = None;
         self.opened_door = None;
+        self.init_rewards();
+        self.init_probabilities();
     }
 
     pub fn valid_action(&self, action: usize) -> bool {
@@ -127,6 +149,7 @@ impl MontyHall {
     }
 }
 
+
 impl fmt::Display for MontyHall {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let chosen_door = self
@@ -205,13 +228,14 @@ mod tests {
     #[test]
     fn test_step() {
         let mut monty_hall = MontyHall::new(3);
+        let winning_door = monty_hall.winning_door;
         monty_hall.chosen_door = None;
         let (reward, done) = monty_hall.step(1);
         assert_eq!(reward, 0.0);
         assert!(!done);
 
         monty_hall.chosen_door = Option::from(monty_hall.winning_door);
-        let (reward, done) = monty_hall.step(0);
+        let (reward, done) = monty_hall.step(winning_door);
         assert_eq!(reward, 1.0);
         assert!(done);
     }
@@ -245,5 +269,84 @@ mod tests {
 
         monty_hall.chosen_door = Option::from(monty_hall.winning_door);
         assert_eq!(monty_hall.score(), 1.0);
+    }
+
+    #[test]
+    fn test_init_rewards() {
+        let nb_portes = 3;
+        let mut monty_hall = MontyHall::new(nb_portes);
+
+        // Appel de la fonction init_rewards explicitement
+        monty_hall.init_rewards();
+
+        // Vérifier que les récompenses sont correctement initialisées
+        assert_eq!(monty_hall.rewards.len(), nb_portes);
+        for i in 0..nb_portes {
+            if i == monty_hall.winning_door {
+                assert_eq!(monty_hall.rewards[i], 1.0);
+            } else {
+                assert_eq!(monty_hall.rewards[i], 0.0);
+            }
+        }
+    }
+
+    #[test]
+    fn test_init_probabilities() {
+        let nb_portes = 3;
+        let mut monty_hall = MontyHall::new(nb_portes);
+
+        // Appel de la fonction init_probabilities explicitement
+        monty_hall.init_probabilities();
+
+        // Vérifier que les probabilités sont correctement initialisées
+        assert_eq!(monty_hall.probabilities.len(), nb_portes);
+        for i in 0..nb_portes {
+            assert_eq!(monty_hall.probabilities[i], 1.0 / nb_portes as f32);
+        }
+    }
+
+    #[test]
+    fn test_new_initializes_correctly() {
+        let nb_portes = 3;
+        let monty_hall = MontyHall::new(nb_portes);
+
+        // Vérifier que les récompenses sont correctement initialisées dans new
+        assert_eq!(monty_hall.rewards.len(), nb_portes);
+        for i in 0..nb_portes {
+            if i == monty_hall.winning_door {
+                assert_eq!(monty_hall.rewards[i], 1.0);
+            } else {
+                assert_eq!(monty_hall.rewards[i], 0.0);
+            }
+        }
+
+        // Vérifier que les probabilités sont correctement initialisées dans new
+        assert_eq!(monty_hall.probabilities.len(), nb_portes);
+        for i in 0..nb_portes {
+            assert_eq!(monty_hall.probabilities[i], 1.0 / nb_portes as f32);
+        }
+    }
+
+    #[test]
+    fn test_reset_initializes_correctly() {
+        let nb_portes = 3;
+        let mut monty_hall = MontyHall::new(nb_portes);
+        monty_hall.reset();
+
+        // Vérifier que les récompenses sont correctement initialisées dans reset
+        assert_eq!(monty_hall.rewards.len(), nb_portes);
+        for i in 0..nb_portes {
+            if i == monty_hall.winning_door {
+                assert_eq!(monty_hall.rewards[i], 1.0);
+            } else {
+                assert_eq!(monty_hall.rewards[i], 0.0);
+            }
+        }
+
+        // Vérifier que les probabilités sont correctement initialisées dans reset
+        assert_eq!(monty_hall.probabilities.len(), nb_portes);
+        for i in 0..nb_portes {
+            assert_eq!(monty_hall.probabilities[i], 1.0 / nb_portes as f32);
+        }
     }
 }
