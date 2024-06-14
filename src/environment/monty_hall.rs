@@ -276,10 +276,8 @@ mod tests {
         let nb_portes = 3;
         let mut monty_hall = MontyHall::new(nb_portes);
 
-        // Appel de la fonction init_rewards explicitement
         monty_hall.init_rewards();
 
-        // Vérifier que les récompenses sont correctement initialisées
         assert_eq!(monty_hall.rewards.len(), nb_portes);
         for i in 0..nb_portes {
             if i == monty_hall.winning_door {
@@ -295,10 +293,8 @@ mod tests {
         let nb_portes = 3;
         let mut monty_hall = MontyHall::new(nb_portes);
 
-        // Appel de la fonction init_probabilities explicitement
         monty_hall.init_probabilities();
 
-        // Vérifier que les probabilités sont correctement initialisées
         assert_eq!(monty_hall.probabilities.len(), nb_portes);
         for i in 0..nb_portes {
             assert_eq!(monty_hall.probabilities[i], 1.0 / nb_portes as f32);
@@ -310,7 +306,6 @@ mod tests {
         let nb_portes = 3;
         let monty_hall = MontyHall::new(nb_portes);
 
-        // Vérifier que les récompenses sont correctement initialisées dans new
         assert_eq!(monty_hall.rewards.len(), nb_portes);
         for i in 0..nb_portes {
             if i == monty_hall.winning_door {
@@ -320,7 +315,6 @@ mod tests {
             }
         }
 
-        // Vérifier que les probabilités sont correctement initialisées dans new
         assert_eq!(monty_hall.probabilities.len(), nb_portes);
         for i in 0..nb_portes {
             assert_eq!(monty_hall.probabilities[i], 1.0 / nb_portes as f32);
@@ -333,7 +327,6 @@ mod tests {
         let mut monty_hall = MontyHall::new(nb_portes);
         monty_hall.reset();
 
-        // Vérifier que les récompenses sont correctement initialisées dans reset
         assert_eq!(monty_hall.rewards.len(), nb_portes);
         for i in 0..nb_portes {
             if i == monty_hall.winning_door {
@@ -343,7 +336,6 @@ mod tests {
             }
         }
 
-        // Vérifier que les probabilités sont correctement initialisées dans reset
         assert_eq!(monty_hall.probabilities.len(), nb_portes);
         for i in 0..nb_portes {
             assert_eq!(monty_hall.probabilities[i], 1.0 / nb_portes as f32);
