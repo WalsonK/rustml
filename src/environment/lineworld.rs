@@ -26,6 +26,7 @@ impl LineWorld {
             probabilities: vec![vec![vec![0.0; len as usize]; 3]; len as usize]
         });
         env.generate_rewards();
+        env.generate_probabilities();
         env
     }
 
@@ -57,6 +58,29 @@ impl LineWorld {
             println!("Position {}:", self.all_position[pos_idx]);
             for (action_idx, action_rewards) in position_rewards.iter().enumerate() {
                 println!("  Action {}: {:?}", self.all_actions[action_idx], action_rewards);
+            }
+        }
+    }
+
+    fn generate_probabilities(&mut self){
+        let num_positions = self.all_position.len();
+        let num_actions = self.all_actions.len();
+        for position_index in 0..num_positions {
+            let current_position = position_index as i64 + 1; // Positions de 1 à len
+            for action_index in 0..num_actions {
+                let action = self.all_actions[action_index];
+                let available_act = self.available_actions();
+
+                if available_act.contains(&action) {
+                    self.agent_position = current_position;
+                    self.step(action);
+
+                    let next_state = self.state_id() as usize - 1; // Ajustement pour l'index 0-based
+                    self.probabilities[position_index][action_index][next_state] = 1.0;
+
+                    // Remettre l'agent à la position initiale pour le prochain essai
+                    self.agent_position = current_position;
+                }
             }
         }
     }
