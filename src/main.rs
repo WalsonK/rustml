@@ -8,29 +8,8 @@ fn main() {
 
     let env = lineworld::LineWorld::new(4, false, 2);
 
-    let f_rwds: Vec<Vec<Vec<f64>>> =
-        vec![
-            vec![
-                vec![0.0, 0.0, 0.0, 0.0],
-                vec![0.0, 0.0, 0.0, 0.0],
-                vec![0.0, 0.0, 0.0, 0.0]
-            ],
-            vec![
-                vec![0.0, 0.0, 0.0, 0.0],
-                vec![-1.0, 0.0, 0.0, 0.0],
-                vec![0.0, 0.0, 0.0, 0.0]
-            ],
-            vec![
-                vec![0.0, 0.0, 0.0, 0.0],
-                vec![0.0, 0.0, 0.0, 0.0],
-                vec![0.0, 0.0, 0.0, 1.0]
-            ],
-            vec![
-                vec![0.0, 0.0, 0.0, 1.0],
-                vec![0.0, 0.0, 0.0, 0.0],
-                vec![0.0, 0.0, 0.0, 0.0],
-            ]
-        ];
+    env.print_rewards(&env.rewards);
+    println!("Agent pos : {}", env.agent_position);
 
 
     let proba: Vec<Vec<Vec<f64>>> =
@@ -60,16 +39,18 @@ fn main() {
     let _ = env.display();
 
     let mut algo = policy_iteration::PolicyIteration2Model::new(
-        env.all_pos,
+        env.all_position,
         vec![0, 1, 2],
-        f_rwds,
+        env.rewards,
         proba,
         0.999,
-        env.go_pos
+        env.terminal_position
     );
 
     let best_policy = algo.policy_iteration();
     println!("Policy : {:?}", best_policy);
+
+
 
 
     /*let mut monty_hall = MontyHall::new();
