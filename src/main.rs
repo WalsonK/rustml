@@ -1,10 +1,78 @@
-mod monty_hall;
-use crate::monty_hall::{Env, MontyHall, NB_PORTES};
-use std::io;
-use rand::Rng;
+extern crate rustml;
+
+use rustml::environment::lineworld;
+use rustml::dynamic_programming::policy_iteration;
+
 
 fn main() {
-    let mut monty_hall = MontyHall::new();
+
+    let env = lineworld::LineWorld::new(4, false, 2);
+
+    let f_rwds: Vec<Vec<Vec<f64>>> =
+        vec![
+            vec![
+                vec![0.0, 0.0, 0.0, 0.0],
+                vec![0.0, 0.0, 0.0, 0.0],
+                vec![0.0, 0.0, 0.0, 0.0]
+            ],
+            vec![
+                vec![0.0, 0.0, 0.0, 0.0],
+                vec![-1.0, 0.0, 0.0, 0.0],
+                vec![0.0, 0.0, 0.0, 0.0]
+            ],
+            vec![
+                vec![0.0, 0.0, 0.0, 0.0],
+                vec![0.0, 0.0, 0.0, 0.0],
+                vec![0.0, 0.0, 0.0, 1.0]
+            ],
+            vec![
+                vec![0.0, 0.0, 0.0, 1.0],
+                vec![0.0, 0.0, 0.0, 0.0],
+                vec![0.0, 0.0, 0.0, 0.0],
+            ]
+        ];
+
+
+    let proba: Vec<Vec<Vec<f64>>> =
+    vec![
+        vec![
+            vec![1.0, 0.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0, 0.0],
+            vec![0.0, 1.0, 0.0, 0.0]
+        ],
+        vec![
+            vec![0.0, 1.0, 0.0, 0.0],
+            vec![1.0, 0.0, 0.0, 0.0],
+            vec![0.0, 0.0, 1.0, 0.0]
+        ],
+        vec![
+            vec![0.0, 0.0, 1.0, 0.0],
+            vec![0.0, 1.0, 0.0, 0.0],
+            vec![0.0, 0.0, 0.0, 1.0]
+        ],
+        vec![
+            vec![0.0, 0.0, 0.0, 1.0],
+            vec![0.0, 0.0, 1.0, 0.0],
+            vec![0.0, 0.0, 0.0, 1.0]
+        ]
+    ];
+
+    let _ = env.display();
+
+    let mut algo = policy_iteration::PolicyIteration2Model::new(
+        env.all_pos,
+        vec![0, 1, 2],
+        f_rwds,
+        proba,
+        0.999,
+        env.go_pos
+    );
+
+    let best_policy = algo.policy_iteration();
+    println!("Policy : {:?}", best_policy);
+
+
+    /*let mut monty_hall = MontyHall::new();
     println!("Bienvenue au jeu de Monty Hall!");
     println!("Il y a {} portes. Une porte cache un prix.", NB_PORTES);
 
@@ -66,7 +134,7 @@ fn main() {
     } else {
         println!("Désolé, vous avez perdu. La porte gagnante était la porte {}.", monty_hall.winning_door);
     }
-    println!("{}", monty_hall);
+    println!("{}", monty_hall);*/
 }
 
 

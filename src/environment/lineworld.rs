@@ -1,13 +1,13 @@
 use rand::Rng;
 
 pub struct LineWorld {
-    agent_pos: i64,
-    all_pos: Vec<i64>,
-    go_pos: Vec<i64>
+    pub agent_pos: i64,
+    pub all_pos: Vec<i64>,
+    pub go_pos: Vec<i64>
 }
 
 impl LineWorld {
-    fn new(len: i64, is_rand: bool, pos: i64) -> Box<LineWorld> {
+    pub fn new(len: i64, is_rand: bool, pos: i64) -> Box<LineWorld> {
         let env = Box::new(LineWorld {
             agent_pos: if !is_rand {
                 pos
@@ -21,29 +21,29 @@ impl LineWorld {
         env
     }
 
-    fn available_actions(&self) -> Vec<i64>{
+    pub fn available_actions(&self) -> Vec<i64>{
         let mut playable_pos: Vec<i64> = self.all_pos.clone();
         playable_pos.retain(|x| !self.go_pos.contains(x));
         // 0 : Stand / 1 : Left / 2 : Right
         return if playable_pos.contains(&self.agent_pos) { vec![0, 1, 2] } else { vec![] }
     }
 
-    fn is_game_over(&self) -> bool {
+    pub fn is_game_over(&self) -> bool {
         return if self.go_pos.contains(&self.agent_pos) { true } else { false }
     }
 
-    fn state_id(&self) -> i64{
+    pub fn state_id(&self) -> i64{
         return self.agent_pos
     }
 
-    fn step(&mut self, action: i64) {
+    pub fn step(&mut self, action: i64) {
         assert!(!self.is_game_over(), "Game is Over !");
         assert!(self.available_actions().contains(&action), "Action : {action} is not playable !");
         if action == 1 { self.agent_pos -= 1 }
         if action == 2 { self.agent_pos += 1 }
     }
 
-    fn score(&self) -> f64 {
+    pub fn score(&self) -> f64 {
         let mut score: f64 = 0.0;
         if self.agent_pos == self.go_pos[0] {
             score = -1.0
@@ -54,7 +54,7 @@ impl LineWorld {
         score
     }
 
-    fn display(&self) -> Vec<char>{
+    pub fn display(&self) -> Vec<char>{
         let mut renderer: Vec<char>= Vec::new();
         for i in self.all_pos[0]..=self.all_pos.len() as i64 {
             if self.agent_pos == i { renderer.push('X') } else {renderer.push('_') }
@@ -64,7 +64,7 @@ impl LineWorld {
         renderer
     }
 
-    fn reset(&mut self, is_rand: bool, pos: i64) {
+    pub fn reset(&mut self, is_rand: bool, pos: i64) {
         self.agent_pos = if !is_rand {
             pos
         } else {

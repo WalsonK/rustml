@@ -1,5 +1,5 @@
 mod pmc;
-mod dynamic_programming;
-mod monte_carlo;
-mod environment;
+pub mod dynamic_programming;
+//mod monte_carlo;
+pub mod environment;
 mod td_learning;

@@ -24,7 +24,7 @@ impl SarsaModel {
         model
     }
 
-    fn iter(&mut self, rand: bool) {
+    /*fn iter(&mut self, rand: bool) {
         for _ in 0..self.nb_episode {
             let mut state = if rand == false { 0usize } else {
                 let mut rng = rand::thread_rng();
@@ -45,7 +45,7 @@ impl SarsaModel {
                 if new_state == self.num_states - 1 { break; }
             }
         }
-    }
+    }*/
 
     fn chose_action(&mut self, state: usize) -> usize {
         let mut rng = rand::thread_rng();
@@ -58,7 +58,7 @@ impl SarsaModel {
         }
     }
 
-    fn do_action(&mut self, state: usize, action: usize) -> (usize, f32){
+    /*fn do_action(&mut self, state: usize, action: usize) -> (usize, f32){
 
-    }
+    }*/
 }
