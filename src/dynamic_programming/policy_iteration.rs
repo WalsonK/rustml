@@ -1,6 +1,6 @@
 use rand::Rng;
 
-pub struct PolicyIteration2Model {
+pub struct PolicyIterationModel {
     pub states: Vec<i64>,
     pub actions: Vec<i64>,
     pub rewards: Vec<Vec<Vec<f64>>>,
@@ -11,14 +11,14 @@ pub struct PolicyIteration2Model {
     pub value_function: Vec<f64>
 }
 
-impl PolicyIteration2Model {
-    pub fn new(s: Vec<i64>, a: Vec<i64>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<i64>) -> Box<PolicyIteration2Model> {
+impl PolicyIterationModel {
+    pub fn new(s: Vec<i64>, a: Vec<i64>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<i64>) -> Box<PolicyIterationModel> {
         let mut rng = rand::thread_rng();
-        let mut pi_model = Box::new(PolicyIteration2Model {
+        let mut pi_model = Box::new(PolicyIterationModel {
             states: s.clone(),
             actions: a,
             rewards: r,
-            probabilities: p, // vec![vec![vec![vec![0.0; 2]; 2]; 2]; 2]
+            probabilities: p,
             is_policy_stable: false,
             gamma: g,
             policy: vec![0; s.len()],

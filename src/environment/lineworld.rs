@@ -65,6 +65,7 @@ impl LineWorld {
     fn generate_probabilities(&mut self){
         let num_positions = self.all_position.len();
         let num_actions = self.all_actions.len();
+        let begin_position = self.agent_position;
         for position_index in 0..num_positions {
             let current_position = position_index as i64 + 1; // Positions de 1 à len
             for action_index in 0..num_actions {
@@ -83,6 +84,7 @@ impl LineWorld {
                 }
             }
         }
+        self.agent_position = begin_position;
     }
 
     pub fn available_actions(&self) -> Vec<i64> {

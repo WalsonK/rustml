@@ -1,41 +1,18 @@
 extern crate rustml;
 
 use rustml::environment::lineworld;
-use rustml::dynamic_programming::policy_iteration;
+use rustml::dynamic_programming::{policy_iteration, value_iteration};
 
 
 fn main() {
-    let proba: Vec<Vec<Vec<f64>>> =
-        vec![
-            vec![
-                vec![1.0, 0.0, 0.0, 0.0],
-                vec![1.0, 0.0, 0.0, 0.0],
-                vec![0.0, 1.0, 0.0, 0.0]
-            ],
-            vec![
-                vec![0.0, 1.0, 0.0, 0.0],
-                vec![1.0, 0.0, 0.0, 0.0],
-                vec![0.0, 0.0, 1.0, 0.0]
-            ],
-            vec![
-                vec![0.0, 0.0, 1.0, 0.0],
-                vec![0.0, 1.0, 0.0, 0.0],
-                vec![0.0, 0.0, 0.0, 1.0]
-            ],
-            vec![
-                vec![0.0, 0.0, 0.0, 1.0],
-                vec![0.0, 0.0, 1.0, 0.0],
-                vec![0.0, 0.0, 0.0, 0.0]
-            ]
-        ];
 
     let env = lineworld::LineWorld::new(4, false, 2);
-    env.print_rewards(&proba);
-    env.print_rewards(&env.probabilities);
+    //env.print_rewards(&env.probabilities);
     //env.print_rewards(&env.rewards);
     let _ = env.display();
 
-    let mut algo = policy_iteration::PolicyIteration2Model::new(
+    //      POLICY ITERATION
+    let mut algo = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         vec![0, 1, 2],
         env.rewards,
@@ -43,9 +20,23 @@ fn main() {
         0.999,
         env.terminal_position
     );
-
     let best_policy = algo.policy_iteration();
-    println!("Policy : {:?}", best_policy);
+    println!("Policy for policy iter: {:?}", best_policy);
+
+
+
+    /*      VALUE ITERATION
+    let mut val_iter = value_iteration::ValueIterationModel::new(
+        env.all_position,
+        vec![0, 1, 2],
+        env.rewards,
+        env.probabilities,
+        0.999,
+        env.terminal_position
+    );
+    val_iter.iteration(0.001);
+    println!("Policy for value iter: {:?}", val_iter.policy);*/
+
 
 
 
