@@ -5,7 +5,8 @@ pub struct GridWorld {
     pub all_position: Vec<i64>,
     pub terminal_position: Vec<i64>,
     pub all_actions: Vec<i64>,
-    pub probabilities: Vec<Vec<Vec<f64>>>
+    pub probabilities: Vec<Vec<Vec<f64>>>,
+    pub rewards: Vec<Vec<Vec<f64>>>
 }
 
 impl GridWorld {
@@ -25,9 +26,11 @@ impl GridWorld {
             terminal_position: vec![0, (lines - 1) * cols + (cols - 1)],
             // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
             all_actions: vec![0, 1, 2, 3, 4],
-            probabilities: vec![vec![vec![0.0; (lines*cols) as usize];5]; (lines*cols) as usize]
+            probabilities: vec![vec![vec![0.0; (lines*cols) as usize];5]; (lines*cols) as usize],
+            rewards: vec![vec![vec![0.0; (lines*cols) as usize];5]; (lines*cols) as usize]
         });
         env.generate_probabilities();
+        env.generate_rewards();
         env
     }
 
@@ -54,6 +57,28 @@ impl GridWorld {
             }
         }
         self.agent_position = begin_position;
+    }
+
+    fn generate_rewards(&mut self) {
+        let num_positions = self.all_position.len();
+        let num_actions = self.all_actions.len();
+
+        let current_position = self.agent_position;
+        for position_index in 0..num_positions {
+            self.agent_position = position_index as i64;
+            for action_index in 0..num_actions {
+                let action = self.all_actions[action_index];
+
+                if self.available_actions().contains(&action) { self.step(action); }
+                let next_state = if self.state_id() == 0 { 0 } else { self.state_id()};
+                let reward = self.score();
+
+                self.rewards[position_index][action_index][next_state as usize] = reward;
+
+                self.agent_position = position_index as i64;
+            }
+        }
+        self.agent_position = current_position;
     }
 
     pub fn print_rewards(&self, rewards: &Vec<Vec<Vec<f64>>>) {
@@ -106,7 +131,6 @@ impl GridWorld {
     pub fn state_id(&self) -> i64 { self.agent_position }
 
     pub fn step(&mut self, action: i64) {
-        // Assert
         // assert!(!self.is_game_over(), "Game is Over !");
         assert!(self.available_actions().contains(&action), "Action : {action} is not playable !");
         // Generate the Grid

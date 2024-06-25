@@ -6,12 +6,17 @@ use rustml::dynamic_programming::{policy_iteration, value_iteration};
 
 fn main() {
 
-    /*let env = lineworld::LineWorld::new(4, false, 2);
+    /*      Line world
+    let env = lineworld::LineWorld::new(4, false, 2);
     env.print_rewards(&env.probabilities);
     //env.print_rewards(&env.rewards);
     let _ = env.display();*/
+
+
+    //      Grid world
     let env = gridworld::GridWorld::new(3, 5, 1);
-    env.print_rewards(&env.probabilities);
+    //env.print_rewards(&env.probabilities);
+    //env.print_rewards(&env.rewards);
     let _ = env.display();
 
     /*      POLICY ITERATION
