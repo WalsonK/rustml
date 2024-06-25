@@ -14,4 +14,5 @@ pub trait Environment {
     fn display(&self);
     fn state_id(&self) -> State;
     fn score(&self) -> Reward;
+    fn is_game_over(&self) -> bool;
 }

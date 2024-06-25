@@ -12,9 +12,9 @@ use environments::environment::Environment;
 use crate::environments::monte_hall::MontyHall;
 
 fn main() {
-
+/*
     let mut env = MontyHall::new(3);
-    let mut model = MonteCarloESModel::new(1000, 0.9, 100);
+    let mut model = MonteCarloESModel::new(10000, 0.9, 2);
 
     model.monte_carlo_es(&mut *env);
 
@@ -28,14 +28,15 @@ fn main() {
     env.display();
 
 
-    /*    // Test with LineWorld
+
+    // Test with LineWorld
     println!("Testing Monte Carlo ES with LineWorld:");
     let mut line_world_env = LineWorld::new(4, false, 2);
 
     println!("{:?}", line_world_env.all_states());
     line_world_env.display(); // Display the initial state of the environment
 
-    let mut mc_es_model_line_world = MonteCarloESModel::new(10000, 0.999, 100); // Add a step limit per episode
+    let mut mc_es_model_line_world = MonteCarloESModel::new(10000, 0.99, 100); // Add a step limit per episode
     println!("Starting Monte Carlo ES for LineWorld...");
     mc_es_model_line_world.monte_carlo_es(line_world_env.as_mut());
 
@@ -43,6 +44,8 @@ fn main() {
     for (state, action) in mc_es_model_line_world.policy.iter() {
         println!("State: {}, Best Action: {}", state, action);
     }
+    println!("Q-values: {:?}", mc_es_model_line_world.q_values);
+    println!("Policy: {:?}", mc_es_model_line_world.policy);
 
     // Uncomment to test with GridWorld
 
@@ -74,19 +77,19 @@ fn main() {
             println!("State: {}, Action: {}, Probability: {}", state, action, prob);
         }
     }
-
+*/
     // Test with GridWorld
     println!("Testing Monte Carlo ES with GridWorld:");
     let mut grid_world_env = GridWorld::new(2, 4, 1);
     grid_world_env.display(); // Display initial state of the environment
 
-    let mut mc_control_grid = MonteCarloControl::new(0.1, 0.999); // Set epsilon and gamma
-    mc_control_grid.on_policy_mc_control(grid_world_env.as_mut(), 10000, 1000); // Set num_episodes and max_steps
+    let mut mc_control_grid = MonteCarloESModel::new(10000, 0.9, 2); // Set epsilon and gamma
+    mc_control_grid.monte_carlo_es(&mut *grid_world_env);
 
     println!("Monte Carlo ES completed for GridWorld. Policy:");
-    for (state, actions) in mc_control_grid.policy.iter() {
-        for (action, prob) in actions.iter() {
-            println!("State: {}, Action: {}, Probability: {}", state, action, prob);
-        }
-    }*/
+    for (state, action) in mc_control_grid.policy.iter() {
+        println!("State: {}, Best Action: {}", state, action);
+    }
+    println!("Q-values: {:?}", mc_control_grid.q_values);
+    println!("Policy: {:?}", mc_control_grid.policy);
 }

@@ -87,9 +87,7 @@ impl MontyHall {
         }
     }
 
-    pub fn done(&self) -> bool {
-        self.chosen_door.is_some() && self.opened_door.is_some()
-    }
+
 }
 
 impl Environment for MontyHall {
@@ -110,9 +108,9 @@ impl Environment for MontyHall {
             return (self.state_id(), 0.0, false);
         }
         if updated {
-            return (self.state_id(), self.reward(), self.done());
+            return (self.state_id(), self.reward(), self.is_game_over());
         }
-        (self.state_id(), 0.0, self.done())
+        (self.state_id(), 0.0, self.is_game_over())
     }
 
     fn available_actions(&self) -> Vec<Action> {
@@ -140,6 +138,9 @@ impl Environment for MontyHall {
 
     fn score(&self) -> Reward {
         self.reward() as Reward
+    }
+   fn is_game_over(&self) -> bool {
+        self.chosen_door.is_some() && self.opened_door.is_some()
     }
 }
 

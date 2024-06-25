@@ -39,9 +39,6 @@ impl GridWorld {
         flat_vec.chunks(col).map(|chunk| chunk.to_vec()).collect()
     }
 
-    pub fn is_game_over(&self) -> bool {
-        self.go_pos.contains(&self.agent_pos)
-    }
 }
 
 impl Environment for GridWorld {
@@ -118,5 +115,8 @@ impl Environment for GridWorld {
         } else {
             0.0
         }
+    }
+    fn is_game_over(&self) -> bool {
+        self.go_pos.contains(&self.agent_pos)
     }
 }

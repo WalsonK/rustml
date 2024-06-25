@@ -8,19 +8,22 @@ pub struct LineWorld {
     go_pos: Vec<i64>,
 }
 
+
+
 impl LineWorld {
     pub fn new(len: i64, is_rand: bool, pos: i64) -> Box<LineWorld> {
-        let env = Box::new(LineWorld {
-            agent_pos: if !is_rand {
-                pos
-            } else {
-                let mut rng = rand::thread_rng();
-                rng.gen_range(1..len)
-            },
+        let agent_pos = if !is_rand {
+            pos
+        } else {
+            let mut rng = rand::thread_rng();
+            rng.gen_range(1..=len)
+        };
+
+        Box::new(LineWorld {
+            agent_pos,
             all_pos: (1..=len).collect(),
             go_pos: vec![1, len],
-        });
-        env
+        })
     }
 
     pub fn is_game_over(&self) -> bool {
@@ -31,14 +34,14 @@ impl LineWorld {
 impl Environment for LineWorld {
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
-        self.agent_pos = rng.gen_range(1..self.all_pos.len() as i64 - 1);
+        self.agent_pos = rng.gen_range(1..=self.all_pos.len() as i64);
         self.agent_pos
     }
 
     fn step(&mut self, action: Action) -> (State, Reward, bool) {
         match action {
             1 if self.agent_pos > 1 => self.agent_pos -= 1,
-            2 if self.agent_pos < self.all_pos.len() as i64 - 1 => self.agent_pos += 1,
+            2 if self.agent_pos < self.all_pos.len() as i64 => self.agent_pos += 1,
             _ => {}
         }
         let reward = self.score();
@@ -49,7 +52,7 @@ impl Environment for LineWorld {
     fn available_actions(&self) -> Vec<Action> {
         let mut actions = vec![0];
         if self.agent_pos > 1 { actions.push(1); }
-        if self.agent_pos < self.all_pos.len() as i64 - 1 { actions.push(2); }
+        if self.agent_pos < self.all_pos.len() as i64 { actions.push(2); }
         actions
     }
 
@@ -78,5 +81,9 @@ impl Environment for LineWorld {
         } else {
             0.0
         }
+    }
+
+    fn is_game_over(&self) -> bool {
+        self.go_pos.contains(&self.agent_pos)
     }
 }
