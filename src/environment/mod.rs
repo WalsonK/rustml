@@ -1,2 +1,2 @@
 pub mod lineworld;
-mod gridworld;
+pub mod gridworld;

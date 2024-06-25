@@ -1,17 +1,20 @@
 extern crate rustml;
 
-use rustml::environment::lineworld;
+use rustml::environment::{lineworld, gridworld};
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 
 
 fn main() {
 
-    let env = lineworld::LineWorld::new(4, false, 2);
-    //env.print_rewards(&env.probabilities);
+    /*let env = lineworld::LineWorld::new(4, false, 2);
+    env.print_rewards(&env.probabilities);
     //env.print_rewards(&env.rewards);
+    let _ = env.display();*/
+    let env = gridworld::GridWorld::new(3, 5, 1);
+    env.print_rewards(&env.probabilities);
     let _ = env.display();
 
-    //      POLICY ITERATION
+    /*      POLICY ITERATION
     let mut algo = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         vec![0, 1, 2],
@@ -21,7 +24,7 @@ fn main() {
         env.terminal_position
     );
     let best_policy = algo.policy_iteration();
-    println!("Policy for policy iter: {:?}", best_policy);
+    println!("Policy for policy iter: {:?}", best_policy);*/
 
 
 

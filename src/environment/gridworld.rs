@@ -1,12 +1,15 @@
 pub struct GridWorld {
-    agent_position: i64,
-    col: usize,
-    all_position: Vec<i64>,
-    terminal_position: Vec<i64>,
+    pub agent_position: i64,
+    pub lines: usize,
+    pub col: usize,
+    pub all_position: Vec<i64>,
+    pub terminal_position: Vec<i64>,
+    pub all_actions: Vec<i64>,
+    pub probabilities: Vec<Vec<Vec<f64>>>
 }
 
 impl GridWorld {
-    fn new(lines: i64, cols: i64, pos: i64) -> Box<GridWorld>{
+    pub fn new(lines: i64, cols: i64, pos: i64) -> Box<GridWorld>{
         let mut positions: Vec<i64> = Vec::new();
         for i in 0..lines {
             for j in 0..cols {
@@ -14,24 +17,65 @@ impl GridWorld {
                 positions.push(index);
             }
         }
-        let env = Box::new(GridWorld {
+        let mut env = Box::new(GridWorld {
             agent_position: pos,
+            lines: lines as usize,
             col: cols as usize,
             all_position: positions,
-            terminal_position: vec![0, (lines - 1) * cols + (cols - 1)]
+            terminal_position: vec![0, (lines - 1) * cols + (cols - 1)],
+            // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
+            all_actions: vec![0, 1, 2, 3, 4],
+            probabilities: vec![vec![vec![0.0; (lines*cols) as usize];5]; (lines*cols) as usize]
         });
+        env.generate_probabilities();
         env
     }
 
-    fn available_actions(&self) -> Vec<i64>{
+    fn generate_probabilities(&mut self) {
+        let num_positions = self.all_position.len();
+        let num_actions = self.all_actions.len();
+        let begin_position = self.agent_position;
+        for position_index in 1..num_positions {
+            let current_position = position_index as i64;
+            for action_index in 0..num_actions {
+                let action = self.all_actions[action_index];
+                let available_act = self.available_actions();
+
+                if available_act.contains(&action) {
+                    self.agent_position = current_position;
+                    self.step(action);
+
+                    let next_state = self.state_id() as usize;
+                    self.probabilities[position_index][action_index][next_state] = 1.0;
+
+                    // Remettre l'agent à la position initiale pour le prochain essai
+                    self.agent_position = current_position;
+                }
+            }
+        }
+        self.agent_position = begin_position;
+    }
+
+    pub fn print_rewards(&self, rewards: &Vec<Vec<Vec<f64>>>) {
+        println!("Prob Matrix:");
+        for (pos_idx, position_rewards) in rewards.iter().enumerate() {
+            println!("Position {}:", self.all_position[pos_idx]);
+            for (action_idx, action_rewards) in position_rewards.iter().enumerate() {
+                println!("  Action {}: {:?}", self.all_actions[action_idx], action_rewards);
+            }
+        }
+    }
+
+
+    pub fn available_actions(&self) -> Vec<i64>{
         // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
         let mut actions : Vec<i64> = vec![];
         // Without go position
         let mut playable_pos: Vec<i64> = self.all_position.clone();
         playable_pos.retain(|x| !self.terminal_position.contains(x));
 
-        let first_line: Vec<i64> = playable_pos[0..self.col].to_vec();
-        let last_line: Vec<i64> = playable_pos[(playable_pos.len() - self.col)..].to_vec();
+        let first_line: Vec<i64> = playable_pos.iter().cloned().filter(|&pos| pos < self.col as i64).collect();
+        let last_line: Vec<i64> = playable_pos.iter().cloned().filter(|&pos| pos >= ((self.lines - 1) * self.col) as i64).collect();
 
         if first_line.contains(&self.agent_position) { // In first line can't go up
             actions = vec![0, 1, 2, 3];
@@ -49,16 +93,21 @@ impl GridWorld {
             actions.retain(|&action| action != 2); // Remove Right (2)
         }
 
+        // Action 0 for final state
+        if self.terminal_position.contains(&self.agent_position){
+            actions = vec![0];
+        }
+
         return actions
     }
 
-    fn is_game_over(&self) -> bool { if self.terminal_position.contains(&self.agent_position) {true} else {false}}
+    pub fn is_game_over(&self) -> bool { if self.terminal_position.contains(&self.agent_position) {true} else {false}}
 
-    fn state_id(&self) -> i64 { self.agent_position }
+    pub fn state_id(&self) -> i64 { self.agent_position }
 
-    fn step(&mut self, action: i64) {
+    pub fn step(&mut self, action: i64) {
         // Assert
-        assert!(!self.is_game_over(), "Game is Over !");
+        // assert!(!self.is_game_over(), "Game is Over !");
         assert!(self.available_actions().contains(&action), "Action : {action} is not playable !");
         // Generate the Grid
         let grid = get_grid(self.all_position.clone(), self.col);
@@ -70,12 +119,12 @@ impl GridWorld {
             self.agent_position = grid[line + 1][index];
         }
         if action == 4 {
-            let (index, line) = find_index(&grid, self.agent_position);
+            let (line, index) = find_index(&grid, self.agent_position);
             self.agent_position = grid[line - 1][index];
         }
     }
 
-    fn score(&self) -> f64 {
+    pub fn score(&self) -> f64 {
         let mut score: f64 = 0.0;
         if self.agent_position == self.terminal_position[0] {
             score = -1.0
@@ -86,7 +135,7 @@ impl GridWorld {
         score
     }
 
-    fn display(&self) -> Vec<Vec<char>>{
+    pub fn display(&self) -> Vec<Vec<char>>{
         let grid = get_grid(self.all_position.clone(), self.col);
         let mut renderer: Vec<Vec<char>> = Vec::new();
         for line in grid.iter() {
@@ -110,7 +159,7 @@ impl GridWorld {
         renderer
     }
 
-    fn reset(&mut self, pos: i64) { self.agent_position = pos; }
+    pub fn reset(&mut self, pos: i64) { self.agent_position = pos; }
 }
 
 fn find_index(grid: &Vec<Vec<i64>>, val: i64) -> (usize, usize) {
@@ -136,7 +185,7 @@ mod tests {
     use super::*;
 
     fn setup_grid_world() -> Box<GridWorld>{
-        let env = GridWorld::new(2, 4, 1);
+        let env = GridWorld::new(3, 5, 1);
         env
     }
 
@@ -144,22 +193,24 @@ mod tests {
     fn test_init() {
         let env = setup_grid_world();
         assert_eq!(env.agent_position, 1);
-        assert_eq!(env.col, 4);
-        assert_eq!(env.all_position, vec![0, 1, 2, 3, 4, 5, 6, 7]);
-        assert_eq!(env.terminal_position, vec![0, 7]);
+        assert_eq!(env.col, 5);
+        assert_eq!(env.all_position, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
+        assert_eq!(env.terminal_position, vec![0, 14]);
     }
     #[test]
     fn test_available_actions() {
         let mut env = setup_grid_world();
         assert_eq!(env.available_actions(), vec![0, 1, 2, 3]);
         env.agent_position = 5;
-        assert_eq!(env.available_actions(), vec![0, 1, 2, 4]);
+        assert_eq!(env.available_actions(), vec![0, 2, 3, 4]);
+        env.agent_position = 14;
+        assert_eq!(env.available_actions(), vec![0]);
     }
     #[test]
     fn test_game_over() {
         let mut env = setup_grid_world();
         assert_eq!(env.is_game_over(), false);
-        env.agent_position = 7;
+        env.agent_position = 14;
         assert_eq!(env.is_game_over(), true);
     }
     #[test]
@@ -177,14 +228,14 @@ mod tests {
         env.step(1);
         assert_eq!(env.agent_position, 1);
         env.step(3);
-        assert_eq!(env.agent_position, 5);
+        assert_eq!(env.agent_position, 6);
         env.step(4);
         assert_eq!(env.agent_position, 1);
     }
     #[test]
     fn test_score() {
         let mut env = setup_grid_world();
-        env.agent_position = 7;
+        env.agent_position = 14;
         assert_eq!(env.score(), 1.0);
         env.agent_position = 0;
         assert_eq!(env.score(), -1.0);
@@ -193,7 +244,11 @@ mod tests {
     fn test_display() {
         let env = setup_grid_world();
         let array = env.display();
-        assert_eq!(array, vec![vec!['_', 'X', '_', '_'], vec!['_', '_', '_', '_']]);
+        assert_eq!(array, vec![
+            vec!['_', 'X', '_', '_', '_'],
+            vec!['_', '_', '_', '_', '_'],
+            vec!['_', '_', '_', '_', '_']
+        ]);
     }
     #[test]
     fn test_reset() {
