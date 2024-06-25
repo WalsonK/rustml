@@ -1,4 +1,5 @@
 use rand::Rng;
+use crate::environment::tools;
 
 pub struct LineWorld {
     pub agent_position: i64,
@@ -50,16 +51,6 @@ impl LineWorld {
             }
         }
         self.agent_position = current_position;
-    }
-
-    pub fn print_rewards(&self, rewards: &Vec<Vec<Vec<f64>>>) {
-        println!("Rewards Matrix:");
-        for (pos_idx, position_rewards) in rewards.iter().enumerate() {
-            println!("Position {}:", self.all_position[pos_idx]);
-            for (action_idx, action_rewards) in position_rewards.iter().enumerate() {
-                println!("  Action {}: {:?}", self.all_actions[action_idx], action_rewards);
-            }
-        }
     }
 
     fn generate_probabilities(&mut self){
@@ -114,14 +105,7 @@ impl LineWorld {
     }
 
     pub fn score(&self) -> f64 {
-        let mut score: f64 = 0.0;
-        if self.agent_position == self.terminal_position[0] {
-            score = -1.0
-        }
-        if self.agent_position == self.terminal_position[1] {
-            score = 1.0;
-        }
-        score
+        tools::score(self.agent_position, &self.terminal_position)
     }
 
     pub fn display(&self) -> Vec<char>{

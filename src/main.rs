@@ -1,6 +1,6 @@
 extern crate rustml;
 
-use rustml::environment::{lineworld, gridworld};
+use rustml::environment::{lineworld, gridworld, tools};
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 
 
@@ -8,15 +8,14 @@ fn main() {
 
     /*      Line world
     let env = lineworld::LineWorld::new(4, false, 2);
-    env.print_rewards(&env.probabilities);
-    //env.print_rewards(&env.rewards);
+    tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
+    tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();*/
 
 
     //      Grid world
     let env = gridworld::GridWorld::new(3, 5, 1);
-    //env.print_rewards(&env.probabilities);
-    //env.print_rewards(&env.rewards);
+    tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
 
     /*      POLICY ITERATION
