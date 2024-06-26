@@ -39,7 +39,7 @@ impl GridWorld {
         let num_positions = self.all_position.len();
         let num_actions = self.all_actions.len();
         let begin_position = self.agent_position;
-        for position_index in 1..num_positions {
+        for position_index in 0..num_positions {
             let current_position = position_index as i64;
             for action_index in 0..num_actions {
                 let action = self.all_actions[action_index];

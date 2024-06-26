@@ -25,7 +25,7 @@ impl PolicyIterationModel {
             value_function: (0..s.len()).map(|_| rng.gen::<f64>()).collect()
         });
         for &s in terminal_state.iter() {
-            pi_model.value_function[s as usize- 1] = 0.0;
+            pi_model.value_function[s as usize] = 0.0;
         }
         pi_model
     }
@@ -79,9 +79,12 @@ impl PolicyIterationModel {
     }
 
     pub fn policy_iteration(&mut self) -> &Vec<i64>{
+        let mut tour = 0;
         loop {
+            println!("Tour n°{} : {:?}", tour, self.policy);
             self.policy_evaluation(0.001);
             if self.policy_improvement() { break; }
+            tour += 1;
         }
         return &self.policy
     }
