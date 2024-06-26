@@ -6,23 +6,23 @@ use rustml::dynamic_programming::{policy_iteration, value_iteration};
 
 fn main() {
 
-    //      Line world
+    /*      Line world
     let env = lineworld::LineWorld::new(4, false, 1);
+    //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
+    //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
+    let _ = env.display();*/
+
+
+    //      Grid world
+    let env = gridworld::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();//
 
-
-    /*      Grid world
-    let env = gridworld::GridWorld::new(3, 5, 1);
-    tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
-    //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
-    let _ = env.display();*/
-
     //      POLICY ITERATION
     let mut algo = policy_iteration::PolicyIterationModel::new(
         env.all_position,
-        vec![0, 1, 2],
+        env.all_actions,
         env.rewards,
         env.probabilities,
         0.999,

@@ -79,12 +79,9 @@ impl PolicyIterationModel {
     }
 
     pub fn policy_iteration(&mut self) -> &Vec<i64>{
-        let mut tour = 0;
         loop {
-            println!("Tour n°{} : {:?}", tour, self.policy);
             self.policy_evaluation(0.001);
             if self.policy_improvement() { break; }
-            tour += 1;
         }
         return &self.policy
     }
