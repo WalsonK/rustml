@@ -11,23 +11,23 @@ pub struct EpisodeStep {
     pub reward: Reward,
 }
 
-pub struct MonteCarloControl {
+pub struct MonteCarloControlOff {
     pub epsilon: f64,
     pub gamma: f64,
     pub policy: HashMap<State, HashMap<Action, f64>>,
     pub q_values: HashMap<(State, Action), Reward>,
-    pub returns: HashMap<(State, Action), Vec<Reward>>,
+    pub c_values: HashMap<(State, Action), f64>,
 }
 
-impl MonteCarloControl {
-    pub fn new(epsilon: f64, gamma: f64) -> Self {
-        Self {
+impl MonteCarloControlOff {
+    pub fn new(epsilon: f64, gamma: f64) -> Box<MonteCarloControlOff> {
+        Box::new(MonteCarloControlOff {
             epsilon,
             gamma,
             policy: HashMap::new(),
             q_values: HashMap::new(),
-            returns: HashMap::new(),
-        }
+            c_values: HashMap::new(),
+        })
     }
 
     pub fn initialize_policy<E: Environment>(&mut self, env: &E) {
@@ -37,20 +37,13 @@ impl MonteCarloControl {
             for &action in &available_actions {
                 actions.insert(action, 1.0 / available_actions.len() as f64);
                 self.q_values.insert((state, action), 0.0);
-                self.returns.insert((state, action), vec![]);
+                self.c_values.insert((state, action), 0.0);
             }
             self.policy.insert(state, actions);
         }
     }
 
-    pub fn choose_action(&self, state: State, rng: &mut rand::rngs::ThreadRng) -> Action {
-        let action_probs = &self.policy[&state];
-        let actions: Vec<&Action> = action_probs.keys().collect();
-        let probs: Vec<&f64> = action_probs.values().collect();
-        *actions.choose_weighted(rng, |&&action| probs[actions.iter().position(|&&a| a == action).unwrap()]).unwrap().clone()
-    }
-
-    pub fn on_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
+    pub fn off_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
         let mut rng = thread_rng();
         self.initialize_policy(env);
 
@@ -60,8 +53,9 @@ impl MonteCarloControl {
             let mut done = false;
             let mut steps = 0;
 
-            while !done && steps < max_steps {
-                let action = self.choose_action(state, &mut rng);
+            // Generate an episode using a soft policy (behavior policy)
+            while  steps < max_steps {
+                let action = self.choose_action_soft(state, &mut rng);
                 let (next_state, reward, is_done) = env.step(action);
                 episode.push(EpisodeStep { state, action, reward });
                 state = next_state;
@@ -69,33 +63,53 @@ impl MonteCarloControl {
                 steps += 1;
             }
 
-            self.process_episode(episode);
+            self.process_episode_off_policy(episode);
         }
     }
 
-    fn process_episode(&mut self, episode: Vec<EpisodeStep>) {
+    fn choose_action_soft(&self, state: State, rng: &mut rand::rngs::ThreadRng) -> Action {
+        if let Some(action_probs) = self.policy.get(&state) {
+            let actions: Vec<&Action> = action_probs.keys().collect();
+            let probs: Vec<f64> = action_probs.values().copied().collect();
+            **actions.choose_weighted(rng, |&action| probs[actions.iter().position(|&&a| a == *action).unwrap()]).unwrap()
+        } else {
+            panic!("No entry found for state: {}", state);
+        }
+    }
+
+    fn process_episode_off_policy(&mut self, episode: Vec<EpisodeStep>) {
         let mut g: Reward = 0.0;
-        let mut visited_state_action_pairs: Vec<(State, Action)> = Vec::new();
+        let mut w: f64 = 1.0;
 
         for step in episode.iter().rev() {
             g = self.gamma * g + step.reward;
             let state_action_pair = (step.state, step.action);
 
-            if !visited_state_action_pairs.contains(&state_action_pair) {
-                visited_state_action_pairs.push(state_action_pair);
-                self.returns.entry(state_action_pair).or_insert_with(Vec::new).push(g);
-                let return_list = &self.returns[&state_action_pair];
-                let mean_return = return_list.iter().copied().sum::<Reward>() / return_list.len() as Reward;
-                self.q_values.insert(state_action_pair, mean_return);
+            if let Some(c) = self.c_values.get_mut(&state_action_pair) {
+                *c += w;
+            }
 
-                let best_action = self.find_best_action(step.state);
-                self.update_policy(step.state, best_action);
+            if let Some(q) = self.q_values.get_mut(&state_action_pair) {
+                if let Some(c) = self.c_values.get(&state_action_pair) {
+                    *q += w / c * (g - *q);
+                }
+            }
+
+            let best_action = self.find_best_action(step.state);
+            self.update_policy(step.state, best_action);
+
+            if step.action != best_action {
+                break;
+            }
+
+            if let Some(action_prob) = self.policy.get(&step.state).and_then(|probs| probs.get(&step.action)) {
+                w /= *action_prob;
             }
         }
     }
 
     fn find_best_action(&self, state: State) -> Action {
-        let mut best_action = 0;
+        let mut best_action = *self.policy[&state].keys().next().unwrap();
         let mut best_value = f64::NEG_INFINITY;
 
         for &action in self.policy[&state].keys() {

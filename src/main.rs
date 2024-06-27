@@ -1,10 +1,12 @@
 mod dynamic_programming {
     pub mod monte_carlo;
 }
+
 mod environments;
 
 use dynamic_programming::monte_carlo::monte_carlo_es::MonteCarloESModel;
-use dynamic_programming::monte_carlo::MonteCarloControlStruct::MonteCarloControl;
+use dynamic_programming::monte_carlo::monte_carlo_control_struct::MonteCarloControl;
+use dynamic_programming::monte_carlo::monte_carlo_control_struct_off::MonteCarloControlOff;
 
 use environments::line_world::LineWorld;
 use environments::grid_world::GridWorld;
@@ -26,7 +28,6 @@ fn main() {
     let action = model.policy.get(&state).cloned().unwrap_or(0);
     env.step(action);
     env.display();
-
 
 
     // Test with LineWorld
@@ -77,10 +78,10 @@ fn main() {
             println!("State: {}, Action: {}, Probability: {}", state, action, prob);
         }
     }
-*/
+
     // Test with GridWorld
     println!("Testing Monte Carlo ES with GridWorld:");
-    let mut grid_world_env = GridWorld::new(2, 4, 1);
+    let mut grid_world_env = GridWorld::new(3, 5, 1);
     grid_world_env.display(); // Display initial state of the environment
 
     let mut mc_control_grid = MonteCarloESModel::new(10000, 0.9, 2); // Set epsilon and gamma
@@ -92,4 +93,58 @@ fn main() {
     }
     println!("Q-values: {:?}", mc_control_grid.q_values);
     println!("Policy: {:?}", mc_control_grid.policy);
+
+    let mut env = MontyHall::new(3);
+    let mut model = MonteCarloControl::new(0.1, 0.9);
+
+    model.on_policy_mc_control(&mut *env, 10000, 2);
+
+    // Affichage des résultats après l'entraînement pour inspection manuelle
+    println!("Q-values: {:?}", model.q_values);
+    println!("Policy: {:?}", model.policy);
+
+    let state = env.reset();
+    let action = model.policy.get(&state).map_or(0, |actions| {
+        *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
+    });
+    env.step(action);
+    env.display();
+
+    let mut env =LineWorld::new(5, false, 2);
+    let mut model = MonteCarloControl::new(0.1, 0.9);
+
+    // Entraînement du modèle avec Monte Carlo Control
+    model.on_policy_mc_control(&mut *env, 10000, 100);
+
+    // Affichage des résultats après l'entraînement
+    println!("Q-values: {:?}", model.q_values);
+    println!("Policy: {:?}", model.policy);
+
+    // Tester la politique entraînée sur un état initial
+    let state = env.reset();
+    let action = model.policy.get(&state).map_or(0, |actions| {
+        *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
+    });
+    env.step(action);
+    env.display();*/
+    let mut env = LineWorld::new(5, false, 2);
+    let mut model = MonteCarloControlOff::new(0.1, 0.9);
+
+    // Entraînement du modèle avec Monte Carlo Control hors politique
+    model.off_policy_mc_control(&mut *env, 10000, 100);
+
+    // Affichage des résultats après l'entraînement
+    println!("Q-values: {:?}", model.q_values);
+    println!("Policy: {:?}", model.policy);
+
+    // Tester la politique entraînée sur un état initial
+    let state = env.reset();
+    let action = model.policy.get(&state).map_or(0, |actions| {
+        *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
+    });
+    env.step(action);
+
+
+
+
 }
