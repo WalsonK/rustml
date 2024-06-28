@@ -5,9 +5,9 @@ use rustml::dynamic_programming::{policy_iteration, value_iteration};
 
 
 fn main() {
-
-    /*      Line world
-    let env = lineworld::LineWorld::new(4, false, 1);
+/*
+    //      Line world
+    let env = lineworld::LineWorld::new(4, false, 0);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();*/
@@ -17,10 +17,10 @@ fn main() {
     let env = gridworld::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
-    let _ = env.display();//
+    let _ = env.display();
 
     //      POLICY ITERATION
-    let mut algo = policy_iteration::PolicyIterationModel::new(
+    /*let mut algo = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         env.all_actions,
         env.rewards,
@@ -29,21 +29,23 @@ fn main() {
         env.terminal_position
     );
     let best_policy = algo.policy_iteration();
-    println!("Policy for policy iter: {:?}", best_policy);//
+    println!("Policy for policy iter: {:?}", best_policy);*/
 
 
 
-    /*      VALUE ITERATION
+    //      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
         env.all_position,
-        vec![0, 1, 2],
+        env.all_actions.clone(),
         env.rewards,
         env.probabilities,
         0.999,
-        env.terminal_position
+        env.terminal_position.clone()
     );
     val_iter.iteration(0.001);
-    println!("Policy for value iter: {:?}", val_iter.policy);*/
+    println!("{:?}", env.all_actions);
+    println!("{:?}", env.terminal_position);
+    println!("Policy for value iter: {:?}", val_iter.policy);
 
 
 
