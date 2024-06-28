@@ -1,56 +1,62 @@
+use rand::Rng;
+
 pub struct ValueIterationModel {
-    pub num_states: usize,
-    pub num_actions: usize,
-    pub rewards: usize,
-    pub probabilities: Vec<Vec<Vec<f32>>>,
-    pub gamma: f32,
-    pub policy: Vec<f32>,
-    pub value_function: Vec<f32>
+    pub states: Vec<i64>,
+    pub actions: Vec<i64>,
+    pub rewards: Vec<Vec<Vec<f64>>>,
+    pub probabilities: Vec<Vec<Vec<f64>>>,
+    pub gamma: f64,
+    pub policy: Vec<usize>,
+    pub value_function: Vec<f64>,
 }
 
 impl ValueIterationModel {
-    fn new(s: usize, a: usize, r: usize, p: Vec<Vec<Vec<f32>>>, g: f32) -> Box<ValueIterationModel>{
+    pub fn new(s: Vec<i64>, a: Vec<i64>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<i64>) -> Box<ValueIterationModel> {
+        let mut rng = rand::thread_rng();
         let mut vi_model = Box::new(ValueIterationModel {
-            num_states: s,
-            num_actions: a,
+            states: s.clone(),
+            actions: a,
             rewards: r,
             probabilities: p,
             gamma: g,
-            policy: vec![0.0; s],
-            value_function: vec![0.0; s]
+            policy: vec![0; s.len()],
+            value_function: (0..s.len()).map(|_| rng.gen::<f64>()).collect(),
         });
-
+        for &s in terminal_state.iter() {
+            vi_model.value_function[s as usize] = 0.0;
+        }
         vi_model
     }
 
-    fn iteration(&mut self, theta: f32) {
-        let mut delta: f32 = 0.0;
+    pub fn iteration(&mut self, theta: f64) {
+        let mut delta: f64;
 
         loop {
-            for state_index in 0..self.num_states {
-                let old_value = self.value_function[state_index];
-                let mut max_value: f32 = -99999.9;
-                let mut best_action: usize = 0;
+            delta = 0.0;
 
-                for action_index in 0..self.num_actions {
-                    let mut total: f32 = 0.0;
-                    for next_state in 0..self.num_states {
+            for state_index in 0..self.states.len() {
+                let old_value = self.value_function[state_index];
+                let mut max_value = f64::NEG_INFINITY;
+                let mut best_action = 0;
+
+                for action_index in 0..self.actions.len() {
+                    let mut total = 0.0;
+                    for next_state in 0..self.states.len() {
                         total += self.probabilities[state_index][action_index][next_state]
                             * (self.rewards[state_index][action_index][next_state]
-                            + self.gamma * self.policy[next_state])
+                            + self.gamma * self.value_function[next_state]);
                     }
                     if total > max_value {
                         max_value = total;
                         best_action = action_index;
                     }
                 }
-                self.policy[state_index] = best_action as f32;
+                self.policy[state_index] = best_action;
                 self.value_function[state_index] = max_value;
-                delta = delta.max((old_value - self.value_function[state_index]).abs())
+                delta = delta.max((old_value - self.value_function[state_index]).abs());
             }
 
             if delta < theta { break; }
         }
-
     }
 }
