@@ -36,15 +36,13 @@ fn main() {
     //      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
         env.all_position,
-        env.all_actions.clone(),
+        env.all_actions,
         env.rewards,
         env.probabilities,
         0.999,
-        env.terminal_position.clone()
+        env.terminal_position
     );
     val_iter.iteration(0.001);
-    println!("{:?}", env.all_actions);
-    println!("{:?}", env.terminal_position);
     println!("Policy for value iter: {:?}", val_iter.policy);
 
 
