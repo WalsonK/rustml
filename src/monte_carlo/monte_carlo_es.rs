@@ -1,13 +1,8 @@
 extern crate rand;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
-use rand::Rng;
 use std::collections::HashMap;
-//use crate::environments::line_world::Environment; //
-
-pub type State = i64;
-pub type Action = i64;
-pub type Reward = f64;
+use crate::environments::environment::{State, Action, Reward, Environment};
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -40,47 +35,42 @@ impl MonteCarloESModel {
     pub fn monte_carlo_es<E: Environment>(&mut self, env: &mut E) {
         let mut rng = thread_rng();
 
-        for episode in 0..self.num_episodes {
-            let state = *env.all_states().choose(&mut rng).expect("No states available");
-            env.set_state(state);
-            let mut available_actions = env.available_actions();
-            if available_actions.is_empty() {
-                println!("No actions available for state {}", state);
-                continue;
-            }
-            let mut action = *available_actions.choose(&mut rng).expect("No actions available");
+        for _ in 0..self.num_episodes {
+            env.reset();
 
-            let mut episode_steps: Vec<EpisodeStep> = Vec::new();
-            let mut steps = 0;
-            let mut done = false;
+            let mut is_first_action = true;
+            let mut trajectory: Vec<EpisodeStep> = Vec::new();
+            let mut steps_count = 0;
 
-            while !done && steps < self.max_steps {
-                let (next_state, reward, is_done) = env.step(action);
-                episode_steps.push(EpisodeStep {
+            while   steps_count < self.max_steps {
+                let state = env.state_id();
+                let available_actions = env.available_actions();
+
+                // Assurer que chaque état a une politique initiale
+                if !self.policy.contains_key(&state) {
+                    self.policy.insert(state, *available_actions.choose(&mut rng).unwrap());
+                }
+
+                let action = if is_first_action {
+                    is_first_action = false;
+                    *available_actions.choose(&mut rng).unwrap()
+                } else {
+                    *self.policy.get(&state).unwrap()
+                };
+
+                let prev_score = env.score();
+                env.step(action);
+                let reward = env.score() - prev_score;
+
+                trajectory.push(EpisodeStep {
                     state,
                     action,
                     reward,
                 });
-
-                env.set_state(next_state);
-                steps += 1;
-                done = is_done;
-
-                // Ajout de débogage pour voir l'état et l'action à chaque étape
-                println!("Episode {}, Step {}: State {}, Action {}, Reward {}", episode, steps, state, action, reward);
-
-                // Affichage de l'état de l'environnement après chaque action
-                env.display();
-
-                available_actions = env.available_actions();
-                if available_actions.is_empty() {
-                    println!("No actions available for state {}", next_state);
-                    break;
-                }
-                action = *available_actions.choose(&mut rng).expect("No actions available");
+                steps_count += 1;
             }
 
-            self.process_episode(episode_steps);
+            self.process_episode(trajectory);
         }
     }
 
@@ -104,18 +94,21 @@ impl MonteCarloESModel {
 
                 let best_action = self.find_best_action(step.state);
                 self.policy.insert(step.state, best_action);
+
+                // Ajout d'une impression pour le débogage
+                println!("State: {}, Action: {}, Mean Return: {}", step.state, step.action, mean_return);
             }
         }
     }
 
     fn find_best_action(&self, state: State) -> Action {
         let mut best_action = 0;
-        let mut best_val = f64::NEG_INFINITY;
+        let mut best_value = f64::NEG_INFINITY;
 
         for action in self.q_values.keys().filter_map(|&(s, a)| if s == state { Some(a) } else { None }) {
             let value = *self.q_values.get(&(state, action)).unwrap_or(&f64::NEG_INFINITY);
-            if value > best_val {
-                best_val = value;
+            if value > best_value {
+                best_value = value;
                 best_action = action;
             }
         }

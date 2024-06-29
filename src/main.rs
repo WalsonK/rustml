@@ -11,16 +11,16 @@ fn main() {
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();*/
-
-
-    //      Grid world
+    
+    /*      Grid world
     let env = gridworld::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
-    let _ = env.display();
+    let _ = env.display();*/
 
-    //      POLICY ITERATION
-    /*let mut algo = policy_iteration::PolicyIterationModel::new(
+
+    /*      POLICY ITERATION
+    let mut algo = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         env.all_actions,
         env.rewards,
@@ -31,9 +31,7 @@ fn main() {
     let best_policy = algo.policy_iteration();
     println!("Policy for policy iter: {:?}", best_policy);*/
 
-
-
-    //      VALUE ITERATION
+    /*      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
         env.all_position,
         env.all_actions,
@@ -41,77 +39,48 @@ fn main() {
         env.probabilities,
         0.999,
         env.terminal_position
-    );
+    );*/
+
+
     val_iter.iteration(0.001);
     println!("Policy for value iter: {:?}", val_iter.policy);
 
+    let mut env = playable_line_world::new(5, false, 2);
+    let mut model = MonteCarloControl::new(0.1, 0.9);
 
+    // Entraînement du modèle avec Monte Carlo Control
+    model.on_policy_mc_control(&mut *env, 10000, 100);
 
+    // Affichage des résultats après l'entraînement
+    println!("Q-values: {:?}", model.q_values);
+    println!("Policy: {:?}", model.policy);
 
+    // Tester la politique entraînée sur un état initial
+    let state = env.reset();
+    let action = model.policy.get(&state).map_or(0, |actions| {
+        *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
+    });
+    env.step(action);
+    env.display();
 
-    /*let mut monty_hall = MontyHall::new();
-    println!("Bienvenue au jeu de Monty Hall!");
-    println!("Il y a {} portes. Une porte cache un prix.", NB_PORTES);
+    println!("__________________OFF_Policy_________________");
+    let mut env = playable_line_world::new(5, false, 2);
+    let mut model = MonteCarloControlOff::new(0.1, 0.9);
 
-    // Choix initial du joueur
-    loop {
-        println!("Choisissez une porte (0, 1 ou 2):");
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Échec de la lecture de la ligne");
-        let choice: usize = match input.trim().parse() {
-            Ok(num) if num < NB_PORTES => num,
-            _ => {
-                println!("Entrée invalide, veuillez entrer un nombre entre 0 et {}.", NB_PORTES - 1);
-                continue;
-            }
-        };
+    // Entraînement du modèle avec Monte Carlo Control hors politique
+    model.off_policy_mc_control(&mut *env, 10000, 100);
 
-        // Applique le choix initial
-        if monty_hall.next_state(choice).is_ok() {
-            break;
-        } else {
-            println!("Action invalide, essayez à nouveau.");
-        }
-    }
+    // Affichage des résultats après l'entraînement
+    println!("Q-values: {:?}", model.q_values);
+    println!("Policy: {:?}", model.policy);
 
-    // Monty ouvre une porte
-    let mut rng = rand::thread_rng();
-    let opened_door = (0..NB_PORTES)
-        .filter(|&x| x != monty_hall.winning_door && x != monty_hall.chosen_door.unwrap())
-        .nth(rng.gen_range(0..NB_PORTES - 2))
-        .unwrap();
-    monty_hall.opened_door = Some(opened_door);
+    // Tester la politique entraînée sur un état initial
+    let state = env.reset();
+    let action = model.policy.get(&state).map_or(0, |actions| {
+        *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
+    });
+    env.step(action);
 
-    println!("Monty ouvre la porte {}.", opened_door);
-    println!("Voulez-vous changer de porte ? (oui/non):");
-
-    // Le joueur décide de changer ou non
-    loop {
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Échec de la lecture de la ligne");
-        let input = input.trim().to_lowercase();
-        match input.as_str() {
-            "oui" => {
-                let new_choice = (0..NB_PORTES)
-                    .filter(|&x| x != monty_hall.chosen_door.unwrap() && x != monty_hall.opened_door.unwrap())
-                    .next()
-                    .unwrap();
-                monty_hall.chosen_door = Some(new_choice);
-                break;
-            }
-            "non" => break,
-            _ => println!("Entrée invalide, veuillez répondre par 'oui' ou 'non'."),
-        }
-    }
-
-    // Fin du jeu
-    let (reward, _) = monty_hall.step(monty_hall.chosen_door.unwrap());
-    if reward > 0.0 {
-        println!("Félicitations! Vous avez gagné!");
-    } else {
-        println!("Désolé, vous avez perdu. La porte gagnante était la porte {}.", monty_hall.winning_door);
-    }
-    println!("{}", monty_hall);*/
 }
 
 /*mod two_round_rock_paper_scissors;
