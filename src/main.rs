@@ -1,6 +1,6 @@
 extern crate rustml;
 
-use rustml::environment::{lineworld, gridworld, tools, playable_line_world, playable_grid_world, playable_monte_hall};
+use rustml::environment::{line_world, gridworld, tools, playable_grid_world, playable_monte_hall};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
@@ -9,15 +9,11 @@ use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carl
 fn main() {
 
     //      Line world
-    let env = lineworld::LineWorld::new(4, false, 1);
+    let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-     //
-
-    /*      Playable Line world
-    let mut env = playable_line_world::playable_line_world::new(5, false, 2);
-     */
+    //
     
     /*      Grid world
     let env = gridworld::GridWorld::new(3, 5, 1);
@@ -44,7 +40,8 @@ fn main() {
         env.terminal_position
     );
     let best_policy = algo.policy_iteration();
-    println!("Policy for policy iter: {:?}", best_policy);*/
+    println!("Policy for policy iter: {:?}", best_policy);
+    */
 
     //      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
@@ -57,7 +54,7 @@ fn main() {
     );
     val_iter.iteration(0.001);
     println!("Policy for value iter: {:?}", val_iter.policy);
-     //
+    //
 
     /*      MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
@@ -67,7 +64,7 @@ fn main() {
     println!("Q-values: {:?}", model.q_values);
     println!("Policy: {:?}", model.policy);
     // Tester la politique entraînée sur un état initial
-    let state = env.reset();
+    let state = env.reset(true, 1);
     let action = model.policy.get(&state).cloned().unwrap_or(0);
     env.step(action);
     env.display();*/
@@ -80,7 +77,7 @@ fn main() {
     println!("Q-values: {:?}", model.q_values);
     println!("Policy: {:?}", model.policy);
     // Tester la politique entraînée sur un état initial
-    let state = env.reset();
+    let state = env.reset(true, 0);
     let action = model.policy.get(&state).map_or(0, |actions| {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
