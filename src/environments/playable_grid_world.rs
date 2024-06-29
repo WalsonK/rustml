@@ -2,22 +2,23 @@ extern crate rand;
 use rand::Rng;
 use crate::environments::environment::{State, Action, Reward, Environment};
 
-pub struct GridWorld {
+pub struct playable_GridWorld {
     agent_pos: i64,
     col: usize,
     all_pos: Vec<i64>,
+
     go_pos: Vec<i64>,
 }
 
-impl GridWorld {
-    pub fn new(lines: i64, cols: i64, pos: i64) -> Box<GridWorld> {
+impl playable_GridWorld {
+    pub fn new(lines: i64, cols: i64, pos: i64) -> Box<playable_GridWorld> {
         let mut positions = Vec::new();
         for i in 0..lines {
             for j in 0..cols {
                 positions.push(i * cols + j);
             }
         }
-        let env = Box::new(GridWorld {
+        let env = Box::new(playable_GridWorld {
             agent_pos: pos,
             col: cols as usize,
             all_pos: positions,
@@ -41,7 +42,7 @@ impl GridWorld {
 
 }
 
-impl Environment for GridWorld {
+impl Environment for playable_GridWorld {
     fn reset(&mut self) -> State {
         self.agent_pos = rand::thread_rng().gen_range(0..self.all_pos.len() as i64);
         self.agent_pos
@@ -52,16 +53,16 @@ impl Environment for GridWorld {
             return (self.agent_pos, self.score(), true);
         }
 
-        let grid = GridWorld::get_grid(self.all_pos.clone(), self.col);
+        let grid = playable_GridWorld::get_grid(self.all_pos.clone(), self.col);
         match action {
             1 => if self.agent_pos % self.col as i64 != 0 { self.agent_pos -= 1; },
             2 => if self.agent_pos % self.col as i64 != self.col as i64 - 1 { self.agent_pos += 1; },
             3 => {
-                let (line, index) = GridWorld::find_index(&grid, self.agent_pos);
+                let (line, index) = playable_GridWorld::find_index(&grid, self.agent_pos);
                 if line + 1 < grid.len() { self.agent_pos = grid[line + 1][index]; }
             },
             4 => {
-                let (line, index) = GridWorld::find_index(&grid, self.agent_pos);
+                let (line, index) = playable_GridWorld::find_index(&grid, self.agent_pos);
                 if line > 0 { self.agent_pos = grid[line - 1][index]; }
             },
             _ => {},        // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
@@ -94,7 +95,7 @@ impl Environment for GridWorld {
     }
 
     fn display(&self) {
-        let grid = GridWorld::get_grid(self.all_pos.clone(), self.col);
+        let grid = playable_GridWorld::get_grid(self.all_pos.clone(), self.col);
         for line in &grid {
             for &val in line {
                 print!("{}", if val == self.agent_pos { 'X' } else { '_' });

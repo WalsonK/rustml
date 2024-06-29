@@ -1,4 +1,4 @@
-pub mod line_world;
-pub mod grid_world;
+pub mod playable_line_world;
+pub mod playable_grid_world;
 pub mod environment;
-pub mod monte_hall;
+pub mod playable_monte_hall;

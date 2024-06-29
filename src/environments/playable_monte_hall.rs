@@ -3,7 +3,7 @@ use rand::Rng;
 use crate::environments::environment::{State, Action, Reward, Environment};
 use std::fmt;
 
-pub struct MontyHall {
+pub struct playable_MontyHall {
     pub winning_door: usize,
     pub chosen_door: Option<usize>,
     pub opened_door: Option<usize>,
@@ -12,13 +12,13 @@ pub struct MontyHall {
     pub probabilities: Vec<f32>,
 }
 
-impl MontyHall {
-    pub fn new(nb_portes: usize) -> Box<MontyHall> {
+impl playable_MontyHall {
+    pub fn new(nb_portes: usize) -> Box<playable_MontyHall> {
         let mut rng = rand::thread_rng();
         let winning_door = rng.gen_range(0..nb_portes);
         println!("La porte gagnante est la porte {}", winning_door);
 
-        let mut monty_hall = MontyHall {
+        let mut monty_hall = playable_MontyHall {
             winning_door,
             chosen_door: None,
             opened_door: None,
@@ -90,7 +90,7 @@ impl MontyHall {
 
 }
 
-impl Environment for MontyHall {
+impl Environment for playable_MontyHall {
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
         self.winning_door = rng.gen_range(0..self.nb_portes);
@@ -144,7 +144,7 @@ impl Environment for MontyHall {
     }
 }
 
-impl fmt::Display for MontyHall {
+impl fmt::Display for playable_MontyHall {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let chosen_door = self
             .chosen_door

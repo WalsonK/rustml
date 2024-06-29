@@ -1,17 +1,15 @@
-mod dynamic_programming {
-    pub mod monte_carlo;
-}
+pub mod monte_carlo;
 
 mod environments;
 
-use dynamic_programming::monte_carlo::monte_carlo_es::MonteCarloESModel;
-use dynamic_programming::monte_carlo::monte_carlo_control_struct::MonteCarloControl;
-use dynamic_programming::monte_carlo::monte_carlo_control_struct_off::MonteCarloControlOff;
+use monte_carlo::monte_carlo_es::MonteCarloESModel;
+use monte_carlo::monte_carlo_control_struct::MonteCarloControl;
+use monte_carlo::monte_carlo_control_struct_off::MonteCarloControlOff;
 
-use environments::line_world::LineWorld;
-use environments::grid_world::GridWorld;
+use environments::playable_line_world::playable_line_world;
+use environments::playable_grid_world::playable_GridWorld;
 use environments::environment::Environment;
-use crate::environments::monte_hall::MontyHall;
+use crate::environments::playable_monte_hall::playable_MontyHall;
 
 fn main() {
 /*
@@ -109,8 +107,8 @@ fn main() {
     });
     env.step(action);
     env.display();
-
-    let mut env =LineWorld::new(5, false, 2);
+*/
+    let mut env = playable_line_world::new(5, false, 2);
     let mut model = MonteCarloControl::new(0.1, 0.9);
 
     // Entraînement du modèle avec Monte Carlo Control
@@ -126,8 +124,10 @@ fn main() {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);
-    env.display();*/
-    let mut env = LineWorld::new(5, false, 2);
+    env.display();
+
+    println!("__________________OFF_Policy_________________");
+    let mut env = playable_line_world::new(5, false, 2);
     let mut model = MonteCarloControlOff::new(0.1, 0.9);
 
     // Entraînement du modèle avec Monte Carlo Control hors politique

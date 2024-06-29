@@ -2,7 +2,7 @@ extern crate rand;
 use rand::Rng;
 use crate::environments::environment::{State, Action, Reward, Environment};
 
-pub struct LineWorld {
+pub struct playable_line_world {
     agent_pos: i64,
     all_pos: Vec<i64>,
     go_pos: Vec<i64>,
@@ -10,8 +10,8 @@ pub struct LineWorld {
 
 
 
-impl LineWorld {
-    pub fn new(len: i64, is_rand: bool, pos: i64) -> Box<LineWorld> {
+impl playable_line_world {
+    pub fn new(len: i64, is_rand: bool, pos: i64) -> Box<playable_line_world> {
         let agent_pos = if !is_rand {
             pos
         } else {
@@ -19,7 +19,7 @@ impl LineWorld {
             rng.gen_range(1..=len)
         };
 
-        Box::new(LineWorld {
+        Box::new(playable_line_world {
             agent_pos,
             all_pos: (1..=len).collect(),
             go_pos: vec![1, len],
@@ -31,7 +31,7 @@ impl LineWorld {
     }
 }
 
-impl Environment for LineWorld {
+impl Environment for playable_line_world {
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
         self.agent_pos = rng.gen_range(1..=self.all_pos.len() as i64);

@@ -54,8 +54,8 @@ impl MonteCarloControlOff {
             let mut steps = 0;
 
             // Generate an episode using a soft policy (behavior policy)
-            while  steps < max_steps {
-                let action = self.choose_action_soft(state, &mut rng);
+            while  !done && steps < max_steps {
+                let action = self.choose_action_soft(env,state, &mut rng);
                 let (next_state, reward, is_done) = env.step(action);
                 episode.push(EpisodeStep { state, action, reward });
                 state = next_state;
@@ -67,13 +67,24 @@ impl MonteCarloControlOff {
         }
     }
 
-    fn choose_action_soft(&self, state: State, rng: &mut rand::rngs::ThreadRng) -> Action {
+    pub fn choose_action_soft<E: Environment>(&mut self, env: &E, state: State, rng: &mut rand::rngs::ThreadRng) -> Action {
+        if !self.policy.contains_key(&state) {
+            println!("Initializing policy for new state: {:?}", state);
+            let mut actions = HashMap::new();
+            let available_actions = env.available_actions();
+            for &action in &available_actions {
+                actions.insert(action, 1.0 / available_actions.len() as f64);
+                self.q_values.insert((state, action), 0.0);
+                self.c_values.insert((state, action), 0.0);
+            }
+            self.policy.insert(state, actions);
+        }
         if let Some(action_probs) = self.policy.get(&state) {
             let actions: Vec<&Action> = action_probs.keys().collect();
             let probs: Vec<f64> = action_probs.values().copied().collect();
             **actions.choose_weighted(rng, |&action| probs[actions.iter().position(|&&a| a == *action).unwrap()]).unwrap()
         } else {
-            panic!("No entry found for state: {}", state);
+            panic!("No entry found for state: {:?}", state);
         }
     }
 
