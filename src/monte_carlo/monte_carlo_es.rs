@@ -3,7 +3,7 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand::Rng;
 use std::collections::HashMap;
-use crate::environments::line_world::Environment; //
+//use crate::environments::line_world::Environment; //
 
 pub type State = i64;
 pub type Action = i64;
