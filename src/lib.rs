@@ -1,4 +1,4 @@
-mod pmc;
-mod dynamic_programming;
-mod monte_carlo;
-mod environment;
+pub mod pmc;
+pub mod dynamic_programming;
+pub mod monte_carlo;
+pub mod environment;
