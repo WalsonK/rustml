@@ -2,7 +2,7 @@ extern crate rand;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
-use crate::environments::environment::{State, Action, Reward, Environment};
+use crate::environment::environment::{State, Action, Reward, Environment};
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {

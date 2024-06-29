@@ -2,7 +2,7 @@ extern crate rand;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
-use crate::environments::environment::{State, Action, Reward, Environment};
+use crate::environment::environment::{State, Action, Reward, Environment};
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -42,7 +42,7 @@ impl MonteCarloESModel {
             let mut trajectory: Vec<EpisodeStep> = Vec::new();
             let mut steps_count = 0;
 
-            while   steps_count < self.max_steps {
+            while !env.is_game_over() && steps_count < self.max_steps {
                 let state = env.state_id();
                 let available_actions = env.available_actions();
 

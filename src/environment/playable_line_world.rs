@@ -1,6 +1,6 @@
 extern crate rand;
 use rand::Rng;
-use crate::environments::environment::{State, Action, Reward, Environment};
+use crate::environment::environment::{State, Action, Reward, Environment};
 
 pub struct playable_line_world {
     agent_pos: i64,

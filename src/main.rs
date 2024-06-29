@@ -1,22 +1,37 @@
 extern crate rustml;
 
-use rustml::environment::{lineworld, gridworld, tools};
+use rustml::environment::{lineworld, gridworld, tools, playable_line_world, playable_grid_world, playable_monte_hall};
+use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
+use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 
 
 fn main() {
-/*
+
     //      Line world
-    let env = lineworld::LineWorld::new(4, false, 0);
+    let env = lineworld::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
-    let _ = env.display();*/
+    let _ = env.display();
+     //
+
+    /*      Playable Line world
+    let mut env = playable_line_world::playable_line_world::new(5, false, 2);
+     */
     
     /*      Grid world
     let env = gridworld::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();*/
+
+    /*      Playable Grid world
+    let mut env = playable_grid_world::playable_GridWorld::new(3,5,1);
+    */
+
+    /*      PLAYABLE MONTY HALL
+    let mut env = playable_monte_hall::playable_MontyHall::new(3);
+    */
 
 
     /*      POLICY ITERATION
@@ -31,7 +46,7 @@ fn main() {
     let best_policy = algo.policy_iteration();
     println!("Policy for policy iter: {:?}", best_policy);*/
 
-    /*      VALUE ITERATION
+    //      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
         env.all_position,
         env.all_actions,
@@ -39,47 +54,52 @@ fn main() {
         env.probabilities,
         0.999,
         env.terminal_position
-    );*/
-
-
+    );
     val_iter.iteration(0.001);
     println!("Policy for value iter: {:?}", val_iter.policy);
+     //
 
-    let mut env = playable_line_world::new(5, false, 2);
-    let mut model = MonteCarloControl::new(0.1, 0.9);
+    /*      MONTE CARLO ES
+    let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
+    // Entraînement du modèle avec Monte Carlo ES
+    model.monte_carlo_es(&mut *env);
+    // Affichage des résultats après l'entraînement pour inspection manuelle
+    println!("Q-values: {:?}", model.q_values);
+    println!("Policy: {:?}", model.policy);
+    // Tester la politique entraînée sur un état initial
+    let state = env.reset();
+    let action = model.policy.get(&state).cloned().unwrap_or(0);
+    env.step(action);
+    env.display();*/
 
+    /*      MONTE CARLO CONTROL
+    let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
-
     // Affichage des résultats après l'entraînement
     println!("Q-values: {:?}", model.q_values);
     println!("Policy: {:?}", model.policy);
-
     // Tester la politique entraînée sur un état initial
     let state = env.reset();
     let action = model.policy.get(&state).map_or(0, |actions| {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);
-    env.display();
+    env.display(); */
 
-    println!("__________________OFF_Policy_________________");
-    let mut env = playable_line_world::new(5, false, 2);
-    let mut model = MonteCarloControlOff::new(0.1, 0.9);
-
+    /*      MONTE CARLO CONTROL OFF POLICY
+    let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control hors politique
     model.off_policy_mc_control(&mut *env, 10000, 100);
-
     // Affichage des résultats après l'entraînement
     println!("Q-values: {:?}", model.q_values);
     println!("Policy: {:?}", model.policy);
-
     // Tester la politique entraînée sur un état initial
     let state = env.reset();
     let action = model.policy.get(&state).map_or(0, |actions| {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
-    env.step(action);
+    env.step(action);*/
 
 }
 
