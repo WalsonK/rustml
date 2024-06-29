@@ -1,6 +1,6 @@
 extern crate rustml;
 
-use rustml::environment::{line_world, gridworld, tools, playable_grid_world, playable_monte_hall};
+use rustml::environment::{line_world, grid_world, tools, playable_monte_hall};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
@@ -8,22 +8,19 @@ use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carl
 
 fn main() {
 
-    //      Line world
+    /*      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    //
+    */
     
-    /*      Grid world
-    let env = gridworld::GridWorld::new(3, 5, 1);
+    //      Grid world
+    let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
-    let _ = env.display();*/
-
-    /*      Playable Grid world
-    let mut env = playable_grid_world::playable_GridWorld::new(3,5,1);
-    */
+    let _ = env.display();
+    //
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
@@ -43,7 +40,7 @@ fn main() {
     println!("Policy for policy iter: {:?}", best_policy);
     */
 
-    //      VALUE ITERATION
+    /*      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
         env.all_position,
         env.all_actions,
@@ -54,7 +51,7 @@ fn main() {
     );
     val_iter.iteration(0.001);
     println!("Policy for value iter: {:?}", val_iter.policy);
-    //
+    */
 
     /*      MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
@@ -69,7 +66,7 @@ fn main() {
     env.step(action);
     env.display();*/
 
-    /*      MONTE CARLO CONTROL
+    //      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -77,12 +74,13 @@ fn main() {
     println!("Q-values: {:?}", model.q_values);
     println!("Policy: {:?}", model.policy);
     // Tester la politique entraînée sur un état initial
-    let state = env.reset(true, 0);
+    let state = env.reset();
     let action = model.policy.get(&state).map_or(0, |actions| {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);
-    env.display(); */
+    env.display();
+    //
 
     /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);

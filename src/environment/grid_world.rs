@@ -1,4 +1,7 @@
+use rand::Rng;
+use crate::environment::environment::{State, Action, Reward, Environment};
 use crate::environment::tools;
+
 pub struct GridWorld {
     pub agent_position: i64,
     pub lines: usize,
@@ -11,12 +14,11 @@ pub struct GridWorld {
 }
 
 impl GridWorld {
-    pub fn new(lines: i64, cols: i64, pos: i64) -> Box<GridWorld>{
-        let mut positions: Vec<i64> = Vec::new();
+    pub fn new(lines: i64, cols: i64, pos: i64) -> Box<GridWorld> {
+        let mut positions = Vec::new();
         for i in 0..lines {
             for j in 0..cols {
-                let index = i * cols + j;
-                positions.push(index);
+                positions.push(i * cols + j);
             }
         }
         let mut env = Box::new(GridWorld {
@@ -82,10 +84,96 @@ impl GridWorld {
         self.agent_position = current_position;
     }
 
+    fn find_index(grid: &Vec<Vec<i64>>, val: i64) -> (usize, usize) {
+        for (i, line) in grid.iter().enumerate() {
+            if let Some(j) = line.iter().position(|&x| x == val) { return (i, j); }
+        }
+        unreachable!();
+    }
 
-    pub fn available_actions(&self) -> Vec<i64>{
+    pub fn get_grid(flat_vec: Vec<i64>, col: usize) -> Vec<Vec<i64>> {
+        flat_vec.chunks(col).map(|chunk| chunk.to_vec()).collect()
+    }
+
+    pub fn get_display_array(&self) -> Vec<Vec<char>>{
+        let grid = Self::get_grid(self.all_position.clone(), self.col);
+        let mut renderer: Vec<Vec<char>> = Vec::new();
+        for line in grid.iter() {
+            let mut render_line: Vec<char> = Vec::new();
+            for &val in line.iter() {
+                if self.agent_position == val {
+                    render_line.push('X')
+                }else {
+                    render_line.push('_')
+                }
+            }
+            renderer.push(render_line);
+        }
+        // Display in println
+        for line in renderer.iter() {
+            for &val in line.iter() {
+                print!("{}", val);
+            }
+            println!();
+        }
+        renderer
+    }
+
+}
+
+impl Environment for GridWorld {
+    fn reset(&mut self) -> State {
+        self.agent_position = rand::thread_rng().gen_range(0..self.all_position.len() as i64);
+        self.agent_position
+    }
+    /*pub fn old_reset(&mut self, pos: i64) { self.agent_position = pos; } */
+
+    fn step(&mut self, action: Action) -> (State, Reward, bool) {
+        if self.is_game_over() {
+            return (self.agent_position, self.score(), true);
+        }
+
+        let grid = GridWorld::get_grid(self.all_position.clone(), self.col);
+        match action {
+            1 => if self.agent_position % self.col as i64 != 0 { self.agent_position -= 1; },
+            2 => if self.agent_position % self.col as i64 != self.col as i64 - 1 { self.agent_position += 1; },
+            3 => {
+                let (line, index) = GridWorld::find_index(&grid, self.agent_position);
+                if line + 1 < grid.len() { self.agent_position = grid[line + 1][index]; }
+            },
+            4 => {
+                let (line, index) = GridWorld::find_index(&grid, self.agent_position);
+                if line > 0 { self.agent_position = grid[line - 1][index]; }
+            },
+            _ => {},        // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
+
+        }
+
+        let reward = self.score();
+        let done = self.is_game_over();
+        (self.agent_position, reward, done)
+    }
+    /*pub fn old_step(&mut self, action: i64) {
+        // assert!(!self.is_game_over(), "Game is Over !");
+        assert!(self.available_actions().contains(&action), "Action : {action} is not playable !");
+        // Generate the Grid
+        let grid = crate::environment::gridworld::get_grid(self.all_position.clone(), self.col);
         // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
-        let mut actions : Vec<i64> = vec![];
+        if action == 1 { self.agent_position -= 1 }
+        if action == 2 { self.agent_position += 1 }
+        if action == 3 {
+            let (line, index) = crate::environment::gridworld::find_index(&grid, self.agent_position);
+            self.agent_position = grid[line + 1][index];
+        }
+        if action == 4 {
+            let (line, index) = crate::environment::gridworld::find_index(&grid, self.agent_position);
+            self.agent_position = grid[line - 1][index];
+        }
+    }*/
+
+    fn available_actions(&self) -> Vec<Action> {
+        // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
+        let mut actions : Vec<Action> = vec![];
         // Without go position
         let mut playable_pos: Vec<i64> = self.all_position.clone();
         playable_pos.retain(|x| !self.terminal_position.contains(x));
@@ -117,75 +205,33 @@ impl GridWorld {
         return actions
     }
 
-    pub fn is_game_over(&self) -> bool { if self.terminal_position.contains(&self.agent_position) {true} else {false}}
-
-    pub fn state_id(&self) -> i64 { self.agent_position }
-
-    pub fn step(&mut self, action: i64) {
-        // assert!(!self.is_game_over(), "Game is Over !");
-        assert!(self.available_actions().contains(&action), "Action : {action} is not playable !");
-        // Generate the Grid
-        let grid = get_grid(self.all_position.clone(), self.col);
-        // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
-        if action == 1 { self.agent_position -= 1 }
-        if action == 2 { self.agent_position += 1 }
-        if action == 3 {
-            let (line, index) = find_index(&grid, self.agent_position);
-            self.agent_position = grid[line + 1][index];
-        }
-        if action == 4 {
-            let (line, index) = find_index(&grid, self.agent_position);
-            self.agent_position = grid[line - 1][index];
-        }
+    fn all_states(&self) -> Vec<State> {
+        self.all_position.clone()
     }
 
-    pub fn score(&self) -> f64 {
-        tools::score(self.agent_position, &self.terminal_position)
+    fn set_state(&mut self, state: State) {
+        self.agent_position = state;
     }
 
-    pub fn display(&self) -> Vec<Vec<char>>{
-        let grid = get_grid(self.all_position.clone(), self.col);
-        let mut renderer: Vec<Vec<char>> = Vec::new();
-        for line in grid.iter() {
-            let mut render_line: Vec<char> = Vec::new();
-            for &val in line.iter() {
-                if self.agent_position == val {
-                    render_line.push('X')
-                }else {
-                    render_line.push('_')
-                }
-            }
-            renderer.push(render_line);
-        }
-        // Display in println
-        for line in renderer.iter() {
-            for &val in line.iter() {
-                print!("{}", val);
+    fn display(&self) {
+        let grid = GridWorld::get_grid(self.all_position.clone(), self.col);
+        for line in &grid {
+            for &val in line {
+                print!("{}", if val == self.agent_position { 'X' } else { '_' });
             }
             println!();
         }
-        renderer
     }
 
-    pub fn reset(&mut self, pos: i64) { self.agent_position = pos; }
-}
+    fn state_id(&self) -> State {
+        self.agent_position
+    }
 
-fn find_index(grid: &Vec<Vec<i64>>, val: i64) -> (usize, usize) {
-    for (i, line) in grid.iter().enumerate() {
-        if let Some(j) = line.iter().position(|&x| x == val) {return (i, j)}
+    fn score(&self) -> Reward { tools::score(self.agent_position, &self.terminal_position) }
+
+    fn is_game_over(&self) -> bool {
+        self.terminal_position.contains(&self.agent_position)
     }
-    unreachable!();
-}
-fn get_grid(flat_vec: Vec<i64>, col: usize) -> Vec<Vec<i64>>{
-    let mut grid: Vec<Vec<i64>> = Vec::new();
-    let lines = flat_vec.len() / col;
-    for i in 0..lines {
-        let start = i * col;
-        let end = start + col;
-        let line: Vec<i64> = flat_vec[start..end].to_vec();
-        grid.push(line);
-    }
-    grid
 }
 
 #[cfg(test)]
@@ -251,18 +297,18 @@ mod tests {
     #[test]
     fn test_display() {
         let env = setup_grid_world();
-        let array = env.display();
+        let array = env.get_display_array();
         assert_eq!(array, vec![
             vec!['_', 'X', '_', '_', '_'],
             vec!['_', '_', '_', '_', '_'],
             vec!['_', '_', '_', '_', '_']
         ]);
     }
-    #[test]
+    /*#[test]
     fn test_reset() {
         let mut env = setup_grid_world();
         env.agent_position = 4;
-        env.reset(2);
+        env.reset();
         assert_eq!(env.agent_position, 2);
-    }
+    }*/
 }
