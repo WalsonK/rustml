@@ -5,6 +5,7 @@ use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 use rustml::planning::dyna_q::DynaQModel;
+use rustml::planning::dyna_q_plus::DynaQPlusModel;
 
 
 fn main() {
@@ -38,7 +39,7 @@ fn main() {
     */
 
     //     DYNQ
-     let iterations = 10000;
+    let iterations = 10000;
     let gamma = 0.95;
     let alpha = 0.1;
     let epsilon = 0.1;
@@ -50,7 +51,23 @@ fn main() {
     let policy = dyna_q_model.derive_policy();
     dyna_q_model.print_policy(&policy);
 
+/*
+    //     DYNQ+
+    // Parameters for DynaQ+ model
+    let iterations = 100000;
+    let gamma = 0.95;
+    let alpha = 0.1;
+    let epsilon = 0.1;
+    let planning_steps = 100;
+    let kappa = 0.001;
 
+    let mut dyna_q_model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
+    dyna_q_model.dyna_q_plus(&mut *env);
+    println!("Q-values: {:?}", dyna_q_model.q_values);
+    let policy = dyna_q_model.derive_policy();
+    dyna_q_model.print_policy(&policy);
+
+*/
 
 
     /*      POLICY ITERATION
