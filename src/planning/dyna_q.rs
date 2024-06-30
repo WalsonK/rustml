@@ -42,7 +42,7 @@ impl DynaQModel {
             // Get current nonterminal state S
             let mut state = env.reset();
 
-            while !env.is_game_over() {
+            while true {
                 // Choose action A using epsilon-greedy policy
                 let available_actions = env.available_actions();
                 let action = self.epsilon_greedy(state, &available_actions, &mut rng);

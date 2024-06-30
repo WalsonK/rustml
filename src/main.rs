@@ -29,6 +29,7 @@ fn main() {
 
     //      Playable Grid world
     let mut env = playable_grid_world::playable_GridWorld::new(3,5,1);
+    env.display();
 
 
     /*      PLAYABLE MONTY HALL
