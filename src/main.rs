@@ -19,6 +19,7 @@ fn main() {
 /*
          // Playable Line world
     let mut env = playable_line_world::playable_line_world::new(5, false, 2);
+    env.display();
 */
     
     /*      Grid world
