@@ -54,7 +54,7 @@ impl MonteCarloControlOff {
             let mut steps = 0;
 
             // Generate an episode using a soft policy (behavior policy)
-            while  !done && steps < max_steps {
+            while   steps < max_steps {
                 let action = self.choose_action_soft(env,state, &mut rng);
                 let (next_state, reward, is_done) = env.step(action);
                 episode.push(EpisodeStep { state, action, reward });

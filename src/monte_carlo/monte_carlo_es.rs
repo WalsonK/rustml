@@ -42,7 +42,7 @@ impl MonteCarloESModel {
             let mut trajectory: Vec<EpisodeStep> = Vec::new();
             let mut steps_count = 0;
 
-            while !env.is_game_over() && steps_count < self.max_steps {
+            while  steps_count < self.max_steps {
                 let state = env.state_id();
                 let available_actions = env.available_actions();
 
