@@ -4,20 +4,22 @@ use rustml::environment::{lineworld, gridworld, tools, playable_line_world, play
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
+use rustml::planning::dyna_q::DynaQModel;
 
 
 fn main() {
-
+/*
     //      Line world
-    let env = lineworld::LineWorld::new(4, false, 1);
+    let mut env = lineworld::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
      //
-
-    /*      Playable Line world
+*/
+/*
+         // Playable Line world
     let mut env = playable_line_world::playable_line_world::new(5, false, 2);
-     */
+*/
     
     /*      Grid world
     let env = gridworld::GridWorld::new(3, 5, 1);
@@ -25,13 +27,28 @@ fn main() {
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();*/
 
-    /*      Playable Grid world
+    //      Playable Grid world
     let mut env = playable_grid_world::playable_GridWorld::new(3,5,1);
-    */
+
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
     */
+
+    //     DYNQ
+     let iterations = 10000;
+    let gamma = 0.95;
+    let alpha = 0.1;
+    let epsilon = 0.1;
+    let n = 100;
+
+    let mut dyna_q_model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
+    dyna_q_model.dyna_q(&mut *env);
+    println!("Q-values: {:?}", dyna_q_model.q_values);
+    let policy = dyna_q_model.derive_policy();
+    dyna_q_model.print_policy(&policy);
+
+
 
 
     /*      POLICY ITERATION
@@ -45,7 +62,7 @@ fn main() {
     );
     let best_policy = algo.policy_iteration();
     println!("Policy for policy iter: {:?}", best_policy);*/
-
+    /*
     //      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
         env.all_position,
@@ -59,7 +76,9 @@ fn main() {
     println!("Policy for value iter: {:?}", val_iter.policy);
      //
 
-    /*      MONTE CARLO ES
+     */
+/*
+    //     MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
     // Entraînement du modèle avec Monte Carlo ES
     model.monte_carlo_es(&mut *env);
@@ -70,8 +89,8 @@ fn main() {
     let state = env.reset();
     let action = model.policy.get(&state).cloned().unwrap_or(0);
     env.step(action);
-    env.display();*/
-
+    env.display();
+*/
     /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
