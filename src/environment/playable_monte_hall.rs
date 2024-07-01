@@ -89,7 +89,7 @@ impl playable_MontyHall {
 
 
 }
-
+/*
 impl Environment for playable_MontyHall {
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
@@ -159,3 +159,5 @@ impl fmt::Display for playable_MontyHall {
         )
     }
 }
+
+ */

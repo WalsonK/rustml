@@ -10,6 +10,7 @@ pub trait Environment {
     fn step(&mut self, action: Action) -> (State, Reward, bool);
     fn available_actions(&self) -> Vec<Action>;
     fn all_states(&self) -> Vec<State>;
+    fn terminal_states(&self) -> Vec<State>;
     fn set_state(&mut self, state: State);
     fn display(&self);
     fn state_id(&self) -> State;
