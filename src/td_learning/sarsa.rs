@@ -1,27 +1,44 @@
 use rand::Rng;
+use crate::environment::environment::{Environment, State};
 
 pub struct SarsaModel {
-    pub q_table: Vec<Vec<f32>>,
-    pub alpha: f32,
-    pub gamma: f32,
-    pub epsilon: f32,
+    pub q_table: Vec<Vec<f64>>,
+    pub alpha: f64,
+    pub gamma: f64,
+    pub epsilon: f64,
     pub nb_episode: usize,
     pub num_states: usize,
     pub num_actions: usize,
 }
 
 impl SarsaModel {
-    fn new(a: usize, s: usize, al: f32, g:f32, e:f32, ep: usize) -> Box<SarsaModel>{
+    pub fn new<E: Environment>(env: &E, alpha: f64, gamma:f64, epsilon:f64, nb_episode: usize) -> Box<SarsaModel>{
+        let ns = env.all_states().len();
+        let na = env.available_actions().len();
         let mut model = Box::new(SarsaModel {
-            num_states: s,
-            num_actions: a,
-            q_table: vec![vec![0.0; a]; s],
-            alpha: al,
-            gamma: g,
-            epsilon: e,
-            nb_episode: ep
+            num_states: ns,
+            num_actions: na,
+            q_table: vec![vec![0.0; na]; ns],
+            alpha,
+            gamma,
+            epsilon,
+            nb_episode
         });
+        // Set random Q
+        model.init_q(env);
         model
+    }
+
+    fn init_q<E: Environment>(&mut self, env: &E) {
+        let mut rng = rand::thread_rng();
+        for i in 0..self.q_table.len() {
+            let si: State = i as State;
+            if env.terminal_states().contains(&si) {
+                self.q_table[i] = vec![0.0; self.q_table[i].len()];
+            } else {
+                self.q_table[i] = (0..self.q_table[i].len()).map(|_| rng.gen::<f64>()).collect();
+            }
+        }
     }
 
     /*fn iter(&mut self, rand: bool) {
@@ -45,9 +62,10 @@ impl SarsaModel {
                 if new_state == self.num_states - 1 { break; }
             }
         }
-    }*/
+    }
+     */
 
-    fn chose_action(&mut self, state: usize) -> usize {
+    /*fn chose_action(&mut self, state: usize) -> usize {
         let mut rng = rand::thread_rng();
         let rand = rng.gen_range(0.0..=1.0);
         return if rand < self.epsilon {
@@ -57,6 +75,8 @@ impl SarsaModel {
             a.partial_cmp(b).unwrap()).map(|(index, _)| index).unwrap()
         }
     }
+
+     */
 
     /*fn do_action(&mut self, state: usize, action: usize) -> (usize, f32){
 

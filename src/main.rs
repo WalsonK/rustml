@@ -3,24 +3,25 @@ extern crate rustml;
 use rustml::environment::{line_world, grid_world, tools, playable_monte_hall};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
+use rustml::td_learning::sarsa;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 
 
 fn main() {
 
-    /*      Line world
+    //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    */
+    //
     
-    //      Grid world
+    /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    //
+    */
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
@@ -66,7 +67,7 @@ fn main() {
     env.step(action);
     env.display();*/
 
-    //      MONTE CARLO CONTROL
+    /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -80,7 +81,7 @@ fn main() {
     });
     env.step(action);
     env.display();
-    //
+    */
 
     /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
@@ -95,6 +96,10 @@ fn main() {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);*/
+
+    // SARSA
+    let model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
+    tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
 
 }
 
