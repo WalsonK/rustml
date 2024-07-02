@@ -1,17 +1,14 @@
 extern crate rand;
 use rand::Rng;
 use crate::environment::environment::{State, Action, Reward, Environment};
-
 pub struct playable_line_world {
-    agent_pos: i64,
-    all_pos: Vec<i64>,
-    go_pos: Vec<i64>,
+    agent_pos: usize,
+    all_pos: Vec<usize>,
+    go_pos: Vec<usize>,
 }
 
-
-
 impl playable_line_world {
-    pub fn new(len: i64, is_rand: bool, pos: i64) -> Box<playable_line_world> {
+    pub fn new(len: usize, is_rand: bool, pos: usize) -> Box<playable_line_world> {
         let agent_pos = if !is_rand {
             pos
         } else {
@@ -33,15 +30,14 @@ impl playable_line_world {
 
 impl Environment for playable_line_world {
     fn reset(&mut self) -> State {
-        let mut rng = rand::thread_rng();
-        self.agent_pos = rng.gen_range(1..=self.all_pos.len() as i64);
+        self.agent_pos = rand::thread_rng().gen_range(1..=self.all_pos.len()).try_into().unwrap();
         self.agent_pos
     }
 
     fn step(&mut self, action: Action) -> (State, Reward, bool) {
         match action {
             1 if self.agent_pos > 1 => self.agent_pos -= 1,
-            2 if self.agent_pos < self.all_pos.len() as i64 => self.agent_pos += 1,
+            2 if self.agent_pos < self.all_pos.len() => self.agent_pos += 1,
             _ => {}
         }
         let reward = self.score();
@@ -52,7 +48,7 @@ impl Environment for playable_line_world {
     fn available_actions(&self) -> Vec<Action> {
         let mut actions = vec![0];
         if self.agent_pos > 1 { actions.push(1); }
-        if self.agent_pos < self.all_pos.len() as i64 { actions.push(2); }
+        if self.agent_pos < self.all_pos.len() { actions.push(2); }
         actions
     }
 

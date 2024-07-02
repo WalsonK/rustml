@@ -13,14 +13,14 @@ pub struct EpisodeStep {
 
 pub struct MonteCarloControlOff {
     pub epsilon: f64,
-    pub gamma: f64,
+    pub gamma: f32,
     pub policy: HashMap<State, HashMap<Action, f64>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub c_values: HashMap<(State, Action), f64>,
 }
 
 impl MonteCarloControlOff {
-    pub fn new(epsilon: f64, gamma: f64) -> Box<MonteCarloControlOff> {
+    pub fn new(epsilon: f64, gamma: f32) -> Box<MonteCarloControlOff> {
         Box::new(MonteCarloControlOff {
             epsilon,
             gamma,
@@ -54,8 +54,8 @@ impl MonteCarloControlOff {
             let mut steps = 0;
 
             // Generate an episode using a soft policy (behavior policy)
-            while  !done && steps < max_steps {
-                let action = self.choose_action_soft(env,state, &mut rng);
+            while !done && steps < max_steps {
+                let action = self.choose_action_soft(env, state, &mut rng);
                 let (next_state, reward, is_done) = env.step(action);
                 episode.push(EpisodeStep { state, action, reward });
                 state = next_state;
@@ -89,11 +89,11 @@ impl MonteCarloControlOff {
     }
 
     fn process_episode_off_policy(&mut self, episode: Vec<EpisodeStep>) {
-        let mut g: Reward = 0.0;
+        let mut g: f64 = 0.0;
         let mut w: f64 = 1.0;
 
         for step in episode.iter().rev() {
-            g = self.gamma * g + step.reward;
+            g = (self.gamma as f64) * g + (step.reward as f64);
             let state_action_pair = (step.state, step.action);
 
             if let Some(c) = self.c_values.get_mut(&state_action_pair) {
@@ -101,8 +101,8 @@ impl MonteCarloControlOff {
             }
 
             if let Some(q) = self.q_values.get_mut(&state_action_pair) {
-                if let Some(c) = self.c_values.get(&state_action_pair) {
-                    *q += w / c * (g - *q);
+                if let Some(c) = self.c_values.get(&state_action_pair).map(|&v| v as f64) {
+                    *q += ((w / c) * (g - *q as f64)) as f32 ;
                 }
             }
 
@@ -121,10 +121,10 @@ impl MonteCarloControlOff {
 
     fn find_best_action(&self, state: State) -> Action {
         let mut best_action = *self.policy[&state].keys().next().unwrap();
-        let mut best_value = f64::NEG_INFINITY;
+        let mut best_value = f32::NEG_INFINITY;
 
         for &action in self.policy[&state].keys() {
-            let value = *self.q_values.get(&(state, action)).unwrap_or(&f64::NEG_INFINITY);
+            let value = *self.q_values.get(&(state, action)).unwrap_or(&f32::NEG_INFINITY);
             if value > best_value {
                 best_value = value;
                 best_action = action;

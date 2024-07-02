@@ -1,4 +1,6 @@
+
 extern crate rand;
+
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
@@ -13,7 +15,7 @@ pub struct EpisodeStep {
 
 pub struct MonteCarloESModel {
     pub num_episodes: usize,
-    pub gamma: f64,
+    pub gamma: f32,
     pub max_steps: usize,
     pub policy: HashMap<State, Action>,
     pub q_values: HashMap<(State, Action), Reward>,
@@ -21,7 +23,7 @@ pub struct MonteCarloESModel {
 }
 
 impl MonteCarloESModel {
-    pub fn new(num_episodes: usize, gamma: f64, max_steps: usize) -> Box<MonteCarloESModel> {
+    pub fn new(num_episodes: usize, gamma: f32, max_steps: usize) -> Box<MonteCarloESModel> {
         Box::new(MonteCarloESModel {
             num_episodes,
             gamma,
@@ -34,16 +36,21 @@ impl MonteCarloESModel {
 
     pub fn monte_carlo_es<E: Environment>(&mut self, env: &mut E) {
         let mut rng = thread_rng();
-
+         let mut i =0;
         for _ in 0..self.num_episodes {
             env.reset();
-
+            println!("{:}",i);
+            i = i+1;
             let mut is_first_action = true;
             let mut trajectory: Vec<EpisodeStep> = Vec::new();
             let mut steps_count = 0;
 
-            while !env.is_game_over() && steps_count < self.max_steps {
+            while steps_count < self.max_steps {
                 let state = env.state_id();
+                if state >= 8192 {
+                    panic!("State ID exceeds the allowed range: {}", state);
+                }
+
                 let available_actions = env.available_actions();
 
                 // Assurer que chaque état a une politique initiale
@@ -58,16 +65,19 @@ impl MonteCarloESModel {
                     *self.policy.get(&state).unwrap()
                 };
 
-                let prev_score = env.score();
-                env.step(action);
-                let reward = env.score() - prev_score;
+                let (new_state, reward, done) = env.step(action);
 
                 trajectory.push(EpisodeStep {
                     state,
                     action,
                     reward,
                 });
+
                 steps_count += 1;
+
+                if done {
+                    break;
+                }
             }
 
             self.process_episode(trajectory);
@@ -95,18 +105,16 @@ impl MonteCarloESModel {
                 let best_action = self.find_best_action(step.state);
                 self.policy.insert(step.state, best_action);
 
-                // Ajout d'une impression pour le débogage
-                println!("State: {}, Action: {}, Mean Return: {}", step.state, step.action, mean_return);
             }
         }
     }
 
     fn find_best_action(&self, state: State) -> Action {
         let mut best_action = 0;
-        let mut best_value = f64::NEG_INFINITY;
+        let mut best_value = f32::NEG_INFINITY;
 
         for action in self.q_values.keys().filter_map(|&(s, a)| if s == state { Some(a) } else { None }) {
-            let value = *self.q_values.get(&(state, action)).unwrap_or(&f64::NEG_INFINITY);
+            let value = *self.q_values.get(&(state, action)).unwrap_or(&f32::NEG_INFINITY);
             if value > best_value {
                 best_value = value;
                 best_action = action;

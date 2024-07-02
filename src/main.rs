@@ -1,25 +1,51 @@
 extern crate rustml;
 
+use rand::Rng;
 use rustml::environment::{lineworld, gridworld, tools, playable_line_world, playable_grid_world, playable_monte_hall};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
+//use rustml::environment::env0::env0;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
+use rustml::environment::SecretEnv0Dp::SecretEnv0Dp;
 
 
+/*
 fn main() {
+    /*let mut env = unsafe { env0::new() };
 
-    //      Line world
+    // Exemple d'utilisation
+    let initial_state = env.reset();
+    println!("Initial state ID: {}", initial_state);
+
+    // Boucle de jeu hypothétique
+    while !env.is_game_over() {
+        println!("azul");
+        let actions = env.available_actions();
+        println!("Available actions: {:?}", actions);
+
+        // Choix d'une action aléatoire
+        let action = actions[rand::thread_rng().gen_range(0..actions.len())];
+        println!("Performing action: {}", action);
+
+        let (new_state, reward, game_over) = env.step(action);
+        println!("New state ID: {}, Reward: {}, Game over: {}", new_state, reward, game_over);
+
+        env.display();
+    }
+
+    println!("Final score: {}", env.score());
+    //    Line world
     let env = lineworld::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-     //
 
-    /*      Playable Line world
+*/
+    //      Playable Line world
     let mut env = playable_line_world::playable_line_world::new(5, false, 2);
-     */
+     //
     
-    /*      Grid world
+    /*     Grid world
     let env = gridworld::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
@@ -46,7 +72,7 @@ fn main() {
     let best_policy = algo.policy_iteration();
     println!("Policy for policy iter: {:?}", best_policy);*/
 
-    //      VALUE ITERATION
+    /*    VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
         env.all_position,
         env.all_actions,
@@ -57,7 +83,7 @@ fn main() {
     );
     val_iter.iteration(0.001);
     println!("Policy for value iter: {:?}", val_iter.policy);
-     //
+     */
 
     /*      MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
@@ -72,7 +98,7 @@ fn main() {
     env.step(action);
     env.display();*/
 
-    /*      MONTE CARLO CONTROL
+    //      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -85,7 +111,7 @@ fn main() {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);
-    env.display(); */
+    env.display(); //
 
     /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
@@ -102,20 +128,87 @@ fn main() {
     env.step(action);*/
 
 }
+*/
 
-/*mod two_round_rock_paper_scissors;
-use crate::two_round_rock_paper_scissors::{Action, Agent, Adversary, Environment};
+
+
+mod environment;
+
 fn main() {
-    let mut env = Environment::new();
-    let agent_action_round_1 = env.agent.choose_action();
-    let (result_round_1, _) = env.step(agent_action_round_1);
-    println!("Round 1: Agent chose {:?}, result: {}", agent_action_round_1, result_round_1);
+    // Charge la bibliothèque dynamique spécifique à votre environnement secret
+    let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    //let mut env = playable_line_world::playable_line_world::new(5, false, 2);
 
-    let agent_action_round_2 = env.agent.choose_action(); // Agent choisit une action aléatoire pour le deuxième round
-    let (result_round_2, done) = env.step(agent_action_round_2); // Passer l'action du deuxième round
-    println!("Round 2: Agent chose {:?}, result: {}", agent_action_round_2, result_round_2); // Agent joue la même action que le deuxième round
+    // Exemple d'utilisation de l'environnement
+    println!("Initial state:");
+    env.display();
 
-    if done {
-        println!("Game over. Total score: {}", env.agent_score);
+    /*Exemple de boucle de jeu ou d'interaction avec l'environnement
+    for _ in 0..100 {
+        let actions = env.available_actions();
+        println!("Available actions: {:?}", actions);
+        let mut rng = rand::thread_rng();
+        let index = rng.gen_range(0..actions.len());
+        let action = actions[index]; // Exemple : choisir la première action disponible
+
+        let (state, reward, done) = env.step(action);
+
+        println!("Action taken: {}", action);
+        println!("State after action:");
+        env.display();
+        println!("Reward received: {}", reward);
+        println!("Game over? {}", done);
+
+        if done {
+            println!("Game over. Resetting environment.");
+            let initial_state = env.reset();
+            println!("Environment reset. Initial state:");
+            env.display();
+        }
+    }*/
+
+    let mut model = monte_carlo_es::MonteCarloESModel::new(50000, 0.9, 10000);
+
+    model.monte_carlo_es(&mut *env);
+    /*let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
+    // Entraînement du modèle avec Monte Carlo Control
+    model.on_policy_mc_control(&mut *env, 10000, 100);
+    // Affichage des résultats après l'entraînement pour inspection manuelle*/
+
+    println!("Q-values: {:?}", model.q_values);
+    println!("Policy: {:?}", model.policy);
+
+    // Exemple de test de la politique entraînée sur un état initial
+    // Boucle de jeu jusqu'à la fin en utilisant le modèle entraîné
+    env.reset();
+    loop {
+
+        let state = env.state_id();
+        let action = if let Some(action) = model.policy.get(&state) {
+            *action
+        } else {
+            // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
+            let actions = env.available_actions();
+            let mut rng = rand::thread_rng();
+            let index = rng.gen_range(0..actions.len());
+            actions[index]
+        };
+
+        // Appliquer l'action à l'environnement
+        let (new_state, reward, done) = env.step(action);
+
+        println!("Action taken: {}", action);
+        println!("State after action:");
+        env.display();
+        println!("Reward received: {}", reward);
+        println!("Game over? {}", done);
+
+        if done {
+            println!("Game over. Resetting environment.");
+            let initial_state = env.reset();
+            println!("Environment reset. Initial state:");
+            env.display();
+            break; // Sort de la boucle si le jeu est terminé
+        }
     }
-}*/
+}

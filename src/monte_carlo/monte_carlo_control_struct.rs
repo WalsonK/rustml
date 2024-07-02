@@ -13,14 +13,14 @@ pub struct EpisodeStep {
 
 pub struct MonteCarloControl {
     pub epsilon: f64,
-    pub gamma: f64,
+    pub gamma: f32,
     pub policy: HashMap<State, HashMap<Action, f64>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub returns: HashMap<(State, Action), Vec<Reward>>,
 }
 
 impl MonteCarloControl {
-    pub fn new(epsilon: f64, gamma: f64) -> Box<MonteCarloControl> {
+    pub fn new(epsilon: f64, gamma: f32) -> Box<MonteCarloControl> {
         Box::new(MonteCarloControl {
             epsilon,
             gamma,
@@ -32,6 +32,7 @@ impl MonteCarloControl {
 
     pub fn initialize_policy<E: Environment>(&mut self, env: &E) {
         for &state in &env.all_states() {
+            println!("{}",&state);
             let mut actions = HashMap::new();
             let available_actions = env.available_actions();
             for &action in &available_actions {
@@ -49,6 +50,7 @@ impl MonteCarloControl {
             println!("Initializing policy for new state: {}", state);
             let mut actions = HashMap::new();
             let available_actions = env.available_actions();
+            println!("availab {:?}",available_actions);
             for &action in &available_actions {
                 actions.insert(action, 1.0 / available_actions.len() as f64);
                 self.q_values.insert((state, action), 0.0);
@@ -75,16 +77,18 @@ impl MonteCarloControl {
             let mut state = env.reset();
             let mut done = false;
             let mut steps = 0;
-
+           println!("aaa {}",state);
             while !done && steps < max_steps {
                 let action = self.choose_action(state, env, &mut rng);
+              //  println!("{}",action);
                 let (next_state, reward, is_done) = env.step(action);
-                episode.push(EpisodeStep { state, action, reward });
+                println!("{}",is_done);
+                episode.push(EpisodeStep {state, action, reward});
                 state = next_state;
                 done = is_done;
                 steps += 1;
             }
-
+            println!("{}",done);
             self.process_episode(episode);
         }
     }
@@ -112,10 +116,10 @@ impl MonteCarloControl {
 
     fn find_best_action(&self, state: State) -> Action {
         let mut best_action = *self.policy[&state].keys().next().unwrap();
-        let mut best_value = f64::NEG_INFINITY;
+        let mut best_value = f32::NEG_INFINITY;
 
         for &action in self.policy[&state].keys() {
-            let value = *self.q_values.get(&(state, action)).unwrap_or(&f64::NEG_INFINITY);
+            let value = *self.q_values.get(&(state, action)).unwrap_or(&f32::NEG_INFINITY);
             if value > best_value {
                 best_value = value;
                 best_action = action;
