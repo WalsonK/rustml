@@ -1,6 +1,6 @@
 extern crate rustml;
 
-use rustml::environment::{line_world, grid_world, tools, playable_monte_hall};
+use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, playable_line_world, playable_grid_world};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
@@ -22,7 +22,7 @@ fn main() {
     let mut env = playable_line_world::playable_line_world::new(5, false, 2);
     env.display();
 */
-    
+ /*
     //      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
@@ -96,7 +96,7 @@ fn main() {
     println!("Policy for value iter: {:?}", val_iter.policy);
     */
 
-     */
+
 /*
     //     MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
@@ -125,7 +125,7 @@ fn main() {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);
-    env.display();
+    env.display();*/
     //
 
     /*      MONTE CARLO CONTROL OFF POLICY
@@ -142,7 +142,7 @@ fn main() {
     });
     env.step(action);*/
 
-}
+
 
 /*mod two_round_rock_paper_scissors;
 use crate::two_round_rock_paper_scissors::{Action, Agent, Adversary, Environment};
@@ -160,3 +160,5 @@ fn main() {
         println!("Game over. Total score: {}", env.agent_score);
     }
 }*/
+
+}
