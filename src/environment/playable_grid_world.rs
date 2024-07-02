@@ -1,12 +1,12 @@
 extern crate rand;
 use rand::Rng;
+use std::convert::TryInto;
 use crate::environment::environment::{State, Action, Reward, Environment};
 
 pub struct playable_GridWorld {
     agent_pos: i64,
     col: usize,
     all_pos: Vec<i64>,
-
     go_pos: Vec<i64>,
 }
 
@@ -33,30 +33,29 @@ impl playable_GridWorld {
                 return (i, j);
             }
         }
-        unreachable!();
+        unreachable!(); // Cette ligne ne doit jamais être atteinte si `val` est bien dans `grid`.
     }
 
     fn get_grid(flat_vec: Vec<i64>, col: usize) -> Vec<Vec<i64>> {
         flat_vec.chunks(col).map(|chunk| chunk.to_vec()).collect()
     }
-
 }
 
 impl Environment for playable_GridWorld {
     fn reset(&mut self) -> State {
         self.agent_pos = rand::thread_rng().gen_range(0..self.all_pos.len() as i64);
-        self.agent_pos
+        self.agent_pos.try_into().unwrap() // Convertir en `State` (usize) en toute sécurité
     }
 
     fn step(&mut self, action: Action) -> (State, Reward, bool) {
         if self.is_game_over() {
-            return (self.agent_pos, self.score(), true);
+            return (self.agent_pos.try_into().unwrap(), self.score(), true);
         }
 
         let grid = playable_GridWorld::get_grid(self.all_pos.clone(), self.col);
         match action {
-            1 => if self.agent_pos % self.col as i64 != 0 { self.agent_pos -= 1; },
-            2 => if self.agent_pos % self.col as i64 != self.col as i64 - 1 { self.agent_pos += 1; },
+            1 if self.agent_pos % self.col as i64 != 0 => self.agent_pos -= 1,
+            2 if self.agent_pos % self.col as i64 != self.col as i64 - 1 => self.agent_pos += 1,
             3 => {
                 let (line, index) = playable_GridWorld::find_index(&grid, self.agent_pos);
                 if line + 1 < grid.len() { self.agent_pos = grid[line + 1][index]; }
@@ -65,13 +64,12 @@ impl Environment for playable_GridWorld {
                 let (line, index) = playable_GridWorld::find_index(&grid, self.agent_pos);
                 if line > 0 { self.agent_pos = grid[line - 1][index]; }
             },
-            _ => {},        // 0 : Stand / 1 : Left / 2 : Right / 3 : Down / 4 : Up
-
+            _ => {} // Gestion des autres actions non prises en charge
         }
 
         let reward = self.score();
         let done = self.is_game_over();
-        (self.agent_pos, reward, done)
+        (self.agent_pos.try_into().unwrap(), reward, done)
     }
 
     fn available_actions(&self) -> Vec<Action> {
@@ -87,11 +85,11 @@ impl Environment for playable_GridWorld {
     }
 
     fn all_states(&self) -> Vec<State> {
-        self.all_pos.clone()
+        self.all_pos.iter().map(|&pos| pos.try_into().unwrap()).collect()
     }
 
     fn set_state(&mut self, state: State) {
-        self.agent_pos = state;
+        self.agent_pos = state.try_into().unwrap(); // Convertir en `i64` en toute sécurité
     }
 
     fn display(&self) {
@@ -105,7 +103,7 @@ impl Environment for playable_GridWorld {
     }
 
     fn state_id(&self) -> State {
-        self.agent_pos
+        self.agent_pos.try_into().unwrap() // Convertir en `State` (usize) en toute sécurité
     }
 
     fn score(&self) -> Reward {
@@ -117,6 +115,7 @@ impl Environment for playable_GridWorld {
             0.0
         }
     }
+
     fn is_game_over(&self) -> bool {
         self.go_pos.contains(&self.agent_pos)
     }

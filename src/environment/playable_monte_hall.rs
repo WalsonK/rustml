@@ -108,7 +108,7 @@ impl Environment for playable_MontyHall {
             return (self.state_id(), 0.0, false);
         }
         if updated {
-            return (self.state_id(), self.reward(), self.is_game_over());
+            return (self.state_id(), self.reward() as Reward, self.is_game_over());
         }
         (self.state_id(), 0.0, self.is_game_over())
     }

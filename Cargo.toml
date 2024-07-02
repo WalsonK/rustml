@@ -12,3 +12,7 @@ libloading = "0.8.3"
 [[bin]]
 name = "rustml"
 path = "src/main.rs"
+
+[profile.release]
+debug = true
+
