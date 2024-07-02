@@ -76,7 +76,7 @@ impl MonteCarloControl {
             let mut done = false;
             let mut steps = 0;
 
-            while !done && steps < max_steps {
+            while steps < max_steps {
                 let action = self.choose_action(state, env, &mut rng);
                 let (next_state, reward, is_done) = env.step(action);
                 episode.push(EpisodeStep { state, action, reward });
