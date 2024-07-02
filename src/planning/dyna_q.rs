@@ -14,16 +14,16 @@ pub struct EpisodeStep {
 
 pub struct DynaQModel {
     pub iterations: usize,
-    pub gamma: f64,
-    pub alpha: f64,
-    pub epsilon: f64,
+    pub gamma: f32,
+    pub alpha: f32,
+    pub epsilon: f32,
     pub planning_steps: usize, // Number of planning steps
     pub q_values: HashMap<(State, Action), Reward>,
     pub model: HashMap<(State, Action), (Reward, State)>,
 }
 
 impl DynaQModel {
-    pub fn new(iterations: usize, gamma: f64, alpha: f64, epsilon: f64, planning_steps: usize) -> Box<DynaQModel> {
+    pub fn new(iterations: usize, gamma: f32, alpha: f32, epsilon: f32, planning_steps: usize) -> Box<DynaQModel> {
         Box::new(DynaQModel {
             iterations,
             gamma,
@@ -37,11 +37,12 @@ impl DynaQModel {
 
     pub fn dyna_q<E: Environment>(&mut self, env: &mut E) {
         let mut rng = thread_rng();
-
+        let mut i =0;
         for _ in 0..self.iterations {
             // Get current nonterminal state S
             let mut state = env.reset();
-
+            println!("{}",i);
+            i+=1;
             while true {
                 // Choose action A using epsilon-greedy policy
                 let available_actions = env.available_actions();
@@ -77,15 +78,15 @@ impl DynaQModel {
         }
     }
 
-    fn max_q_value(&self, state: State, actions: &[Action]) -> f64 {
+    fn max_q_value(&self, state: State, actions: &[Action]) -> f32 {
         actions
             .iter()
             .map(|&action| *self.q_values.get(&(state, action)).unwrap_or(&0.0))
-            .fold(std::f64::MIN, |a, b| a.max(b))
+            .fold(std::f64::MIN, |a, b| a.max(b as f64)) as f32
     }
 
     fn epsilon_greedy(&self, state: State, actions: &[Action], rng: &mut rand::prelude::ThreadRng) -> Action {
-        if rng.gen::<f64>() < self.epsilon {
+        if rng.gen::<f32>() < self.epsilon {
             *actions.choose(rng).unwrap()
         } else {
             actions
@@ -107,7 +108,7 @@ impl DynaQModel {
 
         for (&(state, action), &q_value) in &self.q_values {
             if let Some(&best_action) = policy.get(&state) {
-                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f64::NEG_INFINITY) {
+                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
                     policy.insert(state, action);
                 }
             } else {

@@ -1,5 +1,5 @@
-pub mod lineworld;
-pub mod gridworld;
+pub mod line_world;
+pub mod grid_world;
 pub mod two_round_rock_paper_scissors;
 pub mod monty_hall;
 pub mod tools;

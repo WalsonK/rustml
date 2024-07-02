@@ -1,12 +1,13 @@
 extern crate rustml;
 
 use rand::Rng;
-use rustml::environment::{lineworld, gridworld, tools, playable_line_world, playable_grid_world, playable_monte_hall};
+use rustml::environment::{line_world, grid_world, tools, playable_line_world, playable_grid_world, playable_monte_hall};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 //use rustml::environment::env0::env0;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 use rustml::environment::SecretEnv0Dp::SecretEnv0Dp;
+use rustml::planning::{dyna_q,dyna_q_plus};
 
 
 /*
@@ -167,27 +168,30 @@ fn main() {
         }
     }*/
 
-    let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 10000);
+    //let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 10000);
+    let mut model = dyna_q_plus::DynaQPlusModel::new(200,0.9, 0.1, 0.1, 100, 0.5);
     //let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
+    model.dyna_q_plus(&mut *env);
     // Entraînement du modèle avec Monte Carlo Control hors politique
     //model.off_policy_mc_control(&mut *env, 10000, 100);
-    model.monte_carlo_es(&mut *env);
+    //model.monte_carlo_es(&mut *env);
     /*let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
     // Affichage des résultats après l'entraînement pour inspection manuelle*/
 
     println!("Q-values: {:?}", model.q_values);
-    println!("Policy: {:?}", model.policy);
+    let policy = model.derive_policy();
+
+    println!("Policy: {:?}",  model.print_policy(&policy));
 
     // Exemple de test de la politique entraînée sur un état initial
     // Boucle de jeu jusqu'à la fin en utilisant le modèle entraîné
     env.reset();
     loop {
-
         let state = env.state_id();
-        let action = if let Some(action) = model.policy.get(&state) {
-            *action
+        let action = if let Some(&action) = policy.get(&state) {
+            action
         } else {
             // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
             let actions = env.available_actions();
@@ -197,7 +201,7 @@ fn main() {
         };
 
         // Appliquer l'action à l'environnement
-        let (new_state, reward, done) = env.step(action );
+        let (new_state, reward, done) = env.step(action);
 
         println!("Action taken: {}", action);
         println!("State after action:");
@@ -207,8 +211,7 @@ fn main() {
 
         if done {
             println!("Game over. Resetting environment.");
-            let initial_state = env.reset();
-            println!("Environment reset. Initial state:");
+            env.reset();
             env.display();
             break; // Sort de la boucle si le jeu est terminé
         }
