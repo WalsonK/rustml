@@ -6,6 +6,7 @@ use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 use rustml::planning::dyna_q::DynaQModel;
 use rustml::planning::dyna_q_plus::DynaQPlusModel;
+use rustml::td_learning::q_learning::QLearning;
 
 
 fn main() {
@@ -17,27 +18,40 @@ fn main() {
     let _ = env.display();
      //
 */
-/*
+
          // Playable Line world
     let mut env = playable_line_world::playable_line_world::new(5, false, 2);
     env.display();
-*/
+
  /*
     //      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();*/
-
+/*
     //      Playable Grid world
     let mut env = playable_grid_world::playable_GridWorld::new(3,5,1);
     env.display();
-
+*/
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
     */
+    let iterations = 100_000;
+    let gamma = 0.8;
+    let alpha = 0.5;
+    let epsilon = 0.9;
 
+
+    let mut q_learning_model = QLearning::new(iterations, gamma, alpha, epsilon);
+    q_learning_model.q_learning(&mut *env);
+
+    println!("Q-values: {:?}", q_learning_model.q_values);
+    let policy = q_learning_model.derive_policy();
+    q_learning_model.print_policy(&policy);
+
+/*
     //     DYNQ
     let iterations = 10000;
     let gamma = 0.95;
@@ -50,7 +64,7 @@ fn main() {
     println!("Q-values: {:?}", dyna_q_model.q_values);
     let policy = dyna_q_model.derive_policy();
     dyna_q_model.print_policy(&policy);
-
+*/
 /*
     //     DYNQ+
     // Parameters for DynaQ+ model
