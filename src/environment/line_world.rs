@@ -1,4 +1,5 @@
 use rand::Rng;
+use crate::environment::environment::{State, Action, Reward, Environment};
 use crate::environment::tools;
 
 pub struct LineWorld {
@@ -29,6 +30,20 @@ impl LineWorld {
         env.generate_rewards();
         env.generate_probabilities();
         env
+    }
+
+    pub fn is_game_over(&self) -> bool {
+        self.terminal_position.contains(&self.agent_position)
+    }
+
+    pub fn reset(&mut self, is_rand: bool, pos: i64) -> State {
+        self.agent_position = if !is_rand {
+            pos
+        } else {
+            let mut rng = rand::thread_rng();
+            rng.gen_range(1..self.all_position[self.all_position.len() - 1])
+        };
+        self.agent_position
     }
 
     fn generate_rewards(&mut self) {
@@ -77,38 +92,7 @@ impl LineWorld {
         }
         self.agent_position = begin_position;
     }
-
-    pub fn available_actions(&self) -> Vec<i64> {
-        let mut actions = vec![0];
-        if self.agent_position > 0 {
-            actions.push(1);
-        }
-        if self.agent_position < self.all_position.len() as i64 -1 {
-            actions.push(2);
-        }
-        actions
-    }
-
-    pub fn is_game_over(&self) -> bool {
-        return if self.terminal_position.contains(&self.agent_position) { true } else { false }
-    }
-
-    pub fn state_id(&self) -> i64{
-        return self.agent_position
-    }
-
-    pub fn step(&mut self, action: i64) {
-        //assert!(!self.is_game_over(), "Game is Over !");
-        assert!(self.available_actions().contains(&action), "Action : {action} is not playable !");
-        if action == 1 { self.agent_position -= 1 }
-        if action == 2 { self.agent_position += 1 }
-    }
-
-    pub fn score(&self) -> f64 {
-        tools::score(self.agent_position, &self.terminal_position)
-    }
-
-    pub fn display(&self) -> Vec<char>{
+    fn get_display_array(&mut self) -> Vec<char>{
         let mut renderer: Vec<char>= Vec::new();
         for i in self.all_position[0]..self.all_position.len() as i64 {
             if self.agent_position == i { renderer.push('X') } else {renderer.push('_') }
@@ -117,16 +101,60 @@ impl LineWorld {
         println!("{}", game);
         renderer
     }
+}
 
-    pub fn reset(&mut self, is_rand: bool, pos: i64) {
-        self.agent_position = if !is_rand {
-            pos
-        } else {
-            let mut rng = rand::thread_rng();
-            rng.gen_range(1..self.all_position[self.all_position.len() - 1])
+impl Environment for LineWorld {
+    fn reset(&mut self) -> State {
+        let mut rng = rand::thread_rng();
+        self.agent_position = rng.gen_range(1..=self.all_position.len() as i64);
+        self.agent_position
+    }
+
+    fn step(&mut self, action: Action) -> (State, Reward, bool) {
+        match action {
+            1 if self.agent_position > 0 => self.agent_position -= 1,
+            2 if self.agent_position < self.all_position.len() as i64 => self.agent_position += 1,
+            _ => {}
         }
+
+        let reward = self.score();
+        let done = self.is_game_over();
+        (self.agent_position, reward, done)
+    }
+
+    fn available_actions(&self) -> Vec<Action> {
+        let mut actions = vec![0];
+        if self.agent_position > 0 { actions.push(1); }
+        if self.agent_position < self.all_position.len() as i64 - 1  { actions.push(2); }
+        actions
+    }
+
+    fn all_states(&self) -> Vec<State> {
+        self.all_position.clone()
+    }
+
+    fn set_state(&mut self, state: State) {
+        self.agent_position = state;
+    }
+
+    fn display(&self) {
+        let game: String = self.all_position.iter().map(|&pos| if pos == self.agent_position { 'X' } else { '_' }).collect();
+        println!("{}", game);
+    }
+
+    fn state_id(&self) -> State {
+        self.agent_position
+    }
+
+    fn score(&self) -> Reward {
+        tools::score(self.agent_position, &self.terminal_position)
+    }
+
+    fn is_game_over(&self) -> bool {
+        self.terminal_position.contains(&self.agent_position)
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -176,8 +204,8 @@ mod tests {
     }
     #[test]
     fn test_display() {
-        let env = setup_line_world();
-        let array = env.display();
+        let mut env = setup_line_world();
+        let array = env.get_display_array();
         assert_eq!(array, vec!['_', 'X', '_', '_']);
     }
     #[test]
