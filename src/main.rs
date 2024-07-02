@@ -167,8 +167,10 @@ fn main() {
         }
     }*/
 
-    let mut model = monte_carlo_es::MonteCarloESModel::new(50000, 0.9, 10000);
-
+    let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 10000);
+    //let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
+    // Entraînement du modèle avec Monte Carlo Control hors politique
+    //model.off_policy_mc_control(&mut *env, 10000, 100);
     model.monte_carlo_es(&mut *env);
     /*let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
@@ -195,7 +197,7 @@ fn main() {
         };
 
         // Appliquer l'action à l'environnement
-        let (new_state, reward, done) = env.step(action);
+        let (new_state, reward, done) = env.step(action );
 
         println!("Action taken: {}", action);
         println!("State after action:");

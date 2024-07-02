@@ -12,15 +12,15 @@ pub struct EpisodeStep {
 }
 
 pub struct MonteCarloControlOff {
-    pub epsilon: f64,
+    pub epsilon: f32,
     pub gamma: f32,
-    pub policy: HashMap<State, HashMap<Action, f64>>,
+    pub policy: HashMap<State, HashMap<Action, f32>>,
     pub q_values: HashMap<(State, Action), Reward>,
-    pub c_values: HashMap<(State, Action), f64>,
+    pub c_values: HashMap<(State, Action), f32>,
 }
 
 impl MonteCarloControlOff {
-    pub fn new(epsilon: f64, gamma: f32) -> Box<MonteCarloControlOff> {
+    pub fn new(epsilon: f32, gamma: f32) -> Box<MonteCarloControlOff> {
         Box::new(MonteCarloControlOff {
             epsilon,
             gamma,
@@ -35,7 +35,7 @@ impl MonteCarloControlOff {
             let mut actions = HashMap::new();
             let available_actions = env.available_actions();
             for &action in &available_actions {
-                actions.insert(action, 1.0 / available_actions.len() as f64);
+                actions.insert(action, 1.0 / available_actions.len() as f32);
                 self.q_values.insert((state, action), 0.0);
                 self.c_values.insert((state, action), 0.0);
             }
@@ -73,7 +73,7 @@ impl MonteCarloControlOff {
             let mut actions = HashMap::new();
             let available_actions = env.available_actions();
             for &action in &available_actions {
-                actions.insert(action, 1.0 / available_actions.len() as f64);
+                actions.insert(action, 1.0 / available_actions.len() as f32);
                 self.q_values.insert((state, action), 0.0);
                 self.c_values.insert((state, action), 0.0);
             }
@@ -81,7 +81,7 @@ impl MonteCarloControlOff {
         }
         if let Some(action_probs) = self.policy.get(&state) {
             let actions: Vec<&Action> = action_probs.keys().collect();
-            let probs: Vec<f64> = action_probs.values().copied().collect();
+            let probs: Vec<f32> = action_probs.values().copied().collect();
             **actions.choose_weighted(rng, |&action| probs[actions.iter().position(|&&a| a == *action).unwrap()]).unwrap()
         } else {
             panic!("No entry found for state: {:?}", state);
@@ -89,11 +89,11 @@ impl MonteCarloControlOff {
     }
 
     fn process_episode_off_policy(&mut self, episode: Vec<EpisodeStep>) {
-        let mut g: f64 = 0.0;
-        let mut w: f64 = 1.0;
+        let mut g: f32 = 0.0;
+        let mut w: f32 = 1.0;
 
         for step in episode.iter().rev() {
-            g = (self.gamma as f64) * g + (step.reward as f64);
+            g = (self.gamma as f32) * g + (step.reward as f32);
             let state_action_pair = (step.state, step.action);
 
             if let Some(c) = self.c_values.get_mut(&state_action_pair) {
@@ -101,8 +101,8 @@ impl MonteCarloControlOff {
             }
 
             if let Some(q) = self.q_values.get_mut(&state_action_pair) {
-                if let Some(c) = self.c_values.get(&state_action_pair).map(|&v| v as f64) {
-                    *q += ((w / c) * (g - *q as f64)) as f32 ;
+                if let Some(c) = self.c_values.get(&state_action_pair).map(|&v| v as f32) {
+                    *q += ((w / c) * (g - *q as f32)) as f32 ;
                 }
             }
 
@@ -136,7 +136,7 @@ impl MonteCarloControlOff {
 
     fn update_policy(&mut self, state: State, best_action: Action) {
         let actions = self.policy.get_mut(&state).unwrap();
-        let num_actions = actions.len() as f64;
+        let num_actions = actions.len() as f32;
         let epsilon = self.epsilon;
         for (&action, prob) in actions.iter_mut() {
             if action == best_action {

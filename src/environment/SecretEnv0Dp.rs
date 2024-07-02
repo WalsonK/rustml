@@ -29,6 +29,7 @@ impl SecretEnv0Dp {
         })
     }
 
+
     unsafe fn create_new_env(lib: &Library) -> *mut c_void {
         let secret_env_0_new: Symbol<unsafe extern fn() -> *mut c_void> =
             lib.get(b"secret_env_0_new").expect("Échec du chargement de la fonction `secret_env_0_new`");
@@ -82,7 +83,10 @@ impl Environment for SecretEnv0Dp {
             let state_id = secret_env_0_state_id(self.env);
 
 
-            let reward = self.score();
+
+                let secret_env_0_score: libloading::Symbol<unsafe extern fn(*const c_void) -> f32> =
+                    self.lib.get(b"secret_env_0_score").expect("Failed to load function `secret_env_0_score`");
+            let reward  = secret_env_0_score(self.env);
 
 
            /* let is_game_over_fn: libloading::Symbol<unsafe extern fn(*const c_void) -> bool> =
