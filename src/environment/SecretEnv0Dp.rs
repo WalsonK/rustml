@@ -167,7 +167,7 @@ mod tools {
     use libloading::Library;
 
     pub unsafe fn secret_env_lib() -> Library {
-        let lib_path = r#"C:\Users\farin\CLionProjects\rustml2\src\libs\secret_envs.dll"#;
+        let lib_path = "./libs/libsecret_envs.dylib";
         Library::new(lib_path).expect("Échec du chargement de la bibliothèque")
     }
 }
