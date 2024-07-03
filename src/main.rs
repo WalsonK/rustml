@@ -1,6 +1,6 @@
 extern crate rustml;
 
-use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, playable_line_world, playable_grid_world};
+use rustml::environment::{line_world, grid_world, tools, playable_monte_hall};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::td_learning::sarsa;
@@ -11,6 +11,7 @@ use rustml::planning::dyna_q_plus::DynaQPlusModel;
 
 fn main() {
 
+    // -------------------------------- ENV -------------------------------------
     //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
@@ -29,38 +30,7 @@ fn main() {
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
     */
 
-    /*     DYNQ
-    let iterations = 10000;
-    let gamma = 0.95;
-    let alpha = 0.1;
-    let epsilon = 0.1;
-    let n = 100;
-
-    let mut dyna_q_model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
-    dyna_q_model.dyna_q(&mut *env);
-    println!("Q-values: {:?}", dyna_q_model.q_values);
-    let policy = dyna_q_model.derive_policy();
-    dyna_q_model.print_policy(&policy);
-    */
-
-/*
-    //     DYNQ+
-    // Parameters for DynaQ+ model
-    let iterations = 100000;
-    let gamma = 0.95;
-    let alpha = 0.1;
-    let epsilon = 0.1;
-    let planning_steps = 100;
-    let kappa = 0.001;
-
-    let mut dyna_q_model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
-    dyna_q_model.dyna_q_plus(&mut *env);
-    println!("Q-values: {:?}", dyna_q_model.q_values);
-    let policy = dyna_q_model.derive_policy();
-    dyna_q_model.print_policy(&policy);
-
-*/
-
+// -------------------------------- ALGO -------------------------------------
 
     /*      POLICY ITERATION
     let mut algo = policy_iteration::PolicyIterationModel::new(
@@ -139,8 +109,37 @@ fn main() {
     //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
     let best_policy = model.process_episode(true, &mut *env);
     println!("Policy for policy iter: {:?}", best_policy);
+    //tools::use_policy_in_game(&mut *env, &best_policy);
 
-    tools::use_policy_in_game(&mut *env, &best_policy);
+    /*     DYNQ
+    let iterations = 10000;
+    let gamma = 0.95;
+    let alpha = 0.1;
+    let epsilon = 0.1;
+    let n = 100;
+
+    let mut dyna_q_model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
+    dyna_q_model.dyna_q(&mut *env);
+    println!("Q-values: {:?}", dyna_q_model.q_values);
+    let policy = dyna_q_model.derive_policy();
+    dyna_q_model.print_policy(&policy);
+    */
+
+    /*     DYNQ+
+    // Parameters for DynaQ+ model
+    let iterations = 100000;
+    let gamma = 0.95;
+    let alpha = 0.1;
+    let epsilon = 0.1;
+    let planning_steps = 100;
+    let kappa = 0.001;
+
+    let mut dyna_q_model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
+    dyna_q_model.dyna_q_plus(&mut *env);
+    println!("Q-values: {:?}", dyna_q_model.q_values);
+    let policy = dyna_q_model.derive_policy();
+    dyna_q_model.print_policy(&policy);
+    */
 
 }
 
