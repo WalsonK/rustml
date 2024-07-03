@@ -3,42 +3,33 @@ extern crate rustml;
 use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, playable_line_world, playable_grid_world};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
+use rustml::td_learning::sarsa;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 use rustml::planning::dyna_q::DynaQModel;
 use rustml::planning::dyna_q_plus::DynaQPlusModel;
 
 
 fn main() {
-/*
+
     //      Line world
-    let mut env = lineworld::LineWorld::new(4, false, 1);
+    let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-     //
-*/
-/*
-         // Playable Line world
-    let mut env = playable_line_world::playable_line_world::new(5, false, 2);
-    env.display();
-*/
- /*
-    //      Grid world
+    //
+
+    /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
-    let _ = env.display();*/
-
-    //      Playable Grid world
-    let mut env = playable_grid_world::playable_GridWorld::new(3,5,1);
-    env.display();
-
+    let _ = env.display();
+    */
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
     */
 
-    //     DYNQ
+    /*     DYNQ
     let iterations = 10000;
     let gamma = 0.95;
     let alpha = 0.1;
@@ -50,6 +41,7 @@ fn main() {
     println!("Q-values: {:?}", dyna_q_model.q_values);
     let policy = dyna_q_model.derive_policy();
     dyna_q_model.print_policy(&policy);
+    */
 
 /*
     //     DYNQ+
@@ -111,8 +103,8 @@ fn main() {
     env.step(action);
     env.display();
 */
-    /*      MONTE CARLO CONTROL
 
+    /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -125,8 +117,8 @@ fn main() {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);
-    env.display();*/
-    //
+    env.display();
+    */
 
     /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
@@ -142,7 +134,15 @@ fn main() {
     });
     env.step(action);*/
 
+    // SARSA
+    let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
+    //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
+    let best_policy = model.process_episode(true, &mut *env);
+    println!("Policy for policy iter: {:?}", best_policy);
 
+    tools::use_policy_in_game(&mut *env, &best_policy);
+
+}
 
 /*mod two_round_rock_paper_scissors;
 use crate::two_round_rock_paper_scissors::{Action, Agent, Adversary, Environment};
@@ -160,5 +160,3 @@ fn main() {
         println!("Game over. Total score: {}", env.agent_score);
     }
 }*/
-
-}

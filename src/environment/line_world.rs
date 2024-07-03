@@ -106,7 +106,7 @@ impl LineWorld {
 impl Environment for LineWorld {
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
-        self.agent_position = rng.gen_range(1..=self.all_position.len() as i64);
+        self.agent_position = rng.gen_range(0..self.all_position.len() as i64);
         self.agent_position
     }
 
@@ -132,6 +132,8 @@ impl Environment for LineWorld {
     fn all_states(&self) -> Vec<State> {
         self.all_position.clone()
     }
+
+    fn terminal_states(&self) -> Vec<State> { self.terminal_position.clone() }
 
     fn set_state(&mut self, state: State) {
         self.agent_position = state;

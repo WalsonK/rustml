@@ -4,3 +4,4 @@ pub mod environment;
 pub mod monte_carlo;
 mod secret_wrapper;
 pub mod planning;
+pub mod td_learning;

@@ -209,6 +209,8 @@ impl Environment for GridWorld {
         self.all_position.clone()
     }
 
+    fn terminal_states(&self) -> Vec<State> { self.terminal_position.clone() }
+
     fn set_state(&mut self, state: State) {
         self.agent_position = state;
     }
