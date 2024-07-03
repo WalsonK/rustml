@@ -1,6 +1,6 @@
 extern crate rustml;
 
-use rustml::environment::{line_world, grid_world, tools, playable_monte_hall};
+use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, secret_env0_dp};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::td_learning::sarsa;
@@ -12,6 +12,13 @@ use rustml::planning::dyna_q_plus::DynaQPlusModel;
 fn main() {
 
     // -------------------------------- ENV -------------------------------------
+    
+    /* SECRET ENV 0 DP
+    let mut env = secret_env0_dp::SecretEnv0Dp::new();
+    println!("s : {}, a: {}, r: {}", env.num_states, env.num_actions, env.num_rewards);
+    println!("matrix : {:?}", env.load_rewards())
+    */
+
     //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);

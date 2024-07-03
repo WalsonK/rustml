@@ -1,15 +1,15 @@
 use std::ffi::c_void;
 
-fn wrapper() {
+pub fn wrapper() {
     unsafe {
         #[cfg(target_os = "linux")]
-            let path = "./libs/libsecret_envs.so";
+            let path = "src/libs/libsecret_envs.so";
         #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-            let path = "./libs/libsecret_envs_intel_macos.dylib";
+            let path = "src/libs/libsecret_envs_intel_macos.dylib";
         #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-            let path = "./libs/libsecret_envs.dylib";
+            let path = "src/libs/libsecret_envs.dylib";
         #[cfg(windows)]
-            let path = "./libs/secret_envs.dll";
+            let path = "src/libs/secret_envs.dll";
         let lib = libloading::Library::new(path).expect("Failed to load library");
 
         println!("Secret env 0 functions available for Dynamic Programming ------------------------------------------------------");
