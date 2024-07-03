@@ -1,5 +1,5 @@
 use rand::Rng;
-use crate::environment::environment::{Environment, State};
+use crate::environment::environment::{Environment, State, Action, Reward};
 
 pub struct SarsaModel {
     pub q_table: Vec<Vec<f64>>,
@@ -9,6 +9,7 @@ pub struct SarsaModel {
     pub nb_episode: usize,
     pub num_states: usize,
     pub num_actions: usize,
+    pub policy: Vec<Action>
 }
 
 impl SarsaModel {
@@ -22,13 +23,15 @@ impl SarsaModel {
             alpha,
             gamma,
             epsilon,
-            nb_episode
+            nb_episode,
+            policy: vec![0; ns]
         });
         // Set random Q
         model.init_q(env);
         model
     }
 
+    // Init Q with 0 for terminal State and Random for other
     fn init_q<E: Environment>(&mut self, env: &E) {
         let mut rng = rand::thread_rng();
         for i in 0..self.q_table.len() {
@@ -41,44 +44,63 @@ impl SarsaModel {
         }
     }
 
-    /*fn iter(&mut self, rand: bool) {
+    pub fn process_episode<E: Environment>(&mut self, rand: bool, env: &mut E) -> Vec<Action>{
         for _ in 0..self.nb_episode {
-            let mut state = if rand == false { 0usize } else {
+            let mut state: State = if rand == false { 0usize } else {
                 let mut rng = rand::thread_rng();
                 rng.gen_range(0..self.num_states-1usize)
-            };
+            } as State;
             let mut action = self.chose_action(state);
 
             loop {
-                let (new_state, reward) = self.do_action(state, action);
+                let (new_state, reward) = self.do_action(env, state, action);
                 let new_action = self.chose_action(new_state);
 
-                self.q_table[state][action] += self.alpha * (reward + self.gamma
-                    * self.q_table[new_state][new_action] - self.q_table[state][action]);
+                self.q_table[state as usize][action as usize] += self.alpha * (reward + self.gamma
+                    * self.q_table[new_state as usize][new_action as usize] - self.q_table[state as usize][action as usize]);
 
                 state = new_state;
                 action = new_action;
 
-                if new_state == self.num_states - 1 { break; }
+                if new_state == (self.num_states - 1) as State { break; }
             }
         }
-    }
-     */
 
-    /*fn chose_action(&mut self, state: usize) -> usize {
+        env.reset();
+        // Get best Action from Q for each State
+        for s in 0..self.q_table.len() {
+            let max_index = self.q_table[s]
+                .iter()
+                .enumerate()
+                .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+                .map(|(index, _)| index)
+                .unwrap();
+            self.policy[s] = max_index as Action;
+        }
+        self.policy.clone()
+    }
+
+
+    fn chose_action(&mut self, state: State) -> Action {
         let mut rng = rand::thread_rng();
         let rand = rng.gen_range(0.0..=1.0);
         return if rand < self.epsilon {
-            rng.gen_range(0..=(self.num_actions - 1))
+            // random
+            rng.gen_range(0..=(self.num_actions - 1)) as Action
         } else {
-            self.q_table[state].iter().enumerate().max_by(|&(_, a), &(_, b) |
-            a.partial_cmp(b).unwrap()).map(|(index, _)| index).unwrap()
+            // best action
+            self.q_table[state as usize]
+                .iter()
+                .enumerate()
+                .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+                .map(|(index, _)| index)
+                .unwrap() as Action
         }
     }
 
-     */
-
-    /*fn do_action(&mut self, state: usize, action: usize) -> (usize, f32){
-
-    }*/
+    fn do_action<E: Environment>(&mut self, env: &mut E, state: State, action: Action) -> (State, Reward) {
+        env.set_state(state as State);
+        let tuple: (State, Reward, bool) = env.step(action as Action);
+        return (tuple.0, tuple.1)
+    }
 }

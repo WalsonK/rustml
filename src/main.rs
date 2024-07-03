@@ -15,7 +15,7 @@ fn main() {
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
     //
-    
+
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
@@ -98,8 +98,10 @@ fn main() {
     env.step(action);*/
 
     // SARSA
-    let model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
-    tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
+    let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
+    //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
+    let best_policy = model.process_episode(true, &mut *env);
+    println!("Policy for policy iter: {:?}", best_policy);
 
 }
 
