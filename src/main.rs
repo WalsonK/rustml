@@ -103,6 +103,8 @@ fn main() {
     let best_policy = model.process_episode(true, &mut *env);
     println!("Policy for policy iter: {:?}", best_policy);
 
+    tools::use_policy_in_game(&mut *env, &best_policy);
+
 }
 
 /*mod two_round_rock_paper_scissors;
