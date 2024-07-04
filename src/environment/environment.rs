@@ -15,4 +15,6 @@ pub trait Environment {
     fn state_id(&self) -> State;
     fn score(&self) -> Reward;
     fn is_game_over(&self) -> bool;
+    fn all_action(&self) -> Vec<State>;
+    fn is_forbidden(&self, state_or_action: usize) -> bool;
 }

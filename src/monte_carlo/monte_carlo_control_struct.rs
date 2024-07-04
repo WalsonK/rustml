@@ -3,6 +3,8 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
 use crate::environment::environment::{State, Action, Reward, Environment};
+use libloading::{Library, Symbol};
+use std::os::raw::c_void;
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -30,65 +32,77 @@ impl MonteCarloControl {
         })
     }
 
-    pub fn initialize_policy<E: Environment>(&mut self, env: &E) {
-        for &state in &env.all_states() {
-            println!("{}",&state);
+    pub fn ensure_policy_initialized<E: Environment>(&mut self, state: State, env: &mut E) {
+        if !self.policy.contains_key(&state) {
+           // println!("Initializing policy for state: {}", state);
             let mut actions = HashMap::new();
-            let available_actions = env.available_actions();
+            let available_actions = env.all_action();
             for &action in &available_actions {
-                actions.insert(action, 1.0 / available_actions.len() as f64);
-                self.q_values.insert((state, action), 0.0);
-                self.returns.insert((state, action), vec![]);
+                if !env.is_forbidden(action) {
+                    actions.insert(action, 1.0 / available_actions.len() as f64);
+                    self.q_values.insert((state, action), 0.0);
+                    self.returns.insert((state, action), vec![]);
+                }
             }
             self.policy.insert(state, actions);
         }
     }
 
-    pub fn choose_action<E: Environment>(&mut self, state: State, env: &E, rng: &mut rand::rngs::ThreadRng) -> Action {
-        // If the state is not found in the policy, initialize it
-        if !self.policy.contains_key(&state) {
-            println!("Initializing policy for new state: {}", state);
-            let mut actions = HashMap::new();
-            let available_actions = env.available_actions();
-            println!("availab {:?}",available_actions);
-            for &action in &available_actions {
-                actions.insert(action, 1.0 / available_actions.len() as f64);
-                self.q_values.insert((state, action), 0.0);
-                self.returns.insert((state, action), vec![]);
-            }
-            self.policy.insert(state, actions);
-        }
+    pub fn choose_action_soft<E: Environment>(&mut self, state: State, env: &mut E, rng: &mut rand::rngs::ThreadRng) -> Action {
+        self.ensure_policy_initialized(state, env);
+
+        let available_actions = env.available_actions();
+        //println!("Available actions for state {}: {:?}", state, available_actions);
 
         if let Some(action_probs) = self.policy.get(&state) {
             let actions: Vec<&Action> = action_probs.keys().collect();
             let probs: Vec<f64> = action_probs.values().copied().collect();
-            **actions.choose_weighted(rng, |&action| probs[actions.iter().position(|&&a| a == *action).unwrap()]).unwrap()
+           // println!("Actions and probabilities for state {}: {:?}", state, action_probs);
+            if actions.is_empty() || probs.is_empty() {
+                panic!("No actions or probabilities available for state: {:?}", state);
+            }
+
+            // Filtrer les actions disponibles et leurs probabilités associées
+            let mut valid_actions = vec![];
+            let mut valid_probs = vec![];
+            for (&action, &prob) in actions.iter().zip(probs.iter()) {
+                if available_actions.contains(action) && !env.is_forbidden(*action) {
+                    valid_actions.push(action);
+                    valid_probs.push(prob);
+                }
+            }
+
+            if valid_actions.is_empty() {
+                panic!("No valid actions available for state: {:?}", state);
+            }
+
+            match valid_actions.choose_weighted(rng, |&action| valid_probs[valid_actions.iter().position(|&&a| a == *action).unwrap()]) {
+                Ok(action) => **action,
+                Err(_) => panic!("Failed to choose a weighted action for state: {:?}", state),
+            }
         } else {
-            panic!("No entry found for state: {}", state);
+            panic!("No entry found for state: {:?}", state);
         }
     }
 
     pub fn on_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
         let mut rng = thread_rng();
-        self.initialize_policy(env);
-
+        let mut i =0;
         for _ in 0..num_episodes {
+            println!("{:?}",i);
+            i+=1;
             let mut episode: Vec<EpisodeStep> = vec![];
             let mut state = env.reset();
             let mut done = false;
             let mut steps = 0;
-           println!("aaa {}",state);
             while !done && steps < max_steps {
-                let action = self.choose_action(state, env, &mut rng);
-              //  println!("{}",action);
+                let action = self.choose_action_soft(state, env, &mut rng);
                 let (next_state, reward, is_done) = env.step(action);
-                println!("{}",is_done);
-                episode.push(EpisodeStep {state, action, reward});
+                episode.push(EpisodeStep { state, action, reward });
                 state = next_state;
                 done = is_done;
                 steps += 1;
             }
-            println!("{}",done);
             self.process_episode(episode);
         }
     }

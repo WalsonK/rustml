@@ -1,4 +1,3 @@
-
 extern crate rand;
 
 use rand::seq::SliceRandom;
@@ -36,20 +35,17 @@ impl MonteCarloESModel {
 
     pub fn monte_carlo_es<E: Environment>(&mut self, env: &mut E) {
         let mut rng = thread_rng();
-         let mut i =0;
+        let mut i = 0;
         for _ in 0..self.num_episodes {
             env.reset();
-            println!("{:}",i);
-            i = i+1;
+            println!("{}", i);
+            i = i + 1;
             let mut is_first_action = true;
             let mut trajectory: Vec<EpisodeStep> = Vec::new();
             let mut steps_count = 0;
 
             while steps_count < self.max_steps {
                 let state = env.state_id();
-                if state >= 8192 {
-                    panic!("State ID exceeds the allowed range: {}", state);
-                }
 
                 let available_actions = env.available_actions();
 
@@ -104,7 +100,6 @@ impl MonteCarloESModel {
 
                 let best_action = self.find_best_action(step.state);
                 self.policy.insert(step.state, best_action);
-
             }
         }
     }

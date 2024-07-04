@@ -119,4 +119,11 @@ impl Environment for playable_GridWorld {
     fn is_game_over(&self) -> bool {
         self.go_pos.contains(&self.agent_pos)
     }
+    fn all_action(&self) -> Vec<Action> {
+        self.all_pos.iter().map(|&action| action as Action).collect()
+    }
+
+    fn is_forbidden(&self, state_or_action: usize) -> bool{
+        false
+    }
 }

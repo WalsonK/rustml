@@ -9,3 +9,6 @@ pub mod environment;
 pub mod playable_monte_hall;
 pub mod SecretEnv0Dp;
 mod secret_wrapper;
+pub mod SecretEnv1Dp;
+pub mod SecretEnv2Dp;
+pub mod SecretEnv3Dp;
