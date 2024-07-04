@@ -6,6 +6,7 @@ use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 //use rustml::environment::env0::env0;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
+use rustml::environment::SecretEnv0Td::SecretEnv0Td;
 use rustml::environment::SecretEnv0Dp::SecretEnv0Dp;
 use rustml::environment::SecretEnv1Td::SecretEnv1Td;
 use rustml::planning::{dyna_q,dyna_q_plus};
@@ -170,7 +171,7 @@ fn main() {
     }*/
 
     //let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 10000);
-    let mut model = dyna_q::DynaQModel::new(7000,0.7, 0.6, 0.8, 10);
+    let mut model = dyna_q::DynaQModel::new(200,0.7, 0.6, 0.8, 10);
     //let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
     model.dyna_q(&mut *env);
     // Entraînement du modèle avec Monte Carlo Control hors politique
