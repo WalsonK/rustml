@@ -36,9 +36,10 @@ fn main() {
     // two_round_rock_paper_scissors
     let mut env = two_round_rock_paper_scissors::RPSGame::new();
 
+
 // -------------------------------- ALGO -------------------------------------
 
-    //     POLICY ITERATION
+   //     POLICY ITERATION
     let mut algo = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         env.all_actions,

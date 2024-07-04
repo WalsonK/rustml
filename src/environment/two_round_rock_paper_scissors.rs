@@ -155,8 +155,17 @@ impl Environment for RPSGame {
 
     fn display(&self) {
         println!("Round: {}", self.round);
-        println!("Agent chose: {:?}", self.agent_action.unwrap());
-        println!("Adversary chose: {:?}", self.adversary_action.unwrap());
+
+        match self.agent_action {
+            Some(action) => println!("Agent chose: {:?}", action),
+            None => println!("Agent n'a pas encore choisi d'action"),
+        }
+
+        match self.adversary_action {
+            Some(action) => println!("Adversary chose: {:?}", action),
+            None => println!("Adversaire n'a pas encore choisi d'action"),
+        }
+
         println!("Agent score: {}", self.agent_score);
         println!("Adversary score: {}", self.adversary_score);
     }
