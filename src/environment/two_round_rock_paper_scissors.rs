@@ -1,155 +1,175 @@
 use rand::Rng;
+use crate::environment::environment::{State, Action as ActionType, Reward, Environment};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Action {
+pub enum Action_game {
     Rock,
     Paper,
     Scissors,
 }
 
-impl Action {
-    fn beats(&self, other: Action) -> i32 {
+impl Action_game {
+    fn beats(&self, other: Action_game) -> i32 {
         match (self, other) {
-            (Action::Rock, Action::Scissors) | (Action::Scissors, Action::Paper) | (Action::Paper, Action::Rock) => 1,
-            (Action::Scissors, Action::Rock) | (Action::Paper, Action::Scissors) | (Action::Rock, Action::Paper) => -1,
+            (Action_game::Rock, Action_game::Scissors) | (Action_game::Scissors, Action_game::Paper) | (Action_game::Paper, Action_game::Rock) => 1,
+            (Action_game::Scissors, Action_game::Rock) | (Action_game::Paper, Action_game::Scissors) | (Action_game::Rock, Action_game::Paper) => -1,
             _ => 0,
         }
     }
 }
 
-pub struct Agent;
-
-impl Agent {
-    fn new() -> Self {
-        Agent
-    }
-
-    pub fn choose_action(&self) -> Action {
-        // Here, you can implement any strategy for the agent
-        let actions = [Action::Rock, Action::Paper, Action::Scissors];
-        let random_index = rand::thread_rng().gen_range(0..3);
-        actions[random_index]
-    }
-}
-
-
-pub struct Adversary {
-    first_action: Action,
-}
-
-impl Adversary {
-    fn new() -> Self {
-        Adversary { first_action: Action::Rock }
-    }
-
-    fn choose_action(&mut self, round: usize, agent_first_action: Action) -> Action {
-        if round == 0 {
-            // This is the first round. Play a random action and remember the agent's first action.
-            let actions = [Action::Rock, Action::Paper, Action::Scissors];
-            let action = actions[rand::thread_rng().gen_range(0..3)];
-            self.first_action = agent_first_action;
-            action
-        } else {
-            // This is the second round or beyond. Always play the agent's first action.
-            self.first_action
-        }
-    }
-}
-
-
-pub struct Environment {
-    pub(crate) agent: Agent,
-    adversary: Adversary,
+pub struct RPSGame {
+    agent_action: Option<Action_game>,
+    adversary_action: Option<Action_game>,
+    first_agent_action: Option<Action_game>,
     round: usize,
-    pub(crate) agent_score: i32,
-    adversary_score: i32,
+    pub agent_score: i32,
+    pub adversary_score: i32,
+    pub rewards: Vec<Vec<Vec<Reward>>>,
+    pub probabilities: Vec<Vec<Vec<f64>>>,
+    pub all_position: Vec<State>,
+    pub all_actions: Vec<ActionType>,
+    pub terminal_position: Vec<State>,
 }
 
-impl Environment {
+impl RPSGame {
     pub fn new() -> Self {
-        Environment {
-            agent: Agent::new(),
-            adversary: Adversary::new(),
+        let rewards = Self::generate_rewards();
+        let probabilities = Self::generate_probabilities();
+        let all_position = (0..=2).collect();
+        let all_actions = vec![0, 1, 2];
+        let terminal_position = vec![2];
+
+        RPSGame {
+            agent_action: None,
+            adversary_action: None,
+            first_agent_action: None,
             round: 0,
             agent_score: 0,
             adversary_score: 0,
+            rewards,
+            probabilities,
+            all_position,
+            all_actions,
+            terminal_position,
         }
     }
 
-    pub fn step(&mut self, agent_action: Action) -> (i32, bool) {
-        let adversary_action = self.adversary.choose_action(self.round, agent_action);
-        println!("Adversary chose {:?}", adversary_action);
-        let result = agent_action.beats(adversary_action);
+    fn generate_rewards() -> Vec<Vec<Vec<Reward>>> {
+        let mut rewards = vec![vec![vec![0.0; 3]; 3]; 3];
+        for state in 0..3 {
+            for action in 0..3 {
+                let agent_action = match action {
+                    0 => Action_game::Rock,
+                    1 => Action_game::Paper,
+                    2 => Action_game::Scissors,
+                    _ => panic!("Invalid action"),
+                };
+                for next_state in 0..3 {
+                    let adversary_action = match next_state {
+                        0 => Action_game::Rock,
+                        1 => Action_game::Paper,
+                        2 => Action_game::Scissors,
+                        _ => panic!("Invalid state"),
+                    };
+                    rewards[state][action][next_state] = agent_action.beats(adversary_action) as Reward;
+                }
+            }
+        }
+        rewards
+    }
+
+    fn generate_probabilities() -> Vec<Vec<Vec<f64>>> {
+        let mut probabilities = vec![vec![vec![0.0; 3]; 3]; 3];
+        for state in 0..3 {
+            for action in 0..3 {
+                for next_state in 0..3 {
+                    probabilities[state][action][next_state] = 1.0 / 3.0;
+                }
+            }
+        }
+        probabilities
+    }
+
+    pub fn choose_adversary_action(&self) -> Action_game {
+        if self.round == 0 {
+            let actions = [Action_game::Rock, Action_game::Paper, Action_game::Scissors];
+            let random_index = rand::thread_rng().gen_range(0..3);
+            actions[random_index]
+        } else {
+            self.first_agent_action.unwrap()
+        }
+    }
+}
+
+impl Environment for RPSGame {
+    fn reset(&mut self) -> State {
+        self.agent_action = None;
+        self.adversary_action = None;
+        self.first_agent_action = None;
+        self.round = 0;
+        self.agent_score = 0;
+        self.adversary_score = 0;
+        0 // Return initial state ID
+    }
+
+    fn step(&mut self, action: ActionType) -> (State, Reward, bool) {
+        let agent_action = match action {
+            0 => Action_game::Rock,
+            1 => Action_game::Paper,
+            2 => Action_game::Scissors,
+            _ => panic!("Invalid action"),
+        };
+
+        self.agent_action = Some(agent_action);
+
+        if self.round == 0 {
+            self.first_agent_action = Some(agent_action);
+        }
+
+        self.adversary_action = Some(self.choose_adversary_action());
+
+        let result = self.agent_action.unwrap().beats(self.adversary_action.unwrap());
         self.agent_score += result;
-
         self.round += 1;
+
         let done = self.round >= 2;
-        (result, done)
+        (self.round as State, result as Reward, done)
+    }
+
+    fn available_actions(&self) -> Vec<ActionType> {
+        vec![0, 1, 2] // Rock, Paper, Scissors
+    }
+
+    fn all_states(&self) -> Vec<State> {
+        self.all_position.clone()
+    }
+
+    fn terminal_states(&self) -> Vec<State> {
+        self.terminal_position.clone()
+    }
+
+    fn set_state(&mut self, state: State) {
+        self.round = state as usize;
+    }
+
+    fn display(&self) {
+        println!("Round: {}", self.round);
+        println!("Agent chose: {:?}", self.agent_action.unwrap());
+        println!("Adversary chose: {:?}", self.adversary_action.unwrap());
+        println!("Agent score: {}", self.agent_score);
+        println!("Adversary score: {}", self.adversary_score);
+    }
+
+    fn state_id(&self) -> State {
+        self.round as State
+    }
+
+    fn score(&self) -> Reward {
+        self.agent_score as Reward
+    }
+
+    fn is_game_over(&self) -> bool {
+        self.round >= 2
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_action_beats() {
-        assert_eq!(Action::Rock.beats(Action::Scissors), 1);
-        assert_eq!(Action::Scissors.beats(Action::Paper), 1);
-        assert_eq!(Action::Paper.beats(Action::Rock), 1);
-        assert_eq!(Action::Scissors.beats(Action::Rock), -1);
-        assert_eq!(Action::Paper.beats(Action::Scissors), -1);
-        assert_eq!(Action::Rock.beats(Action::Paper), -1);
-        assert_eq!(Action::Rock.beats(Action::Rock), 0);
-        assert_eq!(Action::Paper.beats(Action::Paper), 0);
-        assert_eq!(Action::Scissors.beats(Action::Scissors), 0);
-    }
-
-    #[test]
-    fn test_agent_choose_action() {
-        let agent = Agent::new();
-        let action = agent.choose_action();
-        assert!(matches!(action, Action::Rock | Action::Paper | Action::Scissors));
-    }
-
-    #[test]
-    fn test_adversary_choose_action() {
-        let mut adversary = Adversary::new();
-        let action = adversary.choose_action(0, Action::Rock);
-        assert!(matches!(action, Action::Rock | Action::Paper | Action::Scissors));
-        assert_eq!(adversary.choose_action(1, Action::Paper), Action::Rock);
-    }
-
-    #[test]
-    fn test_environment_step() {
-        let mut env = Environment::new();
-        let agent_action_round_1 = env.agent.choose_action();
-        println!("Agent chose {:?}", agent_action_round_1);
-        let (result_round_1, done) = env.step(agent_action_round_1);
-        assert_eq!(done, false);
-        env.adversary.first_action = agent_action_round_1;
-        let agent_action_round_2 = env.agent.choose_action();
-        let (result_round_2, done) = env.step(agent_action_round_2);
-        println!("Result: {}, Done: {}", result_round_2, done);
-        assert_eq!(done, true);
-    }
-}
-
-
-
-/*fn main() {
-    let mut env = Environment::new();
-    let agent_action_round_1 = env.agent.choose_action();
-    let (result_round_1, _) = env.step(agent_action_round_1);
-    println!("Round 1: Agent chose {:?}, result: {}", agent_action_round_1, result_round_1);
-
-    let agent_action_round_2 = env.agent.choose_action(); // Agent choisit une action aléatoire pour le deuxième round
-    let (result_round_2, done) = env.step(agent_action_round_2); // Passer l'action du deuxième round
-    println!("Round 2: Agent chose {:?}, result: {}", agent_action_round_2, result_round_2); // Agent joue la même action que le deuxième round
-
-    if done {
-        println!("Game over. Total score: {}", env.agent_score);
-    }
-}*/
-
-

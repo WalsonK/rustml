@@ -1,6 +1,6 @@
 extern crate rustml;
 
-use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, secret_env0_dp};
+use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, secret_env0_dp,two_round_rock_paper_scissors};
 use rustml::environment::environment::Environment;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::td_learning::sarsa;
@@ -19,13 +19,13 @@ fn main() {
     println!("matrix : {:?}", env.load_rewards())
     */
 
-    //      Line world
+/*    //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
     //
-
+*/
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
@@ -33,13 +33,12 @@ fn main() {
     let _ = env.display();
     */
 
-    /*      PLAYABLE MONTY HALL
-    let mut env = playable_monte_hall::playable_MontyHall::new(3);
-    */
+    // two_round_rock_paper_scissors
+    let mut env = two_round_rock_paper_scissors::RPSGame::new();
 
 // -------------------------------- ALGO -------------------------------------
 
-    /*      POLICY ITERATION
+    //     POLICY ITERATION
     let mut algo = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         env.all_actions,
@@ -50,7 +49,7 @@ fn main() {
     );
     let best_policy = algo.policy_iteration();
     println!("Policy for policy iter: {:?}", best_policy);
-    */
+
 
     /*      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
@@ -111,13 +110,13 @@ fn main() {
     });
     env.step(action);*/
 
-    // SARSA
+/*    // SARSA
     let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
     //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
     let best_policy = model.process_episode(true, &mut *env);
     println!("Policy for policy iter: {:?}", best_policy);
     //tools::use_policy_in_game(&mut *env, &best_policy);
-
+*/
     /*     DYNQ
     let iterations = 10000;
     let gamma = 0.95;
