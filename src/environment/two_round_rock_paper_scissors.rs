@@ -34,7 +34,6 @@ pub struct RPSGame {
 }
 
 impl RPSGame {
-    // Le constructeur initialise les vecteurs de probabilités et de récompenses
     pub fn new() -> Box<RPSGame> {
         let all_position = (0..=2).collect();
         let all_actions = vec![0, 1, 2];
@@ -61,7 +60,6 @@ impl RPSGame {
         env
     }
 
-    // Génération des récompenses
     fn generate_rewards(&mut self) {
         for state in 0..3 {
             for action in 0..3 {
@@ -84,7 +82,6 @@ impl RPSGame {
         }
     }
 
-    // Génération des probabilités
     fn generate_probabilities(&mut self) {
         for state in 0..3 {
             for action in 0..3 {
@@ -105,7 +102,6 @@ impl RPSGame {
         }
     }
 
-    // Nouvelle méthode pour jouer deux tours
     fn play_two_rounds(&mut self, action: ActionType) {
         for _ in 0..2 {
             let agent_action = match action {
