@@ -7,6 +7,7 @@ use rustml::td_learning::sarsa;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 use rustml::planning::dyna_q::DynaQModel;
 use rustml::planning::dyna_q_plus::DynaQPlusModel;
+use rustml::td_learning::q_learning::QLearning;
 
 
 fn main() {
@@ -36,6 +37,7 @@ fn main() {
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
     */
+    
 
 // -------------------------------- ALGO -------------------------------------
 
@@ -111,12 +113,26 @@ fn main() {
     });
     env.step(action);*/
 
-    // SARSA
+    /* SARSA
     let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
     //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
     let best_policy = model.process_episode(true, &mut *env);
     println!("Policy for policy iter: {:?}", best_policy);
     //tools::use_policy_in_game(&mut *env, &best_policy);
+    */
+
+    // Q Learning
+    let iterations = 100_000;
+    let gamma = 0.8;
+    let alpha = 0.5;
+    let epsilon = 0.9;
+    let mut q_learning_model = QLearning::new(iterations, gamma, alpha, epsilon);
+    q_learning_model.q_learning(&mut *env);
+
+    println!("Q-values: {:?}", q_learning_model.q_values);
+    let policy = q_learning_model.derive_policy();
+    q_learning_model.print_policy(&policy);
+    //
 
     /*     DYNQ
     let iterations = 10000;
