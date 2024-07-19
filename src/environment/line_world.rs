@@ -4,22 +4,22 @@ use crate::environment::tools;
 
 
 pub struct LineWorld {
-    pub agent_position: i64,
-    pub all_position: Vec<i64>,
-    pub terminal_position: Vec<i64>,
-    pub all_actions: Vec<i64>,
+    pub agent_position: State,
+    pub all_position: Vec<State>,
+    pub terminal_position: Vec<State>,
+    pub all_actions: Vec<Action>,
     pub rewards: Vec<Vec<Vec<f64>>>,
     pub probabilities: Vec<Vec<Vec<f64>>>,
 }
 
 impl LineWorld {
-    pub fn new(len: i64, is_rand: bool, pos: i64) -> Box<LineWorld> {
+    pub fn new(len: usize, is_rand: bool, pos: usize) -> Box<LineWorld> {
         let mut env = Box::new(LineWorld {
             agent_position: if !is_rand {
                 pos
             } else {
                 let mut rng = rand::thread_rng();
-                rng.gen_range(1..len)
+                rng.gen_range(1..len) as State
             },
             all_position: (0..len).collect(),
             terminal_position: vec![0, len - 1],
@@ -37,7 +37,7 @@ impl LineWorld {
     }
 
 
-    fn reset(&mut self, is_rand: bool, pos: i64) -> State {
+    fn reset(&mut self, is_rand: bool, pos: usize) -> State {
         self.agent_position = if !is_rand {
             pos
         } else {
@@ -53,7 +53,7 @@ impl LineWorld {
 
         let current_position = self.agent_position;
         for position_index in 0..num_positions {
-            self.agent_position = position_index as i64;
+            self.agent_position = position_index;
             for action_index in 0..num_actions {
                 let action = self.all_actions[action_index];
 
@@ -65,7 +65,7 @@ impl LineWorld {
 
                 self.rewards[position_index][action_index][next_state] = reward as f64;
 
-                self.agent_position = position_index as i64;
+                self.agent_position = position_index;
             }
         }
         self.agent_position = current_position;
@@ -76,7 +76,7 @@ impl LineWorld {
         let num_actions = self.all_actions.len();
         let begin_position = self.agent_position;
         for position_index in 0..num_positions {
-            let current_position = position_index as i64;
+            let current_position = position_index;
             for action_index in 0..num_actions {
                 let action = self.all_actions[action_index];
                 let available_act = self.available_actions();
@@ -97,7 +97,7 @@ impl LineWorld {
 
     fn get_display_array(&mut self) -> Vec<char> {
         let mut renderer: Vec<char> = Vec::new();
-        for i in self.all_position[0]..self.all_position.len() as i64 {
+        for i in self.all_position[0]..self.all_position.len() {
             if self.agent_position == i {
                 renderer.push('X')
             } else {
@@ -113,14 +113,14 @@ impl LineWorld {
 impl Environment for LineWorld {
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
-        self.agent_position = rng.gen_range(0..self.all_position.len() as i64);
+        self.agent_position = rng.gen_range(0..self.all_position.len());
         self.agent_position as State
     }
 
     fn step(&mut self, action: Action) -> (State, Reward, bool) {
         match action {
             1 if self.agent_position > 0 => self.agent_position -= 1,
-            2 if self.agent_position < self.all_position.len() as i64 - 1 => self.agent_position += 1,
+            2 if self.agent_position < self.all_position.len() - 1 => self.agent_position += 1,
             _ => {}
         }
 
@@ -134,7 +134,7 @@ impl Environment for LineWorld {
         if self.agent_position > 0 {
             actions.push(1);
         }
-        if self.agent_position < self.all_position.len() as i64 - 1 {
+        if self.agent_position < self.all_position.len() - 1 {
             actions.push(2);
         }
         actions
@@ -144,10 +144,8 @@ impl Environment for LineWorld {
         self.all_position.iter().map(|&pos| pos as State).collect()
     }
 
-    fn terminal_states(&self) -> Vec<State> { self.terminal_position.clone() }
-
     fn set_state(&mut self, state: State) {
-        self.agent_position = state as i64;
+        self.agent_position = state;
     }
 
     fn display(&self) {
@@ -175,6 +173,7 @@ impl Environment for LineWorld {
     fn all_action(&self) -> Vec<Action> {
         self.all_actions.iter().map(|&action| action as Action).collect()
     }
+    fn terminal_states(&self) -> Vec<State> { self.terminal_position.clone() }
 
     fn is_forbidden(&self, state_or_action: usize) -> bool{
         false

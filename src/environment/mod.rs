@@ -7,8 +7,6 @@ pub mod environment;
 pub mod playable_monte_hall;
 pub mod secret_env0_dp;
 pub mod secret_wrapper;
-pub mod playable_line_world;
-pub mod playable_grid_world;
 pub mod SecretEnv0Dp;
 pub mod SecretEnv1Dp;
 pub mod SecretEnv2Dp;

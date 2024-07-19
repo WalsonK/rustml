@@ -166,6 +166,10 @@ impl Environment for SecretEnv1Dp {
             secret_env_1_is_game_over(self.env)
         }
     }
+
+    fn terminal_states(&self) -> Vec<State> {
+        todo!()
+    }
 }
 
 mod tools {

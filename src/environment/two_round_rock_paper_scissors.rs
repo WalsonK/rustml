@@ -176,10 +176,6 @@ impl Environment for RPSGame {
         self.all_position.clone()
     }
 
-    fn terminal_states(&self) -> Vec<State> {
-        self.terminal_position.clone()
-    }
-
     fn set_state(&mut self, state: State) {
         self.round = state as usize;
     }
@@ -211,5 +207,17 @@ impl Environment for RPSGame {
 
     fn is_game_over(&self) -> bool {
         self.round >= 2
+    }
+
+    fn all_action(&self) -> Vec<State> {
+        self.all_position.clone()
+    }
+
+    fn terminal_states(&self) -> Vec<State> {
+        self.terminal_position.clone()
+    }
+
+    fn is_forbidden(&self, state_or_action: usize) -> bool {
+        false
     }
 }

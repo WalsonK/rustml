@@ -5,7 +5,7 @@ use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, se
 use rustml::environment::environment::Environment;
 use rustml::environment::environment::Action as ActionType;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
-use rustml::td_learning::sarsa;
+//use rustml::td_learning::sarsa;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 use rustml::planning::dyna_q::DynaQModel;
 use rustml::planning::dyna_q_plus::DynaQPlusModel;
@@ -29,13 +29,13 @@ fn main() {
     //println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     //env.display();
 
-/*    //      Line world
+    /*      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    //
-*/
+    */
+
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
@@ -131,7 +131,7 @@ fn main() {
     //tools::use_policy_in_game(&mut *env, &best_policy);
     */
 
-    // Q Learning
+    /* Q Learning
     let iterations = 100_000;
     let gamma = 0.8;
     let alpha = 0.5;
@@ -142,7 +142,7 @@ fn main() {
     println!("Q-values: {:?}", q_learning_model.q_values);
     let policy = q_learning_model.derive_policy();
     q_learning_model.print_policy(&policy);
-    //
+    */
 
     /*     DYNQ
     let iterations = 10000;
