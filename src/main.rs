@@ -21,7 +21,7 @@ fn main() {
 
     // -------------------------------- ENV -------------------------------------
     // Charge la bibliothèque dynamique spécifique à votre environnement secret
-    let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
     //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
     //env.display();
     //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
@@ -34,12 +34,12 @@ fn main() {
     //println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     //env.display();
 
-    /*      Line world
+    //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    */
+    //
 
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
@@ -98,7 +98,7 @@ fn main() {
     env.display();
 */
 
-    //      MONTE CARLO CONTROL
+    /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -112,7 +112,7 @@ fn main() {
     });
     env.step(action);
     env.display();
-    //
+    */
 
     /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
@@ -149,19 +149,21 @@ fn main() {
     q_learning_model.print_policy(&policy);
     */
 
-    /*     DYNQ
-    let iterations = 10000;
+    //     DYNQ
+    let iterations = 100000;
     let gamma = 0.95;
     let alpha = 0.1;
     let epsilon = 0.1;
     let n = 100;
 
-    let mut dyna_q_model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
-    dyna_q_model.dyna_q(&mut *env);
-    println!("Q-values: {:?}", dyna_q_model.q_values);
-    let policy = dyna_q_model.derive_policy();
-    dyna_q_model.print_policy(&policy);
-    */
+    let mut model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
+    //model.dyna_q(&mut *env);
+    model.load_policy("policy.json").unwrap();
+    //println!("Q-values: {:?}", model.q_values);
+    //let policy = model.derive_policy();
+    //model.print_policy(&policy);
+    //model.save_policy(&policy, "policy.json").unwrap();
+    //
 
     /*     DYNQ+
     // Parameters for DynaQ+ model
@@ -179,7 +181,7 @@ fn main() {
     dyna_q_model.print_policy(&policy);
     */
 
-    /*
+
     // Exemple de test de la politique entraînée sur un état initial
     // Boucle de jeu jusqu'à la fin en utilisant le modèle entraîné
     let mut rng = rand::thread_rng();
@@ -214,9 +216,9 @@ fn main() {
             env.reset();
             break;
         }
-    }*/
+    }
 
-    let mut rng = rand::thread_rng();
+    /*let mut rng = rand::thread_rng();
     loop {
         let state = env.state_id();
         let action = if let Some(actions) = model.policy.get(&state) {
@@ -242,6 +244,6 @@ fn main() {
             env.reset();
             break;
         }
-    }
+    }*/
 
 }

@@ -4,14 +4,17 @@ use rand::{Rng, thread_rng};
 use std::collections::HashMap;
 use rand::prelude::IteratorRandom;
 use crate::environment::environment::{State, Action, Reward, Environment};
+use serde::{Serialize, Deserialize};
+use std::fs::File;
+use std::io::{self, Write, Read};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EpisodeStep {
     pub state: State,
     pub action: Action,
     pub reward: Reward,
 }
-
+#[derive(Serialize, Deserialize)]
 pub struct DynaQModel {
     pub iterations: usize,
     pub gamma: f32,
@@ -20,6 +23,7 @@ pub struct DynaQModel {
     pub planning_steps: usize, // Number of planning steps
     pub q_values: HashMap<(State, Action), Reward>,
     pub model: HashMap<(State, Action), (Reward, State)>,
+    pub policy: HashMap<State, Action>,
 }
 
 impl DynaQModel {
@@ -32,6 +36,7 @@ impl DynaQModel {
             planning_steps,
             q_values: HashMap::new(),
             model: HashMap::new(),
+            policy: HashMap::new(),
         })
     }
 
@@ -127,6 +132,38 @@ impl DynaQModel {
         }
 
         println!("Policy: {:?}", policy_dict);
+    }
+
+    pub fn save_policy(&self, policy: &HashMap<State, Action>, filename: &str) -> io::Result<()> {
+        let file = File::create(filename)?;
+        serde_json::to_writer(file, policy)?;
+        Ok(())
+    }
+
+
+    pub fn derive_and_assign_policy(&mut self) {
+        let mut policy = HashMap::new();
+
+        for (&(state, action), &q_value) in &self.q_values {
+            if let Some(&best_action) = policy.get(&state) {
+                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
+                    policy.insert(state, action);
+                }
+            } else {
+                policy.insert(state, action);
+            }
+        }
+
+        self.policy = policy;
+    }
+
+
+
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<HashMap<State, Action>> {
+        let file = File::open(filename)?;
+        let policy = serde_json::from_reader(file)?;
+        self.derive_and_assign_policy();
+        Ok(policy)
     }
 
 }
