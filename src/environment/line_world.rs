@@ -1,6 +1,8 @@
 use rand::Rng;
 use crate::environment::environment::{State, Action, Reward, Environment};
 use crate::environment::tools;
+
+
 pub struct LineWorld {
     pub agent_position: i64,
     pub all_position: Vec<i64>,
@@ -34,7 +36,8 @@ impl LineWorld {
         self.terminal_position.contains(&self.agent_position)
     }
 
-    pub fn reset(&mut self, is_rand: bool, pos: i64) -> State {
+
+    fn reset(&mut self, is_rand: bool, pos: i64) -> State {
         self.agent_position = if !is_rand {
             pos
         } else {

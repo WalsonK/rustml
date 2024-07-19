@@ -12,6 +12,8 @@ use rustml::environment::SecretEnv1Dp::SecretEnv1Dp;
 use rustml::environment::SecretEnv2Dp::SecretEnv2Dp;
 use rustml::environment::SecretEnv3Dp::SecretEnv3Dp;
 use rustml::planning::{dyna_q,dyna_q_plus};
+use rustml::td_learning::{q_learning,sarsa};
+use rustml::td_learning::q_learning::QLearning;
 
 
 /*
@@ -142,17 +144,21 @@ mod environment;
 fn main() {
     // Charge la bibliothèque dynamique spécifique à votre environnement secret
     //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
+    //env.display();
     //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
+    //println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
+    //env.display();
     //let mut env: Box<SecretEnv2Dp> = unsafe { SecretEnv2Dp::new() };
-    let mut env: Box<SecretEnv3Dp> = unsafe { SecretEnv3Dp::new() };
-    println!("{:?}",env.all_action());
-    //let mut env = line_world::LineWorld::new(5, false, 2);
+    //println!("Env2, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
+    //env.display();
+    //let mut env: Box<SecretEnv3Dp> = unsafe { SecretEnv3Dp::new() };
+    //println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
+    //env.display();
+    let mut env = line_world::LineWorld::new(5, false, 2);
     //let mut env = grid_world::GridWorld::new(3, 5, 1);
+    //println!("{:?}",env.all_action());
 
-
-    // Exemple d'utilisation de l'environnement
-    println!("Initial state:");
-    env.display();
 
     /*Exemple de boucle de jeu ou d'interaction avec l'environnement
     for _ in 0..100 {
@@ -178,21 +184,36 @@ fn main() {
         }
     }*/
 
-    //let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 10000);
-    let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
+    //let mut model = monte_carlo_es::MonteCarloESModel::new(50000, 0.9, 1000);
+    //let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
 
     //let mut model = dyna_q::DynaQModel::new(200,0.9, 0.5, 0.3, 10);
     //let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
+    //model.off_policy_mc_control(&mut *env, 10000, 100);
     //model.dyna_q(&mut *env);
     // Entraînement du modèle avec Monte Carlo Control hors politique
-    model.on_policy_mc_control(&mut *env, 1000, 100);
+    //model.on_policy_mc_control(&mut *env, 10000, 50);
     //model.monte_carlo_es(&mut *env);
     /*let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
-    model.on_policy_mc_control(&mut *env, 10000, 100);
+    model.on_policy_mc_control(&mut *env, 10000, 100);*/
+    // Q Learning
+    let iterations = 10000;
+    let gamma = 0.8;
+    let alpha = 0.6;
+    let epsilon = 0.9;
+    let mut q_learning_model = QLearning::new(iterations, gamma, alpha, epsilon);
+    q_learning_model.q_learning(&mut *env);
+
+    println!("Q-values: {:?}", q_learning_model.q_values);
+    let policy = q_learning_model.derive_policy();
+    q_learning_model.print_policy(&policy);
     // Affichage des résultats après l'entraînement pour inspection manuelle*/
 
-   //println!("Q-values: {:?}", model.q_values);
+}
+/*
+
+    //println!("Q-values: {:?}", model.q_values);
     //let policy = model.derive_policy();
     //println!("Policy: {:?}", model.policy);
 
@@ -204,9 +225,12 @@ fn main() {
     //let index = rng.gen_range(0..env.all_position.len());
 
     env.reset();
-    /*loop {
+    // Exemple d'utilisation de l'environnement
+    println!("Initial state:");
+    env.display();
+    loop {
         let state = env.state_id();
-        let action = if let Some(&action) = policy.get(&state) {
+        let action = if let Some(&action) = model.policy.get(&state) {
             action
         } else {
             // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
@@ -229,8 +253,8 @@ fn main() {
             env.reset();
             break;
         }
-    }*/
-    loop {
+    }
+    /*loop {
         let state = env.state_id();
         let action = if let Some(actions) = model.policy.get(&state) {
             *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
@@ -255,5 +279,5 @@ fn main() {
             env.reset();
             break;
         }
-    }
-    }
+    }*/
+    }*/
