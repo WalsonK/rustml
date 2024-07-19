@@ -12,7 +12,7 @@ pub struct SecretEnv0Dp {
 }
 
 impl SecretEnv0Dp {
-    pub unsafe fn new() -> Box<Self> {
+    pub unsafe fn new() -> Box<SecretEnv0Dp> {
         let lib = tools::secret_env_lib();
         let env = Self::create_new_env(&lib);
         let num_states = Self::get_num_states(&lib);
@@ -182,7 +182,15 @@ mod tools {
     use libloading::Library;
 
     pub unsafe fn secret_env_lib() -> Library {
-        let lib_path = r#"C:\Users\farin\CLionProjects\rustml2\src\libs\secret_envs.dll"#;
-        Library::new(lib_path).expect("Échec du chargement de la bibliothèque")
+        #[cfg(target_os = "linux")]
+        let path = "src/libs/libsecret_envs.so";
+        #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+        let path = "src/libs/libsecret_envs_intel_macos.dylib";
+        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+        let path = "src/libs/libsecret_envs.dylib";
+        #[cfg(windows)]
+        let path = "src/libs/secret_envs.dll";
+
+        Library::new(path).expect("Échec du chargement de la bibliothèque")
     }
 }

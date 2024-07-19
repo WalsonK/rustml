@@ -1,7 +1,11 @@
 extern crate rustml;
 
 use std::io;
-use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, secret_env0_dp, two_round_rock_paper_scissors};
+use rustml::environment::{
+    line_world, grid_world, tools, playable_monte_hall, secret_env0_dp,
+    two_round_rock_paper_scissors, secret_env0dp::SecretEnv0Dp, secret_env1dp::SecretEnv1Dp,
+    secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp
+};
 use rustml::environment::environment::Environment;
 use rustml::environment::environment::Action as ActionType;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
@@ -10,13 +14,14 @@ use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carl
 use rustml::planning::dyna_q::DynaQModel;
 use rustml::planning::dyna_q_plus::DynaQPlusModel;
 use rustml::td_learning::q_learning::QLearning;
+use rand::Rng;
 
 
 fn main() {
 
     // -------------------------------- ENV -------------------------------------
     // Charge la bibliothèque dynamique spécifique à votre environnement secret
-    //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
     //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
     //env.display();
     //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
@@ -48,7 +53,7 @@ fn main() {
     */
     
     // two_round_rock_paper_scissors
-    let mut env = two_round_rock_paper_scissors::RPSGame::new();
+    //let mut env = two_round_rock_paper_scissors::RPSGame::new();
 
 
 // -------------------------------- ALGO -------------------------------------
@@ -93,7 +98,7 @@ fn main() {
     env.display();
 */
 
-    /*      MONTE CARLO CONTROL
+    //      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -107,7 +112,7 @@ fn main() {
     });
     env.step(action);
     env.display();
-    */
+    //
 
     /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
@@ -211,7 +216,8 @@ fn main() {
         }
     }*/
 
-    /*loop {
+    let mut rng = rand::thread_rng();
+    loop {
         let state = env.state_id();
         let action = if let Some(actions) = model.policy.get(&state) {
             *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
@@ -236,6 +242,6 @@ fn main() {
             env.reset();
             break;
         }
-    }*/
+    }
 
 }
