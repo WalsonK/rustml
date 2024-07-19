@@ -1,9 +1,9 @@
 extern crate rand;
 use rand::Rng;
 
-pub type State = i64;
-pub type Action = i64;
-pub type Reward = f64;
+pub type State = usize;
+pub type Action = usize;
+pub type Reward = f32;
 
 pub trait Environment {
     fn reset(&mut self) -> State;
@@ -16,4 +16,6 @@ pub trait Environment {
     fn state_id(&self) -> State;
     fn score(&self) -> Reward;
     fn is_game_over(&self) -> bool;
+    fn all_action(&self) -> Vec<State>;
+    fn is_forbidden(&self, state_or_action: usize) -> bool;
 }

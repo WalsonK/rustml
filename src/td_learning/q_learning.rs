@@ -6,14 +6,14 @@ use crate::environment::environment::{State, Action, Reward, Environment};
 
 pub struct QLearning {
     pub iterations: usize,
-    pub gamma: f64,
-    pub alpha: f64,
-    pub epsilon: f64,
+    pub gamma: f32,
+    pub alpha: f32,
+    pub epsilon: f32,
     pub q_values: HashMap<(State, Action), Reward>,
 }
 
 impl QLearning {
-    pub fn new(iterations: usize, gamma: f64, alpha: f64, epsilon: f64) -> Box<QLearning> {
+    pub fn new(iterations: usize, gamma: f32, alpha: f32, epsilon: f32) -> Box<QLearning> {
         Box::new(QLearning {
             iterations,
             gamma,
@@ -53,15 +53,15 @@ impl QLearning {
         }
     }
 
-    fn max_q_value(&self, state: State, actions: &[Action]) -> f64 {
+    fn max_q_value(&self, state: State, actions: &[Action]) -> f32 {
         actions
             .iter()
             .map(|&action| *self.q_values.get(&(state, action)).unwrap_or(&0.0))
-            .fold(std::f64::MIN, |a, b| a.max(b))
+            .fold(std::f32::MIN, |a, b| a.max(b))
     }
 
     fn epsilon_greedy(&self, state: State, actions: &[Action], rng: &mut rand::prelude::ThreadRng) -> Action {
-        if rng.gen::<f64>() < self.epsilon {
+        if rng.gen::<f32>() < self.epsilon {
             *actions.choose(rng).unwrap()
         } else {
             actions
@@ -83,7 +83,7 @@ impl QLearning {
 
         for (&(state, action), &q_value) in &self.q_values {
             if let Some(&best_action) = policy.get(&state) {
-                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f64::NEG_INFINITY) {
+                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
                     policy.insert(state, action);
                 }
             } else {

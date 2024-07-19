@@ -10,6 +10,7 @@ pub struct playable_MontyHall {
     pub nb_portes: usize,
     pub rewards: Vec<f32>,
     pub probabilities: Vec<f32>,
+    pub all_actions : Vec<Action>,
 }
 
 impl playable_MontyHall {
@@ -17,6 +18,7 @@ impl playable_MontyHall {
         let mut rng = rand::thread_rng();
         let winning_door = rng.gen_range(0..nb_portes);
         println!("La porte gagnante est la porte {}", winning_door);
+        let all_actions : Vec<Action> = vec![0; nb_portes];
 
         let mut monty_hall = playable_MontyHall {
             winning_door,
@@ -25,6 +27,7 @@ impl playable_MontyHall {
             nb_portes,
             rewards: Vec::new(),
             probabilities: Vec::new(),
+            all_actions,
         };
 
         monty_hall.init_rewards();
@@ -108,7 +111,7 @@ impl Environment for playable_MontyHall {
             return (self.state_id(), 0.0, false);
         }
         if updated {
-            return (self.state_id(), self.reward(), self.is_game_over());
+            return (self.state_id(), self.reward() as Reward, self.is_game_over());
         }
         (self.state_id(), 0.0, self.is_game_over())
     }
@@ -141,6 +144,13 @@ impl Environment for playable_MontyHall {
     }
    fn is_game_over(&self) -> bool {
         self.chosen_door.is_some() && self.opened_door.is_some()
+    }
+    fn all_action(&self) -> Vec<Action> {
+        self.all_actions.iter().map(|&action| action as Action).collect()
+    }
+
+    fn is_forbidden(&self, state_or_action: usize) -> bool{
+        false
     }
 }
 

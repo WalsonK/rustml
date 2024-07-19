@@ -15,12 +15,19 @@ use rustml::td_learning::q_learning::QLearning;
 fn main() {
 
     // -------------------------------- ENV -------------------------------------
-    
-    /* SECRET ENV 0 DP
-    let mut env = secret_env0_dp::SecretEnv0Dp::new();
-    println!("s : {}, a: {}, r: {}", env.num_states, env.num_actions, env.num_rewards);
-    println!("matrix : {:?}", env.load_rewards())
-    */
+    // Charge la bibliothèque dynamique spécifique à votre environnement secret
+    //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
+    //env.display();
+    //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
+    //println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
+    //env.display();
+    //let mut env: Box<SecretEnv2Dp> = unsafe { SecretEnv2Dp::new() };
+    //println!("Env2, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
+    //env.display();
+    //let mut env: Box<SecretEnv3Dp> = unsafe { SecretEnv3Dp::new() };
+    //println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
+    //env.display();
 
 /*    //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
@@ -72,9 +79,7 @@ fn main() {
     println!("Policy for value iter: {:?}", val_iter.policy);
 */
 
-
-/*
-    //     MONTE CARLO ES
+    /*      MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
     // Entraînement du modèle avec Monte Carlo ES
     model.monte_carlo_es(&mut *env);
@@ -169,5 +174,68 @@ fn main() {
     dyna_q_model.print_policy(&policy);
     */
 
-}
+    /*
+    // Exemple de test de la politique entraînée sur un état initial
+    // Boucle de jeu jusqu'à la fin en utilisant le modèle entraîné
+    let mut rng = rand::thread_rng();
+    //let index = rng.gen_range(0..env.all_position.len());
 
+    env.reset();
+    // Exemple d'utilisation de l'environnement
+    println!("Initial state:");
+    env.display();
+    loop {
+        let state = env.state_id();
+        let action = if let Some(&action) = model.policy.get(&state) {
+            action
+        } else {
+            // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
+            let actions = env.available_actions();
+            let index = rng.gen_range(0..actions.len());
+            actions[index]
+        };
+
+        // Appliquer l'action à l'environnement
+        let (new_state, reward, done) = env.step(action);
+
+        println!("Action taken: {}", action);
+        println!("State after action:");
+        env.display();
+        println!("Reward received: {}", reward);
+        println!("Game over? {}", done);
+
+        if done {
+            println!("Game over. Resetting environment.");
+            env.reset();
+            break;
+        }
+    }*/
+
+    /*loop {
+        let state = env.state_id();
+        let action = if let Some(actions) = model.policy.get(&state) {
+            *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
+        } else {
+            // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
+            let actions = env.available_actions();
+            let index = rng.gen_range(0..actions.len());
+            actions[index]
+        };
+
+        // Appliquer l'action à l'environnement
+        let (new_state, reward, done) = env.step(action);
+
+        println!("Action taken: {}", action);
+        println!("State after action:");
+        env.display();
+        println!("Reward received: {}", reward);
+        println!("Game over? {}", done);
+
+        if done {
+            println!("Game over. Resetting environment.");
+            env.reset();
+            break;
+        }
+    }*/
+
+}

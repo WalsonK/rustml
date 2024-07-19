@@ -64,7 +64,7 @@ pub fn wrapper() {
             let secret_env_0_display: libloading::Symbol<unsafe extern fn(*const c_void)> =
                 lib.get(b"secret_env_0_display").expect("Failed to load function `secret_env_0_display`");
             dbg!(secret_env_0_display(env));
-            
+
             let secret_env_0_available_actions: libloading::Symbol<unsafe extern fn(*const c_void) -> *const usize> =
                 lib.get(b"secret_env_0_available_actions").expect("Failed to load function `secret_env_0_available_actions`");
             let actions = secret_env_0_available_actions(env);
@@ -166,7 +166,7 @@ pub fn wrapper() {
             let secret_env_1_display: libloading::Symbol<unsafe extern fn(*const c_void)> =
                 lib.get(b"secret_env_1_display").expect("Failed to load function `secret_env_1_display`");
             dbg!(secret_env_1_display(env));
-            
+
             let secret_env_1_available_actions: libloading::Symbol<unsafe extern fn(*const c_void) -> *const usize> =
                 lib.get(b"secret_env_1_available_actions").expect("Failed to load function `secret_env_1_available_actions`");
             let actions = secret_env_1_available_actions(env);

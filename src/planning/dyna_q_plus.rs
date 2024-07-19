@@ -14,18 +14,18 @@ pub struct EpisodeStep {
 
 pub struct DynaQPlusModel {
     pub iterations: usize,
-    pub gamma: f64,
-    pub alpha: f64,
-    pub epsilon: f64,
+    pub gamma: f32,
+    pub alpha: f32,
+    pub epsilon: f32,
     pub planning_steps: usize, // Number of planning steps
-    pub kappa: f64, // New parameter for Dyna-Q+
+    pub kappa: f32, // New parameter for Dyna-Q+
     pub q_values: HashMap<(State, Action), Reward>,
     pub model: HashMap<(State, Action), (Reward, State)>,
     pub time_since_last_action: HashMap<(State, Action), usize>, // Track time since last action
 }
 
 impl DynaQPlusModel {
-    pub fn new(iterations: usize, gamma: f64, alpha: f64, epsilon: f64, planning_steps: usize, kappa: f64) -> Box<DynaQPlusModel> {
+    pub fn new(iterations: usize, gamma: f32, alpha: f32, epsilon: f32, planning_steps: usize, kappa: f32) -> Box<DynaQPlusModel> {
         Box::new(DynaQPlusModel {
             iterations,
             gamma,
@@ -57,7 +57,7 @@ impl DynaQPlusModel {
                 // Update Q-value
                 let max_q_next = self.max_q_value(next_state, &available_actions);
                 let q = self.q_values.entry((state, action)).or_insert(0.0);
-                *q += self.alpha * (reward + self.gamma * max_q_next - *q);
+                *q += self.alpha * (reward + (self.gamma  * max_q_next) as f32 - *q ) as f32;
 
                 // Update model
                 self.model.insert((state, action), (reward, next_state));
@@ -74,7 +74,7 @@ impl DynaQPlusModel {
                         let max_q_s_prime = self.max_q_value(s_prime, &available_actions);
                         let q_sa = self.q_values.entry((s, a)).or_insert(0.0);
                         let tau_sa = *self.time_since_last_action.get(&(s, a)).unwrap_or(&0);
-                        *q_sa += self.alpha * (r + self.kappa * (tau_sa as f64).sqrt() + self.gamma * max_q_s_prime - *q_sa);
+                        *q_sa += self.alpha * (r + self.kappa * (tau_sa as f32).sqrt() + self.gamma * max_q_s_prime - *q_sa);
                     }
                 }
 
@@ -88,15 +88,15 @@ impl DynaQPlusModel {
         }
     }
 
-    fn max_q_value(&self, state: State, actions: &[Action]) -> f64 {
+    fn max_q_value(&self, state: State, actions: &[Action]) -> f32 {
         actions
             .iter()
             .map(|&action| *self.q_values.get(&(state, action)).unwrap_or(&0.0))
-            .fold(std::f64::MIN, |a, b| a.max(b))
+            .fold(std::f64::MIN, |a, b| a.max(b as f64)) as f32
     }
 
     fn epsilon_greedy(&self, state: State, actions: &[Action], rng: &mut rand::prelude::ThreadRng) -> Action {
-        if rng.gen::<f64>() < self.epsilon {
+        if rng.gen::<f32>() < self.epsilon {
             *actions.choose(rng).unwrap()
         } else {
             actions
@@ -129,7 +129,7 @@ impl DynaQPlusModel {
 
         for (&(state, action), &q_value) in &self.q_values {
             if let Some(&best_action) = policy.get(&state) {
-                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f64::NEG_INFINITY) {
+                if q_value  > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
                     policy.insert(state, action);
                 }
             } else {
