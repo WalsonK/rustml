@@ -1,7 +1,9 @@
 extern crate rustml;
 
-use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, secret_env0_dp};
+use std::io;
+use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, secret_env0_dp, two_round_rock_paper_scissors};
 use rustml::environment::environment::Environment;
+use rustml::environment::environment::Action as ActionType;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 use rustml::td_learning::sarsa;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
@@ -20,13 +22,13 @@ fn main() {
     println!("matrix : {:?}", env.load_rewards())
     */
 
-    //      Line world
+/*    //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
     //
-
+*/
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
@@ -38,10 +40,13 @@ fn main() {
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
     */
     
+    // two_round_rock_paper_scissors
+    let mut env = two_round_rock_paper_scissors::RPSGame::new();
+
 
 // -------------------------------- ALGO -------------------------------------
-
-    /*      POLICY ITERATION
+/*
+   //     POLICY ITERATION
     let mut algo = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         env.all_actions,
@@ -52,9 +57,9 @@ fn main() {
     );
     let best_policy = algo.policy_iteration();
     println!("Policy for policy iter: {:?}", best_policy);
-    */
-
-    /*      VALUE ITERATION
+*/
+/*
+    //      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
         env.all_position,
         env.all_actions,
@@ -65,7 +70,7 @@ fn main() {
     );
     val_iter.iteration(0.001);
     println!("Policy for value iter: {:?}", val_iter.policy);
-    */
+*/
 
 
 /*
@@ -77,7 +82,7 @@ fn main() {
     println!("Q-values: {:?}", model.q_values);
     println!("Policy: {:?}", model.policy);
     // Tester la politique entraînée sur un état initial
-    let state = env.reset(true, 1);
+    let state = env.reset();
     let action = model.policy.get(&state).cloned().unwrap_or(0);
     env.step(action);
     env.display();
@@ -166,19 +171,3 @@ fn main() {
 
 }
 
-/*mod two_round_rock_paper_scissors;
-use crate::two_round_rock_paper_scissors::{Action, Agent, Adversary, Environment};
-fn main() {
-    let mut env = Environment::new();
-    let agent_action_round_1 = env.agent.choose_action();
-    let (result_round_1, _) = env.step(agent_action_round_1);
-    println!("Round 1: Agent chose {:?}, result: {}", agent_action_round_1, result_round_1);
-
-    let agent_action_round_2 = env.agent.choose_action(); // Agent choisit une action aléatoire pour le deuxième round
-    let (result_round_2, done) = env.step(agent_action_round_2); // Passer l'action du deuxième round
-    println!("Round 2: Agent chose {:?}, result: {}", agent_action_round_2, result_round_2); // Agent joue la même action que le deuxième round
-
-    if done {
-        println!("Game over. Total score: {}", env.agent_score);
-    }
-}*/
