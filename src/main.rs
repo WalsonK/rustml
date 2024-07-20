@@ -117,7 +117,7 @@ fn main() {
 
 */
 
-    //      MONTE CARLO CONTROL
+    /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -134,9 +134,9 @@ fn main() {
     model.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
     //model.load_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
     //println!("Policy  : {:?}", model.derived_policy);
-    //
+    */
 
-    //      MONTE CARLO CONTROL OFF POLICY
+    /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control hors politique
     model.off_policy_mc_control(&mut *env, 10000, 100);
@@ -148,7 +148,10 @@ fn main() {
     let action = model.policy.get(&state).map_or(0, |actions| {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
-    env.step(action);*/
+    env.step(action);
+    model.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
+    //model.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
+    //println!("Policy  : {:?}", model.derived_policy);*/
 
     /* SARSA
     let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
