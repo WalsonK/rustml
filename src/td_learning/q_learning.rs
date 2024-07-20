@@ -17,7 +17,7 @@ pub struct QLearning {
     pub alpha: f32,
     pub epsilon: f32,
     pub q_values: HashMap<(State, Action), Reward>,
-    pub policy: HashMap<State, Action>, // Policy map
+    pub policy: HashMap<State, Action>,
 }
 
 impl QLearning {
