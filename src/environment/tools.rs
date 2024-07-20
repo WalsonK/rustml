@@ -34,6 +34,7 @@ pub enum Policy {
 // Fonction pour utiliser la politique dans le jeu
 pub fn use_policy_in_game<E: Environment>(env: &mut E, policy: Policy) {
     println!("The Game start!");
+    env.reset();
     env.display();
 
     match policy {
@@ -42,7 +43,7 @@ pub fn use_policy_in_game<E: Environment>(env: &mut E, policy: Policy) {
                 if step_id >= env.state_id() as usize && !env.is_game_over() {
                     println!("State {} : action {}", step_id, action);
                     if step_id == env.state_id() as usize {
-                        env.step(action.clone() as Action);
+                        env.step(*action);
                         env.display();
                     }
                 } else if env.is_game_over() {
@@ -57,12 +58,13 @@ pub fn use_policy_in_game<E: Environment>(env: &mut E, policy: Policy) {
                 let state_id = env.state_id();
                 if let Some(action) = action_map.get(&state_id) {
                     println!("State {} : action {}", state_id, action);
-                    env.step(action.clone() as Action);
-                    env.display();
+                    env.step(*action);
+
                 } else {
                     println!("No action defined for state {}. Game Over!", state_id);
                     break;
                 }
+                env.display();
             }
             println!("Game Over!");
             println!("Score : {}", env.score());

@@ -35,7 +35,8 @@ impl QLearning {
     pub fn q_learning<E: Environment>(&mut self, env: &mut E) {
         let mut rng = thread_rng();
 
-        for _ in 0..self.iterations {
+        for i in 0..self.iterations {
+            println!("Iteration: {}", i);
             // Get current nonterminal state S
             let mut state = env.reset();
 
