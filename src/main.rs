@@ -140,18 +140,21 @@ fn main() {
     //tools::use_policy_in_game(&mut *env, &best_policy);
     */
 
-    /* Q Learning
+    // Q Learning
     let iterations = 100_000;
     let gamma = 0.8;
     let alpha = 0.5;
     let epsilon = 0.9;
-    let mut q_learning_model = QLearning::new(iterations, gamma, alpha, epsilon);
-    q_learning_model.q_learning(&mut *env);
 
-    println!("Q-values: {:?}", q_learning_model.q_values);
-    let policy = q_learning_model.derive_policy();
-    q_learning_model.print_policy(&policy);
-    */
+    let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
+    model.q_learning(&mut *env);
+    println!("Q-values: {:?}", model.q_values);
+    let policy = model.derive_policy();
+    model.print_policy();
+    model.save_policy("policy_QLearning.json").unwrap();
+    //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
+    //model.load_policy("policy_QLearning.json").unwrap();
+    //
 
     /*     DYNQ
     let iterations = 250000;
@@ -170,7 +173,7 @@ fn main() {
     //model.load_policy("policy.json").unwrap();
     */
 
-    //     DYNQ+
+    /*     DYNQ+
     // Parameters for DynaQ+ model
     let iterations = 10000;
     let gamma = 0.95;
@@ -185,9 +188,9 @@ fn main() {
     let policy = model.derive_policy();
     model.print_policy();
     model.save_policy("policy_DYNQ_PLUS.json").unwrap();*/
-    let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
-    model.load_policy("policy_DYNQ_PLUS.json").unwrap();
-    //
+    //let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
+    //model.load_policy("policy_DYNQ_PLUS.json").unwrap();
+    */
 
 
     // Exemple de test de la politique entraînée sur un état initial
