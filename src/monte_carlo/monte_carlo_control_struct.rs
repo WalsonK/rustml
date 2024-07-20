@@ -170,7 +170,7 @@ impl MonteCarloControl {
 
     pub fn save_policy(&self, filename: &str) -> io::Result<()> {
         let file = File::create(filename)?;
-        serde_json::to_writer(file, &self.policy)?;
+        serde_json::to_writer(file, &self.derived_policy)?;
         Ok(())
     }
 
