@@ -170,21 +170,24 @@ fn main() {
     //model.load_policy("policy.json").unwrap();
     */
 
-    /*     DYNQ+
+    //     DYNQ+
     // Parameters for DynaQ+ model
-    let iterations = 100000;
+    let iterations = 10000;
     let gamma = 0.95;
     let alpha = 0.1;
     let epsilon = 0.1;
-    let planning_steps = 100;
+    let planning_steps = 10;
     let kappa = 0.001;
 
-    let mut dyna_q_model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
-    dyna_q_model.dyna_q_plus(&mut *env);
-    println!("Q-values: {:?}", dyna_q_model.q_values);
-    let policy = dyna_q_model.derive_policy();
-    dyna_q_model.print_policy(&policy);
-    */
+    /*let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
+    model.dyna_q_plus(&mut *env);
+    println!("Q-values: {:?}", model.q_values);
+    let policy = model.derive_policy();
+    model.print_policy();
+    model.save_policy("policy_DYNQ_PLUS.json").unwrap();*/
+    let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
+    model.load_policy("policy_DYNQ_PLUS.json").unwrap();
+    //
 
 
     // Exemple de test de la politique entraînée sur un état initial
