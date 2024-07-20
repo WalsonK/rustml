@@ -72,8 +72,8 @@ fn main() {
     println!("final policy: {:?}", model.policy_to_hashmap());
     model.save_policy("policy_POLICY_ITERATION.json").unwrap();
 
-    model.load_policy("policy_POLICY_ITERATION.json").unwrap();
-    model.print_policy();
+    //model.load_policy("policy_POLICY_ITERATION.json").unwrap();
+    //model.print_policy();
 
     */
 
@@ -114,10 +114,12 @@ fn main() {
     model.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
     //let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.9, 2);
     //model.load_policy("policy_MONTE_CARLO_ES.json").unwrap();
+    */
 
-*/
 
-    //      MONTE CARLO CONTROL
+
+
+    /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     /*// Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -134,6 +136,8 @@ fn main() {
     model.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();*/
     model.load_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
     println!("Policy  : {:?}", model.derived_policy);
+
+     */
 
 
     /*      MONTE CARLO CONTROL OFF POLICY
@@ -175,10 +179,12 @@ fn main() {
     model.save_policy("policy_QLearning.json").unwrap();
     //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
     //model.load_policy("policy_QLearning.json").unwrap();
-    */
+
+     */
+
 
     /*     DYNQ
-    let iterations = 250000;
+    let iterations = 10000;
     let gamma = 0.95;
     let alpha = 0.5;
     let epsilon = 0.8;
@@ -187,14 +193,14 @@ fn main() {
     let mut model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
     model.dyna_q(&mut *env);
     println!("Q-values: {:?}", model.q_values);
-    let policy = model.derive_policy();
+    model.derive_and_assign_policy();
     model.print_policy();
     model.save_policy( "policy_DYNQ.json").unwrap();
     //let mut model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
     //model.load_policy("policy.json").unwrap();
     */
 
-    /*     DYNQ+
+    //     DYNQ+
     // Parameters for DynaQ+ model
     let iterations = 10000;
     let gamma = 0.95;
@@ -203,18 +209,18 @@ fn main() {
     let planning_steps = 10;
     let kappa = 0.001;
 
-    /*let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
+    let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
     model.dyna_q_plus(&mut *env);
     println!("Q-values: {:?}", model.q_values);
-    let policy = model.derive_policy();
+    model.derive_and_assign_policy();
     model.print_policy();
-    model.save_policy("policy_DYNQ_PLUS.json").unwrap();*/
+    model.save_policy("policy_DYNQ_PLUS.json").unwrap();
     //let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
     //model.load_policy("policy_DYNQ_PLUS.json").unwrap();
-    */
 
 
-    /*// Exemple de test de la politique entraînée sur un état initial
+
+    // Exemple de test de la politique entraînée sur un état initial    // monter_carlo , dyna_q
     // Boucle de jeu jusqu'à la fin en utilisant le modèle entraîné
     let mut rng = rand::thread_rng();
     //let index = rng.gen_range(0..env.all_position.len());
@@ -223,39 +229,11 @@ fn main() {
     // Exemple d'utilisation de l'environnement
     println!("Initial state:");
     env.display();
+    let policy = model.policy;
     loop {
         let state = env.state_id();
-        let action = if let Some(&action) = model.policy.get(&state) {
+        let action = if let Some(&action) = policy.get(&state) {
             action
-        } else {
-            // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
-            let actions = env.available_actions();
-            let index = rng.gen_range(0..actions.len());
-            actions[index]
-        };
-
-        // Appliquer l'action à l'environnement
-        let (new_state, reward, done) = env.step(action);
-
-        println!("Action taken: {}", action);
-        println!("State after action:");
-        env.display();
-        println!("Reward received: {}", reward);
-        println!("Game over? {}", done);
-
-        if done {
-            println!("Game over. Resetting environment.");
-            env.reset();
-            break;
-        }
-    }*/
-
-    let mut rng = rand::thread_rng();
-    let policy = model.derived_policy;
-    loop {
-        let state = env.state_id();
-        let action = if let Some(actions) = policy.get(&state) {
-            *actions
         } else {
             // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
             let actions = env.available_actions();
@@ -279,4 +257,32 @@ fn main() {
         }
     }
 
+    /*let mut rng = rand::thread_rng();
+    loop {
+        let state = env.state_id();
+        let action = if let Some(actions) = model.policy.get(&state) {
+            *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
+        } else {
+            // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
+            let actions = env.available_actions();
+            let index = rng.gen_range(0..actions.len());
+            actions[index]
+        };
+
+        // Appliquer l'action à l'environnement
+        let (new_state, reward, done) = env.step(action);
+
+        println!("Action taken: {}", action);
+        println!("State after action:");
+        env.display();
+        println!("Reward received: {}", reward);
+        println!("Game over? {}", done);
+
+        if done {
+            println!("Game over. Resetting environment.");
+            env.reset();
+            break;
+        }
+    }
+*/
 }
