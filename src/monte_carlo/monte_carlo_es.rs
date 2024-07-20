@@ -1,17 +1,23 @@
 extern crate rand;
+extern crate serde;
+extern crate serde_json;
 
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{self, Write, Read};
 use crate::environment::environment::{State, Action, Reward, Environment};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EpisodeStep {
     pub state: State,
     pub action: Action,
     pub reward: Reward,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct MonteCarloESModel {
     pub num_episodes: usize,
     pub gamma: f32,
@@ -20,7 +26,6 @@ pub struct MonteCarloESModel {
     pub q_values: HashMap<(State, Action), Reward>,
     pub returns: HashMap<(State, Action), Vec<Reward>>,
 }
-
 impl MonteCarloESModel {
     pub fn new(num_episodes: usize, gamma: f32, max_steps: usize) -> Box<MonteCarloESModel> {
         Box::new(MonteCarloESModel {
@@ -117,5 +122,17 @@ impl MonteCarloESModel {
         }
 
         best_action
+    }
+
+    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
+        let file = File::create(filename)?;
+        serde_json::to_writer(file, &self.policy)?;
+        Ok(())
+    }
+
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
+        let file = File::open(filename)?;
+        self.policy = serde_json::from_reader(file)?;
+        Ok(())
     }
 }
