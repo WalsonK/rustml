@@ -1,6 +1,7 @@
 use libloading::{Library, Symbol};
 use std::os::raw::c_void;
 use crate::environment::environment::{State, Action, Reward, Environment};
+use crate::environment::tools;
 
 pub struct SecretEnv3Dp {
     lib: Library,
@@ -158,14 +159,5 @@ impl Environment for SecretEnv3Dp {
 
     fn terminal_states(&self) -> Vec<State> {
         todo!()
-    }
-}
-
-mod tools {
-    use libloading::Library;
-
-    pub unsafe fn secret_env_lib() -> Library {
-        let lib_path = r#"C:\Users\farin\CLionProjects\rustml2\src\libs\secret_envs.dll"#;
-        Library::new(lib_path).expect("Failed to load library")
     }
 }

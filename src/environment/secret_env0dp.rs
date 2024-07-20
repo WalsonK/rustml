@@ -1,6 +1,7 @@
 use libloading::{Library, Symbol};
 use std::os::raw::c_void;
 use crate::environment::environment::{State, Action, Reward, Environment};
+use crate::environment::tools;
 
 pub struct SecretEnv0Dp {
     lib: Library,
@@ -175,22 +176,5 @@ impl Environment for SecretEnv0Dp {
 
     fn terminal_states(&self) -> Vec<State> {
         todo!()
-    }
-}
-
-mod tools {
-    use libloading::Library;
-
-    pub unsafe fn secret_env_lib() -> Library {
-        #[cfg(target_os = "linux")]
-        let path = "src/libs/libsecret_envs.so";
-        #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-        let path = "src/libs/libsecret_envs_intel_macos.dylib";
-        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-        let path = "src/libs/libsecret_envs.dylib";
-        #[cfg(windows)]
-        let path = "src/libs/secret_envs.dll";
-
-        Library::new(path).expect("Échec du chargement de la bibliothèque")
     }
 }
