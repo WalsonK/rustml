@@ -1,22 +1,22 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io;
+use std::{io};
 use rand::Rng;
 use serde_json;
-use crate::environment::environment::{Action, State};
+use crate::environment::environment::{Action, Reward, State};
 
 pub struct ValueIterationModel {
     pub states: Vec<usize>, // Changed to usize for consistency
     pub actions: Vec<usize>, // Changed to usize for consistency
-    pub rewards: Vec<Vec<Vec<f64>>>,
-    pub probabilities: Vec<Vec<Vec<f64>>>,
-    pub gamma: f64,
+    pub rewards: Vec<Vec<Vec<Reward>>>,
+    pub probabilities: Vec<Vec<Vec<f32>>>,
+    pub gamma: f32,
     pub policy: Vec<usize>, // Changed to usize for consistency
-    pub value_function: Vec<f64>,
+    pub value_function: Vec<f32>,
 }
 
 impl ValueIterationModel {
-    pub fn new(s: Vec<usize>, a: Vec<usize>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<usize>) -> Box<ValueIterationModel> {
+    pub fn new(s: Vec<usize>, a: Vec<usize>, r: Vec<Vec<Vec<Reward>>>, p: Vec<Vec<Vec<f32>>>, g: f32, terminal_state: Vec<usize>) -> Box<ValueIterationModel> {
         let mut rng = rand::thread_rng();
         let mut vi_model = Box::new(ValueIterationModel {
             states: s.clone(),
@@ -25,7 +25,7 @@ impl ValueIterationModel {
             probabilities: p,
             gamma: g,
             policy: vec![0; s.len()],
-            value_function: (0..s.len()).map(|_| rng.gen::<f64>()).collect(),
+            value_function: (0..s.len()).map(|_| rng.gen::<f32>()).collect(),
         });
         for &s in terminal_state.iter() {
             vi_model.value_function[s] = 0.0;
@@ -33,15 +33,15 @@ impl ValueIterationModel {
         vi_model
     }
 
-    pub fn iteration(&mut self, theta: f64) {
-        let mut delta: f64;
+    pub fn iteration(&mut self, theta: f32) {
+        let mut delta: f32;
 
         loop {
             delta = 0.0;
 
             for state_index in 0..self.states.len() {
                 let old_value = self.value_function[state_index];
-                let mut max_value = f64::NEG_INFINITY;
+                let mut max_value = f32::NEG_INFINITY;
                 let mut best_action = 0;
 
                 for action_index in 0..self.actions.len() {

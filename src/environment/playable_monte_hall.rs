@@ -92,7 +92,7 @@ impl playable_MontyHall {
 
 
 }
-/*
+
 impl Environment for playable_MontyHall {
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
@@ -125,6 +125,10 @@ impl Environment for playable_MontyHall {
 
     fn all_states(&self) -> Vec<State> {
         (0..self.nb_portes as State).collect()
+    }
+
+    fn terminal_states(&self) -> Vec<State> {
+        todo!()
     }
 
     fn set_state(&mut self, state: State) {
@@ -169,5 +173,3 @@ impl fmt::Display for playable_MontyHall {
         )
     }
 }
-
- */

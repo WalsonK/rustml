@@ -2,7 +2,7 @@ extern crate rustml;
 
 use std::io;
 use rustml::environment::{
-    line_world, grid_world, tools, playable_monte_hall, secret_env0_dp,
+    line_world, grid_world, tools, playable_monte_hall,
     two_round_rock_paper_scissors, secret_env0dp::SecretEnv0Dp, secret_env1dp::SecretEnv1Dp,
     secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp
 };
@@ -80,18 +80,19 @@ fn main() {
 
     /*      VALUE ITERATION
     let mut model = value_iteration::ValueIterationModel::new(
-        env.all_position ,
-        env.all_actions,
-        env.rewards,
-        env.probabilities,
+        env.all_position.clone() ,
+        env.all_actions.clone(),
+        env.rewards.clone(),
+        env.probabilities.clone(),
         0.999,
-        env.terminal_position
+        env.terminal_position.clone()
     );
-    //model.iteration(0.01);
-    //println!("Policy for value iter: {:?}", model.policy);
+    model.iteration(0.01);
+    println!("Policy for value iter: {:?}", model.policy);
     //model.save_policy("policy_VALUE_ITERATION.json").unwrap();
-    model.load_policy("policy_VALUE_ITERATION.json").unwrap();
-    model.print_policy();
+    //model.load_policy("policy_VALUE_ITERATION.json").unwrap();
+    //model.print_policy();
+    tools::use_policy_array_in_game(&mut *env, &model.policy);
     */
 
     /*     MONTE CARLO ES
@@ -116,7 +117,7 @@ fn main() {
 
     /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
-    /*// Entraînement du modèle avec Monte Carlo Control
+    // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
     // Affichage des résultats après l'entraînement
     println!("Q-values: {:?}", model.q_values);
@@ -128,11 +129,11 @@ fn main() {
     });
     env.step(action);
     env.display();
-    model.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();*/
-    model.load_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
-    println!("Policy  : {:?}", model.derived_policy);
+    //model.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
+    //model.load_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
+    //println!("Policy  : {:?}", model.derived_policy);
 
-     */
+    */
 
 
     /*      MONTE CARLO CONTROL OFF POLICY
@@ -153,11 +154,12 @@ fn main() {
     //println!("Policy  : {:?}", model.derived_policy);*/
 
     // SARSA
-    let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
+    let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 100);
     //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
     let best_policy = model.process_episode(true, &mut *env);
     println!("Policy for policy iter: {:?}", best_policy);
     env.reset();
+
     tools::use_policy_array_in_game(&mut *env, &best_policy);
     //
 
@@ -172,7 +174,7 @@ fn main() {
     println!("Q-values: {:?}", model.q_values);
     let policy = model.derive_policy();
     model.print_policy();
-    model.save_policy("policy_QLearning.json").unwrap();
+    //model.save_policy("policy_QLearning.json").unwrap();
     //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
     //model.load_policy("policy_QLearning.json").unwrap();
 
@@ -191,7 +193,7 @@ fn main() {
     println!("Q-values: {:?}", model.q_values);
     model.derive_and_assign_policy();
     model.print_policy();
-    model.save_policy( "policy_DYNQ.json").unwrap();
+    //model.save_policy( "policy_DYNQ.json").unwrap();
     //let mut model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
     //model.load_policy("policy.json").unwrap();
     */

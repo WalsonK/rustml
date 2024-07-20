@@ -8,8 +8,8 @@ pub struct LineWorld {
     pub all_position: Vec<State>,
     pub terminal_position: Vec<State>,
     pub all_actions: Vec<Action>,
-    pub rewards: Vec<Vec<Vec<f64>>>,
-    pub probabilities: Vec<Vec<Vec<f64>>>,
+    pub rewards: Vec<Vec<Vec<Reward>>>,
+    pub probabilities: Vec<Vec<Vec<f32>>>,
 }
 
 impl LineWorld {
@@ -63,7 +63,7 @@ impl LineWorld {
                 let next_state = if self.state_id() == 0 { 0 } else { self.state_id() };
                 let reward = self.score();
 
-                self.rewards[position_index][action_index][next_state] = reward as f64;
+                self.rewards[position_index][action_index][next_state] = reward as Reward;
 
                 self.agent_position = position_index;
             }
@@ -112,13 +112,13 @@ impl LineWorld {
 
 impl Environment for LineWorld {
     fn reset(&mut self) -> State {
-        /* RANDOM STATE
+        //RANDOM STATE
         let mut rng = rand::thread_rng();
         self.agent_position = rng.gen_range(1..self.all_position.len()-1);
         self.agent_position as State
-        */
-        self.agent_position = 1;
-        1
+
+        /*self.agent_position = 1;
+        1*/
     }
 
     fn step(&mut self, action: Action) -> (State, Reward, bool) {

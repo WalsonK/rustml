@@ -27,7 +27,7 @@ pub struct RPSGame {
     pub agent_score: i32,
     pub adversary_score: i32,
     pub rewards: Vec<Vec<Vec<Reward>>>,
-    pub probabilities: Vec<Vec<Vec<f64>>>,
+    pub probabilities: Vec<Vec<Vec<f32>>>,
     pub all_position: Vec<State>,
     pub all_actions: Vec<ActionType>,
     pub terminal_position: Vec<State>,

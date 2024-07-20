@@ -1,23 +1,23 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io;
+use std::{f32, io};
 use rand::Rng;
-use crate::environment::environment::{Action, State};
+use crate::environment::environment::{Action, Reward, State};
 
 pub struct PolicyIterationModel {
     pub states: Vec<State>,
     pub actions: Vec<Action>,
-    pub rewards: Vec<Vec<Vec<f64>>>,
-    pub probabilities: Vec<Vec<Vec<f64>>>,
-    pub gamma: f64,
+    pub rewards: Vec<Vec<Vec<Reward>>>,
+    pub probabilities: Vec<Vec<Vec<f32>>>,
+    pub gamma: f32,
     pub is_policy_stable: bool,
     pub policy: Vec<Action>,
-    pub value_function: Vec<f64>
+    pub value_function: Vec<f32>
 }
 
 impl PolicyIterationModel {
-    pub fn new(states: Vec<State>, actions: Vec<Action>, rewards: Vec<Vec<Vec<f64>>>,
-               probabilities: Vec<Vec<Vec<f64>>>, gamma: f64, terminal_state: Vec<State>) -> Box<PolicyIterationModel> {
+    pub fn new(states: Vec<State>, actions: Vec<Action>, rewards: Vec<Vec<Vec<Reward>>>,
+               probabilities: Vec<Vec<Vec<f32>>>, gamma: f32, terminal_state: Vec<State>) -> Box<PolicyIterationModel> {
         let mut rng = rand::thread_rng();
         let mut pi_model = Box::new(PolicyIterationModel {
             states: states.clone(),
@@ -27,7 +27,7 @@ impl PolicyIterationModel {
             is_policy_stable: false,
             gamma,
             policy: vec![0; states.len()],
-            value_function: (0..states.len()).map(|_| rng.gen::<f64>()).collect()
+            value_function: (0..states.len()).map(|_| rng.gen::<f32>()).collect()
         });
         for &s in terminal_state.iter() {
             pi_model.value_function[s as usize] = 0.0;
@@ -35,9 +35,9 @@ impl PolicyIterationModel {
         pi_model
     }
 
-    pub fn policy_evaluation(&mut self, theta: f64){
+    pub fn policy_evaluation(&mut self, theta: f32){
         loop {
-            let mut delta: f64 = 0.0;
+            let mut delta: f32 = 0.0;
             for state in 0..self.states.len() -1 {
                 let old_value = self.value_function[state];
                 let mut value = 0.0;
@@ -45,7 +45,7 @@ impl PolicyIterationModel {
                     for next_state in 0..self.states.len()-1 {
                         value += self.probabilities[state][action][next_state]
                             * (self.rewards[state][action][next_state]
-                            + self.gamma * self.policy[next_state] as f64);
+                            + self.gamma * self.policy[next_state] as f32);
                     }
                 }
                 self.value_function[state] = value;
@@ -60,7 +60,7 @@ impl PolicyIterationModel {
         for state_index in 0..self.states.len() {
             let old_action = self.policy[state_index];
             let mut best_action: usize = old_action as usize;
-            let mut best_action_score = f64::NEG_INFINITY;
+            let mut best_action_score = f32::NEG_INFINITY;
 
 
             for action_index in 0..self.actions.len() {
@@ -68,7 +68,7 @@ impl PolicyIterationModel {
                 for next_state_index in 0..self.states.len() {
                     total += self.probabilities[state_index][action_index][next_state_index] *
                         (self.rewards[state_index][action_index][next_state_index]
-                            + self.gamma * self.policy[next_state_index] as f64)
+                            + self.gamma * self.policy[next_state_index] as f32)
                 }
                 if best_action == 0 || total >= best_action_score {
                     best_action = action_index;
