@@ -112,9 +112,13 @@ impl LineWorld {
 
 impl Environment for LineWorld {
     fn reset(&mut self) -> State {
+        /* RANDOM STATE
         let mut rng = rand::thread_rng();
-        self.agent_position = rng.gen_range(0..self.all_position.len());
+        self.agent_position = rng.gen_range(1..self.all_position.len()-1);
         self.agent_position as State
+        */
+        self.agent_position = 1;
+        1
     }
 
     fn step(&mut self, action: Action) -> (State, Reward, bool) {

@@ -22,14 +22,19 @@ pub fn score(agent_position: i64, terminal_position: &Vec<i64>) -> f64 {
     score
 }
 
-pub fn use_policy_in_game<E: Environment>(env: &mut E, policy: &Vec<Action>) {
+pub fn use_policy_array_in_game<E: Environment>(env: &mut E, policy: &Vec<Action>) {
     println!("The Game start !");
     env.display();
     for step in policy.iter().enumerate() {
-        println!("State {} : action {}", step.0, step.1);
-        if step.0 == env.state_id() as usize {
-            env.step(step.1.clone() as Action);
-            env.display();
+        if(step.0 >= env.state_id() && !env.is_game_over()){
+            println!("State {} : action {}", step.0, step.1);
+            if step.0 == env.state_id() as usize {
+                env.step(step.1.clone() as Action);
+                env.display();
+            }
+        } else if(env.is_game_over()) {
+            println!("Game Over !");
+            println!("Score : {}", env.score());
         }
     }
 }
