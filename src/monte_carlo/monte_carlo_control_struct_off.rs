@@ -176,7 +176,7 @@ impl MonteCarloControlOff {
 
     pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
         let file = File::open(filename)?;
-        self.policy = serde_json::from_reader(file)?;
+        self.derived_policy = serde_json::from_reader(file)?;
         self.derive_and_assign_policy(); // Update the derived policy after loading
         Ok(())
     }
