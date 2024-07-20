@@ -39,7 +39,7 @@ fn main() {
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    */
+   */
 
     //      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
@@ -58,8 +58,8 @@ fn main() {
 
 // -------------------------------- ALGO -------------------------------------
 
-   //     POLICY ITERATION
-    /*let mut model = policy_iteration::PolicyIterationModel::new(
+   /*     POLICY ITERATION
+    let mut model = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         env.all_actions,
         env.rewards,
@@ -71,33 +71,33 @@ fn main() {
     println!("Policy for policy iter: {:?}", best_policy);
     println!("final policy: {:?}", model.policy_to_hashmap());
     model.save_policy("policy_POLICY_ITERATION.json").unwrap();
-*/
-    let mut model = policy_iteration::PolicyIterationModel::new(
-       env.all_position,
-         env.all_actions,
-            env.rewards,
-            env.probabilities,
-            0.999,
-            env.terminal_position
-    );
+
     model.load_policy("policy_POLICY_ITERATION.json").unwrap();
     model.print_policy();
 
+    */
 
 
-    /*
-        //      VALUE ITERATION
-        let mut val_iter = value_iteration::ValueIterationModel::new(
-            env.all_position,
+
+
+        /*      VALUE ITERATION
+        let mut model = value_iteration::ValueIterationModel::new(
+            env.all_position ,
             env.all_actions,
             env.rewards,
             env.probabilities,
             0.999,
             env.terminal_position
         );
-        val_iter.iteration(0.001);
-        println!("Policy for value iter: {:?}", val_iter.policy);
-    */
+        //model.iteration(0.01);
+        //println!("Policy for value iter: {:?}", model.policy);
+        //model.save_policy("policy_VALUE_ITERATION.json").unwrap();
+        model.load_policy("policy_VALUE_ITERATION.json").unwrap();
+        model.print_policy();
+
+            */
+
+
 
     /*     MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.6, 20);
@@ -117,7 +117,7 @@ fn main() {
 
 */
 
-    /*      MONTE CARLO CONTROL
+    //      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -131,9 +131,12 @@ fn main() {
     });
     env.step(action);
     env.display();
-    */
+    model.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
+    //model.load_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
+    //println!("Policy  : {:?}", model.derived_policy);
+    //
 
-    /*      MONTE CARLO CONTROL OFF POLICY
+    //      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control hors politique
     model.off_policy_mc_control(&mut *env, 10000, 100);
@@ -244,7 +247,7 @@ fn main() {
         }
     }*/
 
-    /*let mut rng = rand::thread_rng();
+    let mut rng = rand::thread_rng();
     loop {
         let state = env.state_id();
         let action = if let Some(actions) = model.policy.get(&state) {
@@ -270,6 +273,6 @@ fn main() {
             env.reset();
             break;
         }
-    }*/
+    }
 
 }
