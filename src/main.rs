@@ -57,9 +57,9 @@ fn main() {
 
 
 // -------------------------------- ALGO -------------------------------------
-/*
+
    //     POLICY ITERATION
-    let mut algo = policy_iteration::PolicyIterationModel::new(
+    /*let mut model = policy_iteration::PolicyIterationModel::new(
         env.all_position,
         env.all_actions,
         env.rewards,
@@ -67,22 +67,37 @@ fn main() {
         0.999,
         env.terminal_position
     );
-    let best_policy = algo.policy_iteration();
+    let best_policy = model.policy_iteration();
     println!("Policy for policy iter: {:?}", best_policy);
+    println!("final policy: {:?}", model.policy_to_hashmap());
+    model.save_policy("policy_POLICY_ITERATION.json").unwrap();
 */
-/*
-    //      VALUE ITERATION
-    let mut val_iter = value_iteration::ValueIterationModel::new(
-        env.all_position,
-        env.all_actions,
-        env.rewards,
-        env.probabilities,
-        0.999,
-        env.terminal_position
+    let mut model = policy_iteration::PolicyIterationModel::new(
+       env.all_position,
+         env.all_actions,
+            env.rewards,
+            env.probabilities,
+            0.999,
+            env.terminal_position
     );
-    val_iter.iteration(0.001);
-    println!("Policy for value iter: {:?}", val_iter.policy);
-*/
+    model.load_policy("policy_POLICY_ITERATION.json").unwrap();
+    model.print_policy();
+
+
+
+    /*
+        //      VALUE ITERATION
+        let mut val_iter = value_iteration::ValueIterationModel::new(
+            env.all_position,
+            env.all_actions,
+            env.rewards,
+            env.probabilities,
+            0.999,
+            env.terminal_position
+        );
+        val_iter.iteration(0.001);
+        println!("Policy for value iter: {:?}", val_iter.policy);
+    */
 
     /*     MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.6, 20);
@@ -140,7 +155,7 @@ fn main() {
     //tools::use_policy_in_game(&mut *env, &best_policy);
     */
 
-    // Q Learning
+    /* Q Learning
     let iterations = 100_000;
     let gamma = 0.8;
     let alpha = 0.5;
@@ -154,7 +169,7 @@ fn main() {
     model.save_policy("policy_QLearning.json").unwrap();
     //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
     //model.load_policy("policy_QLearning.json").unwrap();
-    //
+    */
 
     /*     DYNQ
     let iterations = 250000;
@@ -193,7 +208,7 @@ fn main() {
     */
 
 
-    // Exemple de test de la politique entraînée sur un état initial
+    /*// Exemple de test de la politique entraînée sur un état initial
     // Boucle de jeu jusqu'à la fin en utilisant le modèle entraîné
     let mut rng = rand::thread_rng();
     //let index = rng.gen_range(0..env.all_position.len());
@@ -227,7 +242,7 @@ fn main() {
             env.reset();
             break;
         }
-    }
+    }*/
 
     /*let mut rng = rand::thread_rng();
     loop {

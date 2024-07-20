@@ -1,4 +1,8 @@
+use std::collections::HashMap;
+use std::fs::File;
+use std::io;
 use rand::Rng;
+use crate::environment::environment::{Action, State};
 
 pub struct PolicyIterationModel {
     pub states: Vec<i64>,
@@ -12,7 +16,7 @@ pub struct PolicyIterationModel {
 }
 
 impl PolicyIterationModel {
-    pub fn new(s: Vec<i64>, a: Vec<i64>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<i64>) -> Box<PolicyIterationModel> {
+    pub fn new(s: Vec<i64>, a: Vec<i64>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<State>) -> Box<PolicyIterationModel> {
         let mut rng = rand::thread_rng();
         let mut pi_model = Box::new(PolicyIterationModel {
             states: s.clone(),
@@ -84,6 +88,39 @@ impl PolicyIterationModel {
             if self.policy_improvement() { break; }
         }
         return &self.policy
+    }
+
+    pub fn policy_to_hashmap(&self) -> HashMap<State, Action> {
+        let mut policy_map = HashMap::new();
+        for (state, &action) in self.policy.iter().enumerate() {
+            policy_map.insert(state as State, action as Action);
+        }
+        policy_map
+    }
+
+    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
+        let file = File::create(filename)?;
+        serde_json::to_writer(file, &self.policy_to_hashmap())?;
+        Ok(())
+    }
+
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<Vec<i64>> {
+        let file = File::open(filename)?;
+        let map: HashMap<i64, i64> = serde_json::from_reader(file)?;
+        let max_key = match map.keys().max() {
+            Some(&key) => key,
+            None => 0,
+        };
+        let mut vec = vec![0; (max_key + 1) as usize];
+        for (key, value) in map {
+            vec[key as usize] = value;
+        }
+        self.policy = vec.clone();
+        Ok(vec)
+    }
+
+    pub fn print_policy(&self) {
+        println!("Policy: {:?}", self.policy);
     }
 
 }
