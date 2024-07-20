@@ -1,4 +1,7 @@
 extern crate rand;
+extern crate serde;
+extern crate serde_json;
+
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 use std::collections::HashMap;
@@ -14,6 +17,7 @@ pub struct EpisodeStep {
     pub action: Action,
     pub reward: Reward,
 }
+
 #[derive(Serialize, Deserialize)]
 pub struct DynaQModel {
     pub iterations: usize,
@@ -42,12 +46,12 @@ impl DynaQModel {
 
     pub fn dyna_q<E: Environment>(&mut self, env: &mut E) {
         let mut rng = thread_rng();
-        let mut i =0;
+        let mut i = 0;
         for _ in 0..self.iterations {
             // Get current nonterminal state S
             let mut state = env.reset();
-            println!("{}",i);
-            i+=1;
+            println!("{}", i);
+            i += 1;
             while true {
                 // Choose action A using epsilon-greedy policy
                 let available_actions = env.available_actions();
@@ -124,46 +128,23 @@ impl DynaQModel {
         policy
     }
 
-    pub fn print_policy(&self, policy: &HashMap<State, Action>) {
-        let mut policy_dict = HashMap::new();
-
-        for (state, action) in policy {
-            policy_dict.insert(state, action);
-        }
-
-        println!("Policy: {:?}", policy_dict);
+    pub fn print_policy(&self) {
+        println!("Policy: {:?}", self.policy);
     }
 
-    pub fn save_policy(&self, policy: &HashMap<State, Action>, filename: &str) -> io::Result<()> {
+    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
         let file = File::create(filename)?;
-        serde_json::to_writer(file, policy)?;
+        serde_json::to_writer(file, &self.policy)?;
         Ok(())
     }
 
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
+        let file = File::open(filename)?;
+        self.policy = serde_json::from_reader(file)?;
+        Ok(())
+    }
 
     pub fn derive_and_assign_policy(&mut self) {
-        let mut policy = HashMap::new();
-
-        for (&(state, action), &q_value) in &self.q_values {
-            if let Some(&best_action) = policy.get(&state) {
-                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
-                    policy.insert(state, action);
-                }
-            } else {
-                policy.insert(state, action);
-            }
-        }
-
-        self.policy = policy;
+        self.policy = self.derive_policy();
     }
-
-
-
-    pub fn load_policy(&mut self, filename: &str) -> io::Result<HashMap<State, Action>> {
-        let file = File::open(filename)?;
-        let policy = serde_json::from_reader(file)?;
-        self.derive_and_assign_policy();
-        Ok(policy)
-    }
-
 }

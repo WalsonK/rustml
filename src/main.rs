@@ -34,19 +34,19 @@ fn main() {
     //println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     //env.display();
 
-    //      Line world
+    /*      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    //
+    */
 
-    /*      Grid world
+    //      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    */
+    //
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
@@ -84,8 +84,8 @@ fn main() {
     println!("Policy for value iter: {:?}", val_iter.policy);
 */
 
-    /*      MONTE CARLO ES
-    let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
+    /*     MONTE CARLO ES
+    let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.6, 20);
     // Entraînement du modèle avec Monte Carlo ES
     model.monte_carlo_es(&mut *env);
     // Affichage des résultats après l'entraînement pour inspection manuelle
@@ -96,6 +96,10 @@ fn main() {
     let action = model.policy.get(&state).cloned().unwrap_or(0);
     env.step(action);
     env.display();
+    model.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
+    //let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.9, 2);
+    //model.load_policy("policy_MONTE_CARLO_ES.json").unwrap();
+
 */
 
     /*      MONTE CARLO CONTROL
@@ -149,21 +153,22 @@ fn main() {
     q_learning_model.print_policy(&policy);
     */
 
-    //     DYNQ
-    let iterations = 100000;
+    /*     DYNQ
+    let iterations = 250000;
     let gamma = 0.95;
-    let alpha = 0.1;
-    let epsilon = 0.1;
-    let n = 100;
+    let alpha = 0.5;
+    let epsilon = 0.8;
+    let n = 10;
 
     let mut model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
-    //model.dyna_q(&mut *env);
-    model.load_policy("policy.json").unwrap();
-    //println!("Q-values: {:?}", model.q_values);
-    //let policy = model.derive_policy();
-    //model.print_policy(&policy);
-    //model.save_policy(&policy, "policy.json").unwrap();
-    //
+    model.dyna_q(&mut *env);
+    println!("Q-values: {:?}", model.q_values);
+    let policy = model.derive_policy();
+    model.print_policy();
+    model.save_policy( "policy_DYNQ.json").unwrap();
+    //let mut model = DynaQModel::new(iterations, gamma, alpha, epsilon, n);
+    //model.load_policy("policy.json").unwrap();
+    */
 
     /*     DYNQ+
     // Parameters for DynaQ+ model
