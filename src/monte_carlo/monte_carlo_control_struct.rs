@@ -1,10 +1,14 @@
 extern crate rand;
+extern crate serde;
+extern crate serde_json;
+
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
 use crate::environment::environment::{State, Action, Reward, Environment};
-use libloading::{Library, Symbol};
-use std::os::raw::c_void;
+use serde::{Serialize, Deserialize};
+use std::fs::File;
+use std::io::{self, Write, Read};
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -13,12 +17,14 @@ pub struct EpisodeStep {
     pub reward: Reward,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct MonteCarloControl {
     pub epsilon: f64,
     pub gamma: f32,
     pub policy: HashMap<State, HashMap<Action, f64>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub returns: HashMap<(State, Action), Vec<Reward>>,
+    pub derived_policy: HashMap<State, Action>,
 }
 
 impl MonteCarloControl {
@@ -29,12 +35,12 @@ impl MonteCarloControl {
             policy: HashMap::new(),
             q_values: HashMap::new(),
             returns: HashMap::new(),
+            derived_policy: HashMap::new(),
         })
     }
 
     pub fn ensure_policy_initialized<E: Environment>(&mut self, state: State, env: &mut E) {
         if !self.policy.contains_key(&state) {
-           // println!("Initializing policy for state: {}", state);
             let mut actions = HashMap::new();
             let available_actions = env.all_action();
             for &action in &available_actions {
@@ -52,17 +58,11 @@ impl MonteCarloControl {
         self.ensure_policy_initialized(state, env);
 
         let available_actions = env.available_actions();
-        //println!("Available actions for state {}: {:?}", state, available_actions);
 
         if let Some(action_probs) = self.policy.get(&state) {
             let actions: Vec<&Action> = action_probs.keys().collect();
             let probs: Vec<f64> = action_probs.values().copied().collect();
-           // println!("Actions and probabilities for state {}: {:?}", state, action_probs);
-            if actions.is_empty() || probs.is_empty() {
-                panic!("No actions or probabilities available for state: {:?}", state);
-            }
 
-            // Filtrer les actions disponibles et leurs probabilités associées
             let mut valid_actions = vec![];
             let mut valid_probs = vec![];
             for (&action, &prob) in actions.iter().zip(probs.iter()) {
@@ -87,10 +87,10 @@ impl MonteCarloControl {
 
     pub fn on_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
         let mut rng = thread_rng();
-        let mut i =0;
+        let mut i = 0;
         for _ in 0..num_episodes {
-            println!("{:?}",i);
-            i+=1;
+            println!("{:?}", i);
+            i += 1;
             let mut episode: Vec<EpisodeStep> = vec![];
             let mut state = env.reset();
             let mut done = false;
@@ -104,6 +104,7 @@ impl MonteCarloControl {
                 steps += 1;
             }
             self.process_episode(episode);
+            self.derive_and_assign_policy();
         }
     }
 
@@ -154,5 +155,32 @@ impl MonteCarloControl {
                 *prob = epsilon / num_actions;
             }
         }
+    }
+
+    pub fn derive_and_assign_policy(&mut self) {
+        let mut derived_policy = HashMap::new();
+
+        for (&state, action_probs) in &self.policy {
+            let best_action = action_probs.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(action, _)| *action).unwrap();
+            derived_policy.insert(state, best_action);
+        }
+
+        self.derived_policy = derived_policy;
+    }
+
+    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
+        let file = File::create(filename)?;
+        serde_json::to_writer(file, &self.derived_policy)?;
+        Ok(())
+    }
+
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
+        let file = File::open(filename)?;
+        self.derived_policy = serde_json::from_reader(file)?;
+        Ok(())
+    }
+
+    pub fn print_policy(&self) {
+        println!("Derived Policy: {:?}", self.derived_policy);
     }
 }

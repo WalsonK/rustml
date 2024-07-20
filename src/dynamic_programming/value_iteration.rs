@@ -1,17 +1,22 @@
+use std::collections::HashMap;
+use std::fs::File;
+use std::io;
 use rand::Rng;
+use serde_json;
+use crate::environment::environment::{Action, State};
 
 pub struct ValueIterationModel {
-    pub states: Vec<i64>,
-    pub actions: Vec<i64>,
+    pub states: Vec<usize>, // Changed to usize for consistency
+    pub actions: Vec<usize>, // Changed to usize for consistency
     pub rewards: Vec<Vec<Vec<f64>>>,
     pub probabilities: Vec<Vec<Vec<f64>>>,
     pub gamma: f64,
-    pub policy: Vec<usize>,
+    pub policy: Vec<usize>, // Changed to usize for consistency
     pub value_function: Vec<f64>,
 }
 
 impl ValueIterationModel {
-    pub fn new(s: Vec<i64>, a: Vec<i64>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<i64>) -> Box<ValueIterationModel> {
+    pub fn new(s: Vec<usize>, a: Vec<usize>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<usize>) -> Box<ValueIterationModel> {
         let mut rng = rand::thread_rng();
         let mut vi_model = Box::new(ValueIterationModel {
             states: s.clone(),
@@ -23,7 +28,7 @@ impl ValueIterationModel {
             value_function: (0..s.len()).map(|_| rng.gen::<f64>()).collect(),
         });
         for &s in terminal_state.iter() {
-            vi_model.value_function[s as usize] = 0.0;
+            vi_model.value_function[s] = 0.0;
         }
         vi_model
     }
@@ -58,5 +63,38 @@ impl ValueIterationModel {
 
             if delta < theta { break; }
         }
+    }
+
+    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
+        let file = File::create(filename)?;
+        serde_json::to_writer(file, &self.policy_to_hashmap())?;
+        Ok(())
+    }
+
+    pub fn policy_to_hashmap(&self) -> HashMap<usize, usize> { // Changed to usize
+        let mut policy_map = HashMap::new();
+        for (state, &action) in self.policy.iter().enumerate() {
+            policy_map.insert(state, action);
+        }
+        policy_map
+    }
+
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<Vec<usize>> { // Changed to usize
+        let file = File::open(filename)?;
+        let map: HashMap<usize, usize> = serde_json::from_reader(file)?;
+        let max_key = match map.keys().max() {
+            Some(&key) => key,
+            None => 0,
+        };
+        let mut vec = vec![0; max_key + 1];
+        for (key, value) in map {
+            vec[key] = value;
+        }
+        self.policy = vec.clone();
+        Ok(vec)
+    }
+
+    pub fn print_policy(&self) {
+        println!("Policy: {:?}", self.policy);
     }
 }

@@ -1,17 +1,24 @@
 extern crate rand;
+extern crate serde;
+extern crate serde_json;
+
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 use std::collections::HashMap;
 use rand::prelude::IteratorRandom;
 use crate::environment::environment::{State, Action, Reward, Environment};
+use serde::{Serialize, Deserialize};
+use std::fs::File;
+use std::io::{self, Write, Read};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EpisodeStep {
     pub state: State,
     pub action: Action,
     pub reward: Reward,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct DynaQPlusModel {
     pub iterations: usize,
     pub gamma: f32,
@@ -22,6 +29,7 @@ pub struct DynaQPlusModel {
     pub q_values: HashMap<(State, Action), Reward>,
     pub model: HashMap<(State, Action), (Reward, State)>,
     pub time_since_last_action: HashMap<(State, Action), usize>, // Track time since last action
+    pub policy: HashMap<State, Action>, // Policy map
 }
 
 impl DynaQPlusModel {
@@ -36,6 +44,7 @@ impl DynaQPlusModel {
             q_values: HashMap::new(),
             model: HashMap::new(),
             time_since_last_action: HashMap::new(), // Initialize the tracking map
+            policy: HashMap::new(), // Initialize policy map
         })
     }
 
@@ -57,7 +66,7 @@ impl DynaQPlusModel {
                 // Update Q-value
                 let max_q_next = self.max_q_value(next_state, &available_actions);
                 let q = self.q_values.entry((state, action)).or_insert(0.0);
-                *q += self.alpha * (reward + (self.gamma  * max_q_next) as f32 - *q ) as f32;
+                *q += self.alpha * (reward + (self.gamma * max_q_next) as f32 - *q) as f32;
 
                 // Update model
                 self.model.insert((state, action), (reward, next_state));
@@ -86,6 +95,7 @@ impl DynaQPlusModel {
                 }
             }
         }
+        self.derive_and_assign_policy(); // Update policy after training
     }
 
     fn max_q_value(&self, state: State, actions: &[Action]) -> f32 {
@@ -129,7 +139,7 @@ impl DynaQPlusModel {
 
         for (&(state, action), &q_value) in &self.q_values {
             if let Some(&best_action) = policy.get(&state) {
-                if q_value  > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
+                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
                     policy.insert(state, action);
                 }
             } else {
@@ -140,14 +150,23 @@ impl DynaQPlusModel {
         policy
     }
 
-    pub fn print_policy(&self, policy: &HashMap<State, Action>) {
-        let mut policy_dict = HashMap::new();
-
-        for (state, action) in policy {
-            policy_dict.insert(state, action);
-        }
-
-        println!("Policy: {:?}", policy_dict);
+    pub fn print_policy(&self) {
+        println!("Policy: {:?}", self.policy);
     }
 
+    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
+        let file = File::create(filename)?;
+        serde_json::to_writer(file, &self.policy)?;
+        Ok(())
+    }
+
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
+        let file = File::open(filename)?;
+        self.policy = serde_json::from_reader(file)?;
+        Ok(())
+    }
+
+    pub fn derive_and_assign_policy(&mut self) {
+        self.policy = self.derive_policy();
+    }
 }

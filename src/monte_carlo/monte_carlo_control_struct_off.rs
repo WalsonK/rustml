@@ -1,8 +1,14 @@
 extern crate rand;
+extern crate serde;
+extern crate serde_json;
+
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
 use crate::environment::environment::{State, Action, Reward, Environment};
+use serde::{Serialize, Deserialize};
+use std::fs::File;
+use std::io::{self, Write, Read};
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -11,12 +17,14 @@ pub struct EpisodeStep {
     pub reward: Reward,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct MonteCarloControlOff {
     pub epsilon: f32,
     pub gamma: f32,
     pub policy: HashMap<State, HashMap<Action, f32>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub c_values: HashMap<(State, Action), f32>,
+    pub derived_policy: HashMap<State, Action>,
 }
 
 impl MonteCarloControlOff {
@@ -27,6 +35,7 @@ impl MonteCarloControlOff {
             policy: HashMap::new(),
             q_values: HashMap::new(),
             c_values: HashMap::new(),
+            derived_policy: HashMap::new(),
         })
     }
 
@@ -64,6 +73,7 @@ impl MonteCarloControlOff {
             }
 
             self.process_episode_off_policy(episode);
+            self.derive_and_assign_policy();
         }
     }
 
@@ -93,7 +103,7 @@ impl MonteCarloControlOff {
         let mut w: f32 = 1.0;
 
         for step in episode.iter().rev() {
-            g = (self.gamma as f32) * g + (step.reward as f32);
+            g = self.gamma * g + step.reward;
             let state_action_pair = (step.state, step.action);
 
             if let Some(c) = self.c_values.get_mut(&state_action_pair) {
@@ -145,5 +155,32 @@ impl MonteCarloControlOff {
                 *prob = epsilon / num_actions;
             }
         }
+    }
+
+    pub fn derive_and_assign_policy(&mut self) {
+        let mut derived_policy = HashMap::new();
+
+        for (&state, action_probs) in &self.policy {
+            let best_action = action_probs.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(action, _)| *action).unwrap();
+            derived_policy.insert(state, best_action);
+        }
+
+        self.derived_policy = derived_policy;
+    }
+
+    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
+        let file = File::create(filename)?;
+        serde_json::to_writer(file, &self.derived_policy)?;
+        Ok(())
+    }
+
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
+        let file = File::open(filename)?;
+        self.derived_policy = serde_json::from_reader(file)?;
+        Ok(())
+    }
+
+    pub fn print_policy(&self) {
+        println!("Derived Policy: {:?}", self.derived_policy);
     }
 }

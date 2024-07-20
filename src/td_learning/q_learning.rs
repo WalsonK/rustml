@@ -1,15 +1,23 @@
 extern crate rand;
+extern crate serde;
+extern crate serde_json;
+
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
 use std::collections::HashMap;
 use crate::environment::environment::{State, Action, Reward, Environment};
+use serde::{Serialize, Deserialize};
+use std::fs::File;
+use std::io::{self, Write, Read};
 
+#[derive(Serialize, Deserialize)]
 pub struct QLearning {
     pub iterations: usize,
     pub gamma: f32,
     pub alpha: f32,
     pub epsilon: f32,
     pub q_values: HashMap<(State, Action), Reward>,
+    pub policy: HashMap<State, Action>,
 }
 
 impl QLearning {
@@ -20,6 +28,7 @@ impl QLearning {
             alpha,
             epsilon,
             q_values: HashMap::new(),
+            policy: HashMap::new(), // Initialize policy map
         })
     }
 
@@ -51,6 +60,7 @@ impl QLearning {
                 }
             }
         }
+        self.derive_and_assign_policy(); // Update policy after training
     }
 
     fn max_q_value(&self, state: State, actions: &[Action]) -> f32 {
@@ -94,13 +104,23 @@ impl QLearning {
         policy
     }
 
-    pub fn print_policy(&self, policy: &HashMap<State, Action>) {
-        let mut policy_dict = HashMap::new();
+    pub fn print_policy(&self) {
+        println!("Policy: {:?}", self.policy);
+    }
 
-        for (state, action) in policy {
-            policy_dict.insert(state, action);
-        }
+    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
+        let file = File::create(filename)?;
+        serde_json::to_writer(file, &self.policy)?;
+        Ok(())
+    }
 
-        println!("Policy: {:?}", policy_dict);
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
+        let file = File::open(filename)?;
+        self.policy = serde_json::from_reader(file)?;
+        Ok(())
+    }
+
+    pub fn derive_and_assign_policy(&mut self) {
+        self.policy = self.derive_policy();
     }
 }
