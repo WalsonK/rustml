@@ -5,28 +5,29 @@ use rand::Rng;
 use crate::environment::environment::{Action, State};
 
 pub struct PolicyIterationModel {
-    pub states: Vec<i64>,
-    pub actions: Vec<i64>,
+    pub states: Vec<State>,
+    pub actions: Vec<Action>,
     pub rewards: Vec<Vec<Vec<f64>>>,
     pub probabilities: Vec<Vec<Vec<f64>>>,
     pub gamma: f64,
     pub is_policy_stable: bool,
-    pub policy: Vec<i64>,
+    pub policy: Vec<Action>,
     pub value_function: Vec<f64>
 }
 
 impl PolicyIterationModel {
-    pub fn new(s: Vec<i64>, a: Vec<i64>, r: Vec<Vec<Vec<f64>>>, p: Vec<Vec<Vec<f64>>>, g: f64, terminal_state: Vec<State>) -> Box<PolicyIterationModel> {
+    pub fn new(states: Vec<State>, actions: Vec<Action>, rewards: Vec<Vec<Vec<f64>>>,
+               probabilities: Vec<Vec<Vec<f64>>>, gamma: f64, terminal_state: Vec<State>) -> Box<PolicyIterationModel> {
         let mut rng = rand::thread_rng();
         let mut pi_model = Box::new(PolicyIterationModel {
-            states: s.clone(),
-            actions: a,
-            rewards: r,
-            probabilities: p,
+            states: states.clone(),
+            actions,
+            rewards,
+            probabilities,
             is_policy_stable: false,
-            gamma: g,
-            policy: vec![0; s.len()],
-            value_function: (0..s.len()).map(|_| rng.gen::<f64>()).collect()
+            gamma,
+            policy: vec![0; states.len()],
+            value_function: (0..states.len()).map(|_| rng.gen::<f64>()).collect()
         });
         for &s in terminal_state.iter() {
             pi_model.value_function[s as usize] = 0.0;
@@ -74,7 +75,7 @@ impl PolicyIterationModel {
                     best_action_score = total;
                 }
             }
-            self.policy[state_index] = best_action as i64 ;
+            self.policy[state_index] = best_action ;
             if self.policy[state_index] != old_action {
                 self.is_policy_stable = false;
             }
@@ -82,7 +83,7 @@ impl PolicyIterationModel {
         return self.is_policy_stable
     }
 
-    pub fn policy_iteration(&mut self) -> &Vec<i64>{
+    pub fn policy_iteration(&mut self) -> &Vec<Action>{
         loop {
             self.policy_evaluation(0.001);
             if self.policy_improvement() { break; }
@@ -104,16 +105,16 @@ impl PolicyIterationModel {
         Ok(())
     }
 
-    pub fn load_policy(&mut self, filename: &str) -> io::Result<Vec<i64>> {
+    pub fn load_policy(&mut self, filename: &str) -> io::Result<Vec<usize>> {
         let file = File::open(filename)?;
         let map: HashMap<i64, i64> = serde_json::from_reader(file)?;
         let max_key = match map.keys().max() {
             Some(&key) => key,
             None => 0,
         };
-        let mut vec = vec![0; (max_key + 1) as usize];
+        let mut vec: Vec<usize> = vec![0; (max_key + 1) as usize];
         for (key, value) in map {
-            vec[key as usize] = value;
+            vec[key as usize] = value as usize;
         }
         self.policy = vec.clone();
         Ok(vec)

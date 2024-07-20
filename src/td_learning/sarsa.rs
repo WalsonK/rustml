@@ -2,9 +2,9 @@ use rand::Rng;
 use crate::environment::environment::{Environment, State, Action, Reward};
 
 pub struct SarsaModel {
-    pub q_table: Vec<Vec<f64>>,
-    pub alpha: f64,
-    pub gamma: f64,
+    pub q_table: Vec<Vec<f32>>,
+    pub alpha: f32,
+    pub gamma: f32,
     pub epsilon: f64,
     pub nb_episode: usize,
     pub num_states: usize,
@@ -13,7 +13,7 @@ pub struct SarsaModel {
 }
 
 impl SarsaModel {
-    pub fn new<E: Environment>(env: &E, alpha: f64, gamma:f64, epsilon:f64, nb_episode: usize) -> Box<SarsaModel>{
+    pub fn new<E: Environment>(env: &E, alpha: f32, gamma:f32, epsilon:f64, nb_episode: usize) -> Box<SarsaModel>{
         let ns = env.all_states().len();
         let na = env.available_actions().len();
         let mut model = Box::new(SarsaModel {
@@ -39,7 +39,7 @@ impl SarsaModel {
             if env.terminal_states().contains(&si) {
                 self.q_table[i] = vec![0.0; self.q_table[i].len()];
             } else {
-                self.q_table[i] = (0..self.q_table[i].len()).map(|_| rng.gen::<f64>()).collect();
+                self.q_table[i] = (0..self.q_table[i].len()).map(|_| rng.gen::<f32>()).collect();
             }
         }
     }

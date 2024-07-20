@@ -9,7 +9,7 @@ use rustml::environment::{
 use rustml::environment::environment::Environment;
 use rustml::environment::environment::Action as ActionType;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
-//use rustml::td_learning::sarsa;
+use rustml::td_learning::sarsa;
 use rustml::monte_carlo::{monte_carlo_es, monte_carlo_control_struct, monte_carlo_control_struct_off};
 use rustml::planning::dyna_q::DynaQModel;
 use rustml::planning::dyna_q_plus::DynaQPlusModel;
@@ -34,19 +34,19 @@ fn main() {
     //println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     //env.display();
 
-    /*      Line world
+    //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-   */
+   //
 
-    //      Grid world
+    /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    //
+    */
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
@@ -60,44 +60,39 @@ fn main() {
 
    /*     POLICY ITERATION
     let mut model = policy_iteration::PolicyIterationModel::new(
-        env.all_position,
+        env.all_position.clone(),
+        env.all_actions.clone(),
+        env.rewards.clone(),
+        env.probabilities.clone(),
+        0.999,
+        env.terminal_position.clone()
+    );
+    let best_policy = model.policy_iteration();
+    println!("Policy for policy iter: {:?}", best_policy);
+    //println!("final policy: {:?}", model.policy_to_hashmap());
+    //model.save_policy("policy_POLICY_ITERATION.json").unwrap();
+
+    //model.load_policy("policy_POLICY_ITERATION.json").unwrap();
+    //model.print_policy();
+    tools::use_policy_array_in_game(&mut *env, &best_policy);
+    */
+
+
+    /*      VALUE ITERATION
+    let mut model = value_iteration::ValueIterationModel::new(
+        env.all_position ,
         env.all_actions,
         env.rewards,
         env.probabilities,
         0.999,
         env.terminal_position
     );
-    let best_policy = model.policy_iteration();
-    println!("Policy for policy iter: {:?}", best_policy);
-    println!("final policy: {:?}", model.policy_to_hashmap());
-    model.save_policy("policy_POLICY_ITERATION.json").unwrap();
-
-    //model.load_policy("policy_POLICY_ITERATION.json").unwrap();
-    //model.print_policy();
-
+    //model.iteration(0.01);
+    //println!("Policy for value iter: {:?}", model.policy);
+    //model.save_policy("policy_VALUE_ITERATION.json").unwrap();
+    model.load_policy("policy_VALUE_ITERATION.json").unwrap();
+    model.print_policy();
     */
-
-
-
-
-        /*      VALUE ITERATION
-        let mut model = value_iteration::ValueIterationModel::new(
-            env.all_position ,
-            env.all_actions,
-            env.rewards,
-            env.probabilities,
-            0.999,
-            env.terminal_position
-        );
-        //model.iteration(0.01);
-        //println!("Policy for value iter: {:?}", model.policy);
-        //model.save_policy("policy_VALUE_ITERATION.json").unwrap();
-        model.load_policy("policy_VALUE_ITERATION.json").unwrap();
-        model.print_policy();
-
-            */
-
-
 
     /*     MONTE CARLO ES
     let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.6, 20);
@@ -157,13 +152,14 @@ fn main() {
     //model.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
     //println!("Policy  : {:?}", model.derived_policy);*/
 
-    /* SARSA
+    // SARSA
     let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
     //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
     let best_policy = model.process_episode(true, &mut *env);
     println!("Policy for policy iter: {:?}", best_policy);
-    //tools::use_policy_in_game(&mut *env, &best_policy);
-    */
+    env.reset();
+    tools::use_policy_array_in_game(&mut *env, &best_policy);
+    //
 
     /* Q Learning
     let iterations = 100_000;
@@ -200,7 +196,7 @@ fn main() {
     //model.load_policy("policy.json").unwrap();
     */
 
-    //     DYNQ+
+    /*     DYNQ+
     // Parameters for DynaQ+ model
     let iterations = 10000;
     let gamma = 0.95;
@@ -217,9 +213,11 @@ fn main() {
     model.save_policy("policy_DYNQ_PLUS.json").unwrap();
     //let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
     //model.load_policy("policy_DYNQ_PLUS.json").unwrap();
+    //
+     */
 
 
-
+/*
     // Exemple de test de la politique entraînée sur un état initial    // monter_carlo , dyna_q
     // Boucle de jeu jusqu'à la fin en utilisant le modèle entraîné
     let mut rng = rand::thread_rng();
@@ -256,6 +254,8 @@ fn main() {
             break;
         }
     }
+
+ */
 
     /*let mut rng = rand::thread_rng();
     loop {
