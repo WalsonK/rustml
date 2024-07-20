@@ -17,6 +17,8 @@ pub struct MonteCarloControlOff {
     pub policy: HashMap<State, HashMap<Action, f32>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub c_values: HashMap<(State, Action), f32>,
+    pub derived_policy: HashMap<State, Action>,
+
 }
 
 impl MonteCarloControlOff {
@@ -27,6 +29,7 @@ impl MonteCarloControlOff {
             policy: HashMap::new(),
             q_values: HashMap::new(),
             c_values: HashMap::new(),
+            derived_policy: HashMap::new(),
         })
     }
 
@@ -64,6 +67,7 @@ impl MonteCarloControlOff {
             }
 
             self.process_episode_off_policy(episode);
+            self.derive_and_assign_policy();
         }
     }
 
@@ -145,5 +149,15 @@ impl MonteCarloControlOff {
                 *prob = epsilon / num_actions;
             }
         }
+    }
+    pub fn derive_and_assign_policy(&mut self) {
+        let mut derived_policy = HashMap::new();
+
+        for (&state, action_probs) in &self.policy {
+            let best_action = action_probs.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(action, _)| *action).unwrap();
+            derived_policy.insert(state, best_action);
+        }
+
+        self.derived_policy = derived_policy;
     }
 }

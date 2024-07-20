@@ -21,7 +21,7 @@ fn main() {
 
     // -------------------------------- ENV -------------------------------------
     // Charge la bibliothèque dynamique spécifique à votre environnement secret
-    let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
     //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
     //env.display();
     //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
@@ -34,12 +34,12 @@ fn main() {
     //println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     //env.display();
 
-    /*      Line world
+    //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    */
+    //
 
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
@@ -98,7 +98,7 @@ fn main() {
     env.display();
 */
 
-    //      MONTE CARLO CONTROL
+    /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -107,26 +107,30 @@ fn main() {
     println!("Policy: {:?}", model.policy);
     // Tester la politique entraînée sur un état initial
     let state = env.reset();
+    /*
     let action = model.policy.get(&state).map_or(0, |actions| {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);
     env.display();
-    //
 
-    /*      MONTE CARLO CONTROL OFF POLICY
+     */
+    */
+
+    //      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control hors politique
     model.off_policy_mc_control(&mut *env, 10000, 100);
     // Affichage des résultats après l'entraînement
     println!("Q-values: {:?}", model.q_values);
     println!("Policy: {:?}", model.policy);
-    // Tester la politique entraînée sur un état initial
-    let state = env.reset();
+    /* Tester la politique entraînée sur un état initial
+
     let action = model.policy.get(&state).map_or(0, |actions| {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);*/
+    //
 
     /* SARSA
     let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
@@ -215,12 +219,13 @@ fn main() {
             break;
         }
     }*/
-
+    println!(" derived policy{:?}",model.derived_policy);
+    let state = env.reset();
     let mut rng = rand::thread_rng();
     loop {
         let state = env.state_id();
-        let action = if let Some(actions) = model.policy.get(&state) {
-            *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
+        let action = if let Some(actions) = model.derived_policy.get(&state) {
+            *actions
         } else {
             // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état
             let actions = env.available_actions();
