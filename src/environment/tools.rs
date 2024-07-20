@@ -1,4 +1,4 @@
-use crate::environment::environment::{Action, Environment};
+use crate::environment::environment::{Action, Environment,State};
 use libloading::Library;
 
 pub fn print_matrix(all_position: &Vec<i64>, all_actions: &Vec<i64>, matrix: &Vec<Vec<Vec<f64>>>) {
@@ -22,18 +22,49 @@ pub fn score(agent_position: i64, terminal_position: &Vec<i64>) -> f64 {
     score
 }
 
-pub fn use_policy_array_in_game<E: Environment>(env: &mut E, policy: &Vec<Action>) {
-    println!("The Game start !");
+
+use std::collections::HashMap;
+
+// Définir une structure pour encapsuler les deux types de politiques
+pub enum Policy {
+    Array(Vec<Action>),
+    Map(HashMap<State, Action>),
+}
+
+// Fonction pour utiliser la politique dans le jeu
+pub fn use_policy_in_game<E: Environment>(env: &mut E, policy: Policy) {
+    println!("The Game start!");
     env.display();
-    for step in policy.iter().enumerate() {
-        if(step.0 >= env.state_id() && !env.is_game_over()){
-            println!("State {} : action {}", step.0, step.1);
-            if step.0 == env.state_id() as usize {
-                env.step(step.1.clone() as Action);
-                env.display();
+
+    match policy {
+        Policy::Array(actions) => {
+            for (step_id, action) in actions.iter().enumerate() {
+                if step_id >= env.state_id() as usize && !env.is_game_over() {
+                    println!("State {} : action {}", step_id, action);
+                    if step_id == env.state_id() as usize {
+                        env.step(action.clone() as Action);
+                        env.display();
+                    }
+                } else if env.is_game_over() {
+                    println!("Game Over!");
+                    println!("Score : {}", env.score());
+                    break;
+                }
             }
-        } else if(env.is_game_over()) {
-            println!("Game Over !");
+        }
+        Policy::Map(action_map) => {
+            while !env.is_game_over() {
+                let state_id = env.state_id();
+                if let Some(action) = action_map.get(&state_id) {
+                    println!("State {} : action {}", state_id, action);
+                    env.step(action.clone() as Action);
+                    env.display();
+                } else {
+                    println!("No action defined for state {}. Game Over!", state_id);
+                    break;
+                }
+            }
+            println!("Game Over!");
             println!("Score : {}", env.score());
         }
     }

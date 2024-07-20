@@ -2,10 +2,11 @@ extern crate rustml;
 
 use std::io;
 use rustml::environment::{
-    line_world, grid_world, tools, playable_monte_hall,
+    line_world, grid_world, playable_monte_hall,
     two_round_rock_paper_scissors, secret_env0dp::SecretEnv0Dp, secret_env1dp::SecretEnv1Dp,
-    secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp
+    secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp,
 };
+use rustml::environment::tools::{Policy, use_policy_in_game};
 use rustml::environment::environment::Environment;
 use rustml::environment::environment::Action as ActionType;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
@@ -153,7 +154,7 @@ fn main() {
     //model.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
     //println!("Policy  : {:?}", model.derived_policy);*/
 
-    // SARSA
+    /* SARSA
     let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 100);
     //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
     let best_policy = model.process_episode(true, &mut *env);
@@ -161,9 +162,9 @@ fn main() {
     env.reset();
 
     tools::use_policy_array_in_game(&mut *env, &best_policy);
-    //
+    */
 
-    /* Q Learning
+    // Q Learning
     let iterations = 100_000;
     let gamma = 0.8;
     let alpha = 0.5;
@@ -174,11 +175,12 @@ fn main() {
     println!("Q-values: {:?}", model.q_values);
     let policy = model.derive_policy();
     model.print_policy();
+    use_policy_in_game(&mut *env, Policy::Map(model.policy))
     //model.save_policy("policy_QLearning.json").unwrap();
     //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
     //model.load_policy("policy_QLearning.json").unwrap();
 
-     */
+     //
 
 
     /*     DYNQ
