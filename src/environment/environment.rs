@@ -18,4 +18,6 @@ pub trait Environment {
     fn is_game_over(&self) -> bool;
     fn all_action(&self) -> Vec<State>;
     fn is_forbidden(&self, state_or_action: usize) -> bool;
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32;
+
 }

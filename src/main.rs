@@ -15,13 +15,14 @@ use rustml::planning::dyna_q::DynaQModel;
 use rustml::planning::dyna_q_plus::DynaQPlusModel;
 use rustml::td_learning::q_learning::QLearning;
 use rand::Rng;
+use rustml::dynamic_programming::playable_value_iteration::ValueIterationModel;
 
 
 fn main() {
 
     // -------------------------------- ENV -------------------------------------
     // Charge la bibliothèque dynamique spécifique à votre environnement secret
-    //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
     //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
     //env.display();
     //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
@@ -34,12 +35,12 @@ fn main() {
     //println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     //env.display();
 
-    //      Line world
+    /*      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    //
+    */
 
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
@@ -70,6 +71,26 @@ fn main() {
     let best_policy = algo.policy_iteration();
     println!("Policy for policy iter: {:?}", best_policy);
 */
+    /* Initialize the environment VALUE ITERATION
+    let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+
+    // Set parameters for Value Iteration
+    let discount_factor = 0.5;
+    let theta = 0.1;
+
+    // Create ValueIterationModel instance
+    let states = env.all_states();
+    let actions = env.available_actions();
+    let terminal_states = env.terminal_states();
+    let mut value_iteration = ValueIterationModel::new(states, actions, discount_factor, terminal_states);
+
+    // Run Value Iteration
+    value_iteration.iteration(&mut *env, theta);
+
+    // Print the results
+    println!("Value Function: {:?}", value_iteration.value_function);
+    println!("Policy: {:?}", value_iteration.policy);
+     */
 /*
     //      VALUE ITERATION
     let mut val_iter = value_iteration::ValueIterationModel::new(
@@ -84,19 +105,22 @@ fn main() {
     println!("Policy for value iter: {:?}", val_iter.policy);
 */
 
-    /*      MONTE CARLO ES
-    let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.9, 2);
-    // Entraînement du modèle avec Monte Carlo ES
-    model.monte_carlo_es(&mut *env);
-    // Affichage des résultats après l'entraînement pour inspection manuelle
-    println!("Q-values: {:?}", model.q_values);
-    println!("Policy: {:?}", model.policy);
-    // Tester la politique entraînée sur un état initial
-    let state = env.reset();
-    let action = model.policy.get(&state).cloned().unwrap_or(0);
-    env.step(action);
-    env.display();
-*/
+    /*     MONTE CARLO ES
+     let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.6, 20);
+     // Entraînement du modèle avec Monte Carlo ES
+     model.monte_carlo_es(&mut *env);
+     // Affichage des résultats après l'entraînement pour inspection manuelle
+     println!("Q-values: {:?}", model.q_values);
+     println!("Policy: {:?}", model.policy);
+     // Tester la politique entraînée sur un état initial
+     let state = env.reset();
+     let action = model.policy.get(&state).cloned().unwrap_or(0);
+     env.step(action);
+     env.display();
+     model.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
+     //let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.9, 2);
+     //model.load_policy("policy_MONTE_CARLO_ES.json").unwrap();
+     */
 
     /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
@@ -117,7 +141,7 @@ fn main() {
      */
     */
 
-    //      MONTE CARLO CONTROL OFF POLICY
+    /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control hors politique
     model.off_policy_mc_control(&mut *env, 10000, 100);
@@ -130,7 +154,7 @@ fn main() {
         *actions.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap_or(std::cmp::Ordering::Equal)).unwrap().0
     });
     env.step(action);*/
-    //
+    */
 
     /* SARSA
     let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.1, 1000);
@@ -219,7 +243,7 @@ fn main() {
             break;
         }
     }*/
-    println!(" derived policy{:?}",model.derived_policy);
+    /*println!(" derived policy{:?}",model.derived_policy);
     let state = env.reset();
     let mut rng = rand::thread_rng();
     loop {
@@ -248,5 +272,5 @@ fn main() {
             break;
         }
     }
-
+*/
 }

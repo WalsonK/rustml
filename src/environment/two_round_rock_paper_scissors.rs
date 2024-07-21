@@ -133,6 +133,10 @@ impl RPSGame {
 }
 
 impl Environment for RPSGame {
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32{
+        0.0
+    }
+
     fn reset(&mut self) -> State {
         self.agent_action = None;
         self.adversary_action = None;

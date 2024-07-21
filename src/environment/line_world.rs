@@ -178,6 +178,10 @@ impl Environment for LineWorld {
     fn is_forbidden(&self, state_or_action: usize) -> bool{
         false
     }
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32{
+        0.0
+    }
+
 }
 
 #[cfg(test)]

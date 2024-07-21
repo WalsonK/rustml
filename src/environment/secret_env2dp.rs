@@ -57,6 +57,10 @@ impl SecretEnv2Dp {
 }
 
 impl Environment for SecretEnv2Dp {
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32{
+        0.0
+    }
+
     fn reset(&mut self) -> State {
         unsafe {
             let secret_env_2_reset: Symbol<unsafe extern fn(*mut c_void)> =

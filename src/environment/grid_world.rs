@@ -122,6 +122,10 @@ impl GridWorld {
 }
 
 impl Environment for GridWorld {
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32{
+        0.0
+    }
+
     fn reset(&mut self) -> State {
         self.agent_position = rand::thread_rng().gen_range(0..self.all_position.len());
         self.agent_position as State
