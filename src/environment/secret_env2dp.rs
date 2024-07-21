@@ -57,6 +57,9 @@ impl SecretEnv2Dp {
 }
 
 impl Environment for SecretEnv2Dp {
+    fn random_state(&mut self){
+
+    }
     fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32{
         0.0
     }

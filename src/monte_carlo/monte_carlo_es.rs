@@ -37,7 +37,7 @@ impl MonteCarloESModel {
         let mut rng = thread_rng();
         let mut i = 0;
         for _ in 0..self.num_episodes {
-            env.reset();
+            env.random_state();
             println!("{}", i);
             i = i + 1;
             let mut is_first_action = true;

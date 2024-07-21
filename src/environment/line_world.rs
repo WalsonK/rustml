@@ -111,6 +111,10 @@ impl LineWorld {
 }
 
 impl Environment for LineWorld {
+    fn random_state(&mut self){
+
+    }
+
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
         self.agent_position = rng.gen_range(0..self.all_position.len());

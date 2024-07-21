@@ -6,7 +6,7 @@ use rustml::environment::{
     two_round_rock_paper_scissors, secret_env0dp::SecretEnv0Dp, secret_env1dp::SecretEnv1Dp,
     secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp
 };
-use rustml::environment::environment::Environment;
+use rustml::environment::environment::{Action, Environment};
 use rustml::environment::environment::Action as ActionType;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
 //use rustml::td_learning::sarsa;
@@ -22,7 +22,7 @@ fn main() {
 
     // -------------------------------- ENV -------------------------------------
     // Charge la bibliothèque dynamique spécifique à votre environnement secret
-    let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
     //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
     //env.display();
     //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
@@ -49,9 +49,9 @@ fn main() {
     let _ = env.display();
     */
 
-    /*      PLAYABLE MONTY HALL
+    //      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
-    */
+    //
     
     // two_round_rock_paper_scissors
     //let mut env = two_round_rock_paper_scissors::RPSGame::new();
@@ -105,8 +105,8 @@ fn main() {
     println!("Policy for value iter: {:?}", val_iter.policy);
 */
 
-    /*     MONTE CARLO ES
-     let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.6, 20);
+    //     MONTE CARLO ES
+     let mut model = monte_carlo_es::MonteCarloESModel::new(100000, 0.9, 50);
      // Entraînement du modèle avec Monte Carlo ES
      model.monte_carlo_es(&mut *env);
      // Affichage des résultats après l'entraînement pour inspection manuelle
@@ -114,13 +114,13 @@ fn main() {
      println!("Policy: {:?}", model.policy);
      // Tester la politique entraînée sur un état initial
      let state = env.reset();
-     let action = model.policy.get(&state).cloned().unwrap_or(0);
-     env.step(action);
-     env.display();
-     model.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
+     //let action = model.policy.get(&state).cloned().unwrap_or(0);
+     //env.step(action);
+     //env.display();
+     //model.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
      //let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.9, 2);
      //model.load_policy("policy_MONTE_CARLO_ES.json").unwrap();
-     */
+     //
 
     /*      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
@@ -207,7 +207,7 @@ fn main() {
     dyna_q_model.print_policy(&policy);
     */
 
-    /*
+    //
     // Exemple de test de la politique entraînée sur un état initial
     // Boucle de jeu jusqu'à la fin en utilisant le modèle entraîné
     let mut rng = rand::thread_rng();
@@ -242,7 +242,7 @@ fn main() {
             env.reset();
             break;
         }
-    }*/
+    }//
     /*println!(" derived policy{:?}",model.derived_policy);
     let state = env.reset();
     let mut rng = rand::thread_rng();

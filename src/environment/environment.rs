@@ -19,5 +19,5 @@ pub trait Environment {
     fn all_action(&self) -> Vec<State>;
     fn is_forbidden(&self, state_or_action: usize) -> bool;
     fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32;
-
+    fn random_state(&mut self) ;
 }

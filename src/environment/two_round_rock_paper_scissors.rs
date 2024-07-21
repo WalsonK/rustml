@@ -133,6 +133,9 @@ impl RPSGame {
 }
 
 impl Environment for RPSGame {
+    fn random_state(&mut self){
+
+    }
     fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32{
         0.0
     }
