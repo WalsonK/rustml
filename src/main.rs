@@ -21,11 +21,11 @@ use rand::Rng;
 fn main() {
 
     // -------------------------------- ENV -------------------------------------
-    /*      Secret Env 0
+    //      Secret Env 0
     let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
     println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
     env.display();
-     */
+     //
     /*      Secret Env 1
     let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
     println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
@@ -49,19 +49,19 @@ fn main() {
     let _ = env.display();
    */
 
-    //      Grid world
+    /*     Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    //
+    */
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
     */
     
     // two_round_rock_paper_scissors
-    //let mut env = two_round_rock_paper_scissors::RPSGame::new();
+    let mut env = two_round_rock_paper_scissors::RPSGame::new();
 
 
 // -------------------------------- ALGO -------------------------------------
@@ -86,7 +86,7 @@ fn main() {
     */
 
 
-    //      VALUE ITERATION
+    /*      VALUE ITERATION
     let mut model = value_iteration::ValueIterationModel::new(
         env.all_position.clone() ,
         env.all_actions.clone(),
@@ -102,7 +102,7 @@ fn main() {
     //model.print_policy();
     use_policy_in_game(&mut *env, Policy::Array(model.policy.clone()));
 
-     //
+     */
 
 
     /*     MONTE CARLO ES
@@ -148,7 +148,7 @@ fn main() {
     */
 
 
-    /*      MONTE CARLO CONTROL OFF POLICY
+    //     MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control hors politique
     model.off_policy_mc_control(&mut *env, 10000, 100);
@@ -164,7 +164,8 @@ fn main() {
     use_policy_in_game(&mut *env, Policy::Map(model.derived_policy.clone()));
     model.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
     //model.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
-    //println!("Policy  : {:?}", model.derived_policy);*/
+    //println!("Policy  : {:?}", model.derived_policy);
+    //
 
     /* SARSA
     let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 100);

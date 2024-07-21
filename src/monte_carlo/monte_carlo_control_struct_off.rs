@@ -5,10 +5,10 @@ extern crate serde_json;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
-use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{self, Write, Read};
+use crate::environment::environment::{State, Action, Reward, Environment};
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -39,24 +39,11 @@ impl MonteCarloControlOff {
         })
     }
 
-    pub fn initialize_policy<E: Environment>(&mut self, env: &E) {
-        for &state in &env.all_states() {
-            let mut actions = HashMap::new();
-            let available_actions = env.available_actions();
-            for &action in &available_actions {
-                actions.insert(action, 1.0 / available_actions.len() as f32);
-                self.q_values.insert((state, action), 0.0);
-                self.c_values.insert((state, action), 0.0);
-            }
-            self.policy.insert(state, actions);
-        }
-    }
-
     pub fn off_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
         let mut rng = thread_rng();
-        self.initialize_policy(env);
 
-        for _ in 0..num_episodes {
+        for i in 0..num_episodes {
+            println!("{}",i);
             let mut episode: Vec<EpisodeStep> = vec![];
             let mut state = env.reset();
             let mut done = false;
@@ -79,7 +66,6 @@ impl MonteCarloControlOff {
 
     pub fn choose_action_soft<E: Environment>(&mut self, env: &E, state: State, rng: &mut rand::rngs::ThreadRng) -> Action {
         if !self.policy.contains_key(&state) {
-            println!("Initializing policy for new state: {:?}", state);
             let mut actions = HashMap::new();
             let available_actions = env.available_actions();
             for &action in &available_actions {
@@ -111,8 +97,8 @@ impl MonteCarloControlOff {
             }
 
             if let Some(q) = self.q_values.get_mut(&state_action_pair) {
-                if let Some(c) = self.c_values.get(&state_action_pair).map(|&v| v as f32) {
-                    *q += ((w / c) * (g - *q as f32)) as f32 ;
+                if let Some(&c) = self.c_values.get(&state_action_pair) {
+                    *q += (w / c) * (g - *q);
                 }
             }
 
