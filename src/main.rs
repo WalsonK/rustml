@@ -21,19 +21,26 @@ use rand::Rng;
 fn main() {
 
     // -------------------------------- ENV -------------------------------------
-    // Charge la bibliothèque dynamique spécifique à votre environnement secret
-    //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
-    //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
-    //env.display();
-    //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
-    //println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
-    //env.display();
-    //let mut env: Box<SecretEnv2Dp> = unsafe { SecretEnv2Dp::new() };
-    //println!("Env2, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
-    //env.display();
+    /*      Secret Env 0
+    let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+    println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
+    env.display();
+     */
+    /*      Secret Env 1
+    let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
+    println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
+    env.display();
+     */
+    /*      Secret Env 2
+    let mut env: Box<SecretEnv2Dp> = unsafe { SecretEnv2Dp::new() };
+    println!("Env2, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
+    env.display();
+     */
+    /*      Secret Env 3
     let mut env: Box<SecretEnv3Dp> = unsafe { SecretEnv3Dp::new() };
     println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     env.display();
+     */
 
     /*      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
@@ -42,12 +49,12 @@ fn main() {
     let _ = env.display();
    */
 
-    /*      Grid world
+    //      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    */
+    //
 
     /*      PLAYABLE MONTY HALL
     let mut env = playable_monte_hall::playable_MontyHall::new(3);
@@ -79,7 +86,7 @@ fn main() {
     */
 
 
-    /*      VALUE ITERATION
+    //      VALUE ITERATION
     let mut model = value_iteration::ValueIterationModel::new(
         env.all_position.clone() ,
         env.all_actions.clone(),
@@ -95,7 +102,7 @@ fn main() {
     //model.print_policy();
     use_policy_in_game(&mut *env, Policy::Array(model.policy.clone()));
 
-     */
+     //
 
 
     /*     MONTE CARLO ES
@@ -168,7 +175,7 @@ fn main() {
 
     use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));*/
 
-    // Q Learning
+    /* Q Learning
     let iterations = 100_000;
     let gamma = 0.6;
     let alpha = 0.7;
@@ -183,6 +190,7 @@ fn main() {
     //model.save_policy("policy_QLearning.json").unwrap();
     //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
     //model.load_policy("policy_QLearning.json").unwrap();
+     */
 
 
 
