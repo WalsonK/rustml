@@ -156,6 +156,14 @@ impl Environment for playable_MontyHall {
     fn is_forbidden(&self, state_or_action: usize) -> bool{
         false
     }
+
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32 {
+        todo!()
+    }
+
+    fn random_state(&mut self) {
+        todo!()
+    }
 }
 
 impl fmt::Display for playable_MontyHall {

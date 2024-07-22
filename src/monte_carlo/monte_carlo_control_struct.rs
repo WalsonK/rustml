@@ -21,10 +21,10 @@ pub struct EpisodeStep {
 pub struct MonteCarloControl {
     pub epsilon: f64,
     pub gamma: f32,
-    pub policy: HashMap<State, HashMap<Action, f64>>,
+    pub derived_policy: HashMap<State, HashMap<Action, f64>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub returns: HashMap<(State, Action), Vec<Reward>>,
-    pub derived_policy: HashMap<State, Action>,
+    pub policy: HashMap<State, Action>,
 }
 
 impl MonteCarloControl {
@@ -32,15 +32,16 @@ impl MonteCarloControl {
         Box::new(MonteCarloControl {
             epsilon,
             gamma,
-            policy: HashMap::new(),
+            derived_policy: HashMap::new(),
             q_values: HashMap::new(),
             returns: HashMap::new(),
-            derived_policy: HashMap::new(),
+            policy: HashMap::new(),
         })
     }
 
     pub fn ensure_policy_initialized<E: Environment>(&mut self, state: State, env: &mut E) {
-        if !self.policy.contains_key(&state) {
+        if !self.derived_policy.contains_key(&state)
+        {
             let mut actions = HashMap::new();
             let available_actions = env.all_action();
             for &action in &available_actions {
@@ -50,7 +51,7 @@ impl MonteCarloControl {
                     self.returns.insert((state, action), vec![]);
                 }
             }
-            self.policy.insert(state, actions);
+            self.derived_policy.insert(state, actions);
         }
     }
 
@@ -59,7 +60,7 @@ impl MonteCarloControl {
 
         let available_actions = env.available_actions();
 
-        if let Some(action_probs) = self.policy.get(&state) {
+        if let Some(action_probs) = self.derived_policy.get(&state) {
             let actions: Vec<&Action> = action_probs.keys().collect();
             let probs: Vec<f64> = action_probs.values().copied().collect();
 
@@ -130,10 +131,10 @@ impl MonteCarloControl {
     }
 
     fn find_best_action(&self, state: State) -> Action {
-        let mut best_action = *self.policy[&state].keys().next().unwrap();
+        let mut best_action = *self.derived_policy[&state].keys().next().unwrap();
         let mut best_value = f32::NEG_INFINITY;
 
-        for &action in self.policy[&state].keys() {
+        for &action in self.derived_policy[&state].keys() {
             let value = *self.q_values.get(&(state, action)).unwrap_or(&f32::NEG_INFINITY);
             if value > best_value {
                 best_value = value;
@@ -145,7 +146,7 @@ impl MonteCarloControl {
     }
 
     fn update_policy(&mut self, state: State, best_action: Action) {
-        let actions = self.policy.get_mut(&state).unwrap();
+        let actions = self.derived_policy.get_mut(&state).unwrap();
         let num_actions = actions.len() as f64;
         let epsilon = self.epsilon;
         for (&action, prob) in actions.iter_mut() {
@@ -160,27 +161,27 @@ impl MonteCarloControl {
     pub fn derive_and_assign_policy(&mut self) {
         let mut derived_policy = HashMap::new();
 
-        for (&state, action_probs) in &self.policy {
+        for (&state, action_probs) in &self.derived_policy {
             let best_action = action_probs.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(action, _)| *action).unwrap();
             derived_policy.insert(state, best_action);
         }
 
-        self.derived_policy = derived_policy;
+        self.policy = derived_policy;
     }
 
     pub fn save_policy(&self, filename: &str) -> io::Result<()> {
         let file = File::create(filename)?;
-        serde_json::to_writer(file, &self.derived_policy)?;
+        serde_json::to_writer(file, &self.policy)?;
         Ok(())
     }
 
     pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
         let file = File::open(filename)?;
-        self.derived_policy = serde_json::from_reader(file)?;
+        self.policy = serde_json::from_reader(file)?;
         Ok(())
     }
 
     pub fn print_policy(&self) {
-        println!("Derived Policy: {:?}", self.derived_policy);
+        println!("Derived Policy: {:?}", self.policy);
     }
 }

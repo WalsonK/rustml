@@ -5,10 +5,10 @@ extern crate serde_json;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use std::collections::HashMap;
-use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{self, Write, Read};
+use crate::environment::environment::{State, Action, Reward, Environment};
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -21,10 +21,10 @@ pub struct EpisodeStep {
 pub struct MonteCarloControlOff {
     pub epsilon: f32,
     pub gamma: f32,
-    pub policy: HashMap<State, HashMap<Action, f32>>,
+    pub derived_policy: HashMap<State, HashMap<Action, f32>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub c_values: HashMap<(State, Action), f32>,
-    pub derived_policy: HashMap<State, Action>,
+    pub policy: HashMap<State, Action>,
 }
 
 impl MonteCarloControlOff {
@@ -32,31 +32,18 @@ impl MonteCarloControlOff {
         Box::new(MonteCarloControlOff {
             epsilon,
             gamma,
-            policy: HashMap::new(),
+            derived_policy: HashMap::new(),
             q_values: HashMap::new(),
             c_values: HashMap::new(),
-            derived_policy: HashMap::new(),
+            policy: HashMap::new(),
         })
-    }
-
-    pub fn initialize_policy<E: Environment>(&mut self, env: &E) {
-        for &state in &env.all_states() {
-            let mut actions = HashMap::new();
-            let available_actions = env.available_actions();
-            for &action in &available_actions {
-                actions.insert(action, 1.0 / available_actions.len() as f32);
-                self.q_values.insert((state, action), 0.0);
-                self.c_values.insert((state, action), 0.0);
-            }
-            self.policy.insert(state, actions);
-        }
     }
 
     pub fn off_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
         let mut rng = thread_rng();
-        self.initialize_policy(env);
 
-        for _ in 0..num_episodes {
+        for i in 0..num_episodes {
+            println!("{}",i);
             let mut episode: Vec<EpisodeStep> = vec![];
             let mut state = env.reset();
             let mut done = false;
@@ -78,8 +65,7 @@ impl MonteCarloControlOff {
     }
 
     pub fn choose_action_soft<E: Environment>(&mut self, env: &E, state: State, rng: &mut rand::rngs::ThreadRng) -> Action {
-        if !self.policy.contains_key(&state) {
-            println!("Initializing policy for new state: {:?}", state);
+        if !self.derived_policy.contains_key(&state) {
             let mut actions = HashMap::new();
             let available_actions = env.available_actions();
             for &action in &available_actions {
@@ -87,9 +73,9 @@ impl MonteCarloControlOff {
                 self.q_values.insert((state, action), 0.0);
                 self.c_values.insert((state, action), 0.0);
             }
-            self.policy.insert(state, actions);
+            self.derived_policy.insert(state, actions);
         }
-        if let Some(action_probs) = self.policy.get(&state) {
+        if let Some(action_probs) = self.derived_policy.get(&state) {
             let actions: Vec<&Action> = action_probs.keys().collect();
             let probs: Vec<f32> = action_probs.values().copied().collect();
             **actions.choose_weighted(rng, |&action| probs[actions.iter().position(|&&a| a == *action).unwrap()]).unwrap()
@@ -111,8 +97,8 @@ impl MonteCarloControlOff {
             }
 
             if let Some(q) = self.q_values.get_mut(&state_action_pair) {
-                if let Some(c) = self.c_values.get(&state_action_pair).map(|&v| v as f32) {
-                    *q += ((w / c) * (g - *q as f32)) as f32 ;
+                if let Some(&c) = self.c_values.get(&state_action_pair) {
+                    *q += (w / c) * (g - *q);
                 }
             }
 
@@ -123,17 +109,17 @@ impl MonteCarloControlOff {
                 break;
             }
 
-            if let Some(action_prob) = self.policy.get(&step.state).and_then(|probs| probs.get(&step.action)) {
+            if let Some(action_prob) = self.derived_policy.get(&step.state).and_then(|probs| probs.get(&step.action)) {
                 w /= *action_prob;
             }
         }
     }
 
     fn find_best_action(&self, state: State) -> Action {
-        let mut best_action = *self.policy[&state].keys().next().unwrap();
+        let mut best_action = *self.derived_policy[&state].keys().next().unwrap();
         let mut best_value = f32::NEG_INFINITY;
 
-        for &action in self.policy[&state].keys() {
+        for &action in self.derived_policy[&state].keys() {
             let value = *self.q_values.get(&(state, action)).unwrap_or(&f32::NEG_INFINITY);
             if value > best_value {
                 best_value = value;
@@ -145,7 +131,7 @@ impl MonteCarloControlOff {
     }
 
     fn update_policy(&mut self, state: State, best_action: Action) {
-        let actions = self.policy.get_mut(&state).unwrap();
+        let actions = self.derived_policy.get_mut(&state).unwrap();
         let num_actions = actions.len() as f32;
         let epsilon = self.epsilon;
         for (&action, prob) in actions.iter_mut() {
@@ -160,27 +146,27 @@ impl MonteCarloControlOff {
     pub fn derive_and_assign_policy(&mut self) {
         let mut derived_policy = HashMap::new();
 
-        for (&state, action_probs) in &self.policy {
+        for (&state, action_probs) in &self.derived_policy {
             let best_action = action_probs.iter().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(action, _)| *action).unwrap();
             derived_policy.insert(state, best_action);
         }
 
-        self.derived_policy = derived_policy;
+        self.policy = derived_policy;
     }
 
     pub fn save_policy(&self, filename: &str) -> io::Result<()> {
         let file = File::create(filename)?;
-        serde_json::to_writer(file, &self.derived_policy)?;
+        serde_json::to_writer(file, &self.policy)?;
         Ok(())
     }
 
     pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
         let file = File::open(filename)?;
-        self.derived_policy = serde_json::from_reader(file)?;
+        self.policy = serde_json::from_reader(file)?;
         Ok(())
     }
 
     pub fn print_policy(&self) {
-        println!("Derived Policy: {:?}", self.derived_policy);
+        println!("Derived Policy: {:?}", self.policy);
     }
 }

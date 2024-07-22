@@ -28,7 +28,7 @@ impl QLearning {
             alpha,
             epsilon,
             q_values: HashMap::new(),
-            policy: HashMap::new(), // Initialize policy map
+            policy: HashMap::new(),
         })
     }
 
