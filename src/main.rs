@@ -34,11 +34,11 @@ fn main() {
     println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     env.display();
      */
-    //      Secret Env 2
+    /*      Secret Env 2
     let mut env: Box<SecretEnv2Dp> = unsafe { SecretEnv2Dp::new() };
     println!("Env2, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     env.display();
-     //
+     */
     /*      Secret Env 3
     let mut env: Box<SecretEnv3Dp> = unsafe { SecretEnv3Dp::new() };
     println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
@@ -196,7 +196,7 @@ fn main() {
 
     use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));*/
 
-    // Q Learning
+    /* Q Learning
     let iterations = 100;
     let gamma = 0.5;
     let alpha = 0.7;
@@ -215,7 +215,7 @@ fn main() {
 
     //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
     //model.load_policy("policy_QLearning.json").unwrap();
-     //
+    */
 
 
 
@@ -305,8 +305,8 @@ fn main() {
                         env.terminal_states()
                     )
                 )
-            },
-            "value_iteration" => {
+            },*/
+            /*"value_iteration" => {
                 Algo::ValueIteration(
                     ValueIterationModel::new(
                         env.all_states() ,
@@ -371,7 +371,7 @@ fn main() {
                 println!("Policy: {:?}", mccon.policy);
 
                 if save { mccon.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();}
-                use_policy_in_game(&mut *env, Policy::Map(mccon.derived_policy.clone()));
+                use_policy_in_game(&mut *env, Policy::Map(mccon.policy.clone()));
             }
             Algo::MonteCarloControlOff(ref mut mccoff) => {
                 if load { mccoff.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap(); }
@@ -385,7 +385,7 @@ fn main() {
                 println!("Policy: {:?}", mccoff.policy);
 
                 if save { mccoff.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap(); }
-                use_policy_in_game(&mut *env, Policy::Map(mccoff.derived_policy.clone()));
+                use_policy_in_game(&mut *env, Policy::Map(mccoff.policy.clone()));
             },
             Algo::Sarsa(ref mut sra) => {
                 if load { }
