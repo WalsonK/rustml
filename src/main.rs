@@ -9,7 +9,7 @@ use rustml::environment::{
     secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp,
 };
 use rustml::environment::tools::{Policy, use_policy_in_game};
-use rustml::environment::environment::{Environment};
+use rustml::environment::environment::{Environment, Reward};
 use rustml::environment::environment::Action as ActionType;
 
 use rustml::monte_carlo::{
@@ -267,6 +267,7 @@ fn main() {
 
     enum Algo {
         PolicyIteration(Box<PolicyIterationModel>),
+        ValueIteration(Box<ValueIterationModel>),
         MonteCarloES(Box<MonteCarloESModel>),
         MonteCarloControlOn(Box<MonteCarloControl>),
         MonteCarloControlOff(Box<MonteCarloControlOff>),
@@ -276,7 +277,7 @@ fn main() {
         DynaQPlus(Box<DynaQPlusModel>)
     }
 
-    fn process(environment: &str, algorithm: &str, is_training_only: bool, save: bool, load: bool) {
+    fn process(environment: &str, algorithm: &str, save: bool, load: bool) {
         let mut env: Box<dyn Environment> = match environment {
             "secretenv0" => unsafe { SecretEnv0Dp::new() },
             "secretenv1" => unsafe { SecretEnv1Dp::new() },
@@ -294,8 +295,20 @@ fn main() {
         let mut algo = match algorithm {
             /*"policy_iteration" => {
                 Algo::PolicyIteration(
-                    policy_iteration::PolicyIterationModel::new(
+                    PolicyIterationModel::new(
                         env.all_states(),
+                        env.all_action(),
+                        vec![vec![vec![1 as Reward; 1]]], //env.rewards.clone(),
+                        vec![vec![vec![1.0; 1]]], //env.probabilities.clone(),
+                        0.999,
+                        env.terminal_states()
+                    )
+                )
+            },
+            "value_iteration" => {
+                Algo::ValueIteration(
+                    ValueIterationModel::new(
+                        env.all_states() ,
                         env.all_action(),
                         vec![vec![vec![1 as Reward; 1]]], //env.rewards.clone(),
                         vec![vec![vec![1.0; 1]]], //env.probabilities.clone(),
@@ -343,15 +356,98 @@ fn main() {
                 println!("Policy: {:?}", mce.policy);
 
                 if save { mce.save_policy("policy_MONTE_CARLO_ES.json").unwrap(); }
-
-                if !is_training_only {
-                    use_policy_in_game(&mut *env, Policy::Map(mce.policy.clone()));
+                use_policy_in_game(&mut *env, Policy::Map(mce.policy.clone()));
+            },
+            Algo::MonteCarloControlOn(ref mut mccon) => {
+                if load { mccon.load_policy("policy_MONTE_CARLO_CONTROL.json").unwrap(); }
+                else {
+                    let start = Instant::now();
+                    mccon.on_policy_mc_control(&mut *env, 10000, 100);
+                    let duration = start.elapsed();
+                    println!("Model trained for : {:?}", duration);
                 }
+                println!("Q-values: {:?}", mccon.q_values);
+                println!("Policy: {:?}", mccon.policy);
+
+                if save { mccon.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();}
+                use_policy_in_game(&mut *env, Policy::Map(mccon.derived_policy.clone()));
+            }
+            Algo::MonteCarloControlOff(ref mut mccoff) => {
+                if load { mccoff.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap(); }
+                else {
+                    let start = Instant::now();
+                    mccoff.off_policy_mc_control(&mut *env, 10000, 100);
+                    let duration = start.elapsed();
+                    println!("Model trained for : {:?}", duration);
+                }
+                println!("Q-values: {:?}", mccoff.q_values);
+                println!("Policy: {:?}", mccoff.policy);
+
+                if save { mccoff.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap(); }
+                use_policy_in_game(&mut *env, Policy::Map(mccoff.derived_policy.clone()));
+            },
+            Algo::Sarsa(ref mut sra) => {
+                if load { }
+                else {
+                    let start = Instant::now();
+                    sra.process_episode(true, &mut *env);
+                    let duration = start.elapsed();
+                    println!("Model trained for : {:?}", duration);
+                }
+                println!("Policy: {:?}", sra.policy);
+
+                if save { }
+                use_policy_in_game(&mut *env, Policy::Array(sra.policy.clone()));
+            },
+            Algo::QLearning(ref mut ql) => {
+                if load { ql.load_policy("policy_QLearning.json").unwrap(); }
+                else {
+                    let start = Instant::now();
+                    ql.q_learning(&mut *env);
+                    ql.derive_policy();
+                    let duration = start.elapsed();
+                    println!("Model trained for : {:?}", duration);
+                }
+                println!("Q-values: {:?}", ql.q_values);
+                ql.print_policy();
+
+                if save { ql.save_policy("policy_QLearning.json").unwrap(); }
+                use_policy_in_game(&mut *env, Policy::Map(ql.policy.clone()))
+            },
+            Algo::DynaQ(ref mut dq) => {
+                if load { dq.load_policy( "policy_DYNQ.json").unwrap(); }
+                else {
+                    let start = Instant::now();
+                    dq.dyna_q(&mut *env);
+                    dq.derive_and_assign_policy();
+                    let duration = start.elapsed();
+                    println!("Model trained for : {:?}", duration);
+                }
+                println!("Q-values: {:?}", dq.q_values);
+                dq.print_policy();
+
+                if save { dq.save_policy( "policy_DYNQ.json").unwrap(); }
+                use_policy_in_game(&mut *env, Policy::Map(dq.policy.clone()));
+            },
+            Algo::DynaQPlus(ref mut dqp) => {
+                if load { dqp.load_policy("policy_DYNQ_PLUS.json").unwrap(); }
+                else {
+                    let start = Instant::now();
+                    dqp.dyna_q_plus(&mut *env);
+                    dqp.derive_and_assign_policy();
+                    let duration = start.elapsed();
+                    println!("Model trained for : {:?}", duration);
+                }
+                println!("Q-values: {:?}", dqp.q_values);
+                dqp.print_policy();
+
+                if save { dqp.save_policy("policy_DYNQ_PLUS.json").unwrap(); }
+                use_policy_in_game(&mut *env, Policy::Map(dqp.policy.clone()));
             },
             _ => {}
         }
     }
 
 
-    process("lineworld",  "monte_carlo_es", false, false, true);
+    process("lineworld",  "dyna_q+", false, false);
 }

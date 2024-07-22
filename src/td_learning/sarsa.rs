@@ -44,7 +44,7 @@ impl SarsaModel {
         }
     }
 
-    pub fn process_episode<E: Environment>(&mut self, rand: bool, env: &mut E) -> Vec<Action>{
+    pub fn process_episode(&mut self, rand: bool, env: &mut dyn Environment) -> Vec<Action>{
         for _ in 0..self.nb_episode {
             let mut state: State = if rand == false { 0usize } else {
                 let mut rng = rand::thread_rng();
@@ -98,7 +98,7 @@ impl SarsaModel {
         }
     }
 
-    fn do_action<E: Environment>(&mut self, env: &mut E, state: State, action: Action) -> (State, Reward) {
+    fn do_action(&mut self, env: &mut dyn Environment, state: State, action: Action) -> (State, Reward) {
         env.set_state(state as State);
         let tuple: (State, Reward, bool) = env.step(action as Action);
         return (tuple.0, tuple.1)

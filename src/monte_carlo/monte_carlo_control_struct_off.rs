@@ -39,7 +39,7 @@ impl MonteCarloControlOff {
         })
     }
 
-    pub fn initialize_policy<E: Environment>(&mut self, env: &E) {
+    pub fn initialize_policy(&mut self, env: &dyn Environment) {
         for &state in &env.all_states() {
             let mut actions = HashMap::new();
             let available_actions = env.available_actions();
@@ -52,7 +52,7 @@ impl MonteCarloControlOff {
         }
     }
 
-    pub fn off_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
+    pub fn off_policy_mc_control(&mut self, env: &mut dyn Environment, num_episodes: usize, max_steps: usize) {
         let mut rng = thread_rng();
         self.initialize_policy(env);
 
@@ -77,7 +77,7 @@ impl MonteCarloControlOff {
         }
     }
 
-    pub fn choose_action_soft<E: Environment>(&mut self, env: &E, state: State, rng: &mut rand::rngs::ThreadRng) -> Action {
+    pub fn choose_action_soft(&mut self, env: &dyn Environment, state: State, rng: &mut rand::rngs::ThreadRng) -> Action {
         if !self.policy.contains_key(&state) {
             println!("Initializing policy for new state: {:?}", state);
             let mut actions = HashMap::new();

@@ -39,7 +39,7 @@ impl MonteCarloControl {
         })
     }
 
-    pub fn ensure_policy_initialized<E: Environment>(&mut self, state: State, env: &mut E) {
+    pub fn ensure_policy_initialized(&mut self, state: State, env: &mut dyn Environment) {
         if !self.policy.contains_key(&state) {
             let mut actions = HashMap::new();
             let available_actions = env.all_action();
@@ -54,7 +54,7 @@ impl MonteCarloControl {
         }
     }
 
-    pub fn choose_action_soft<E: Environment>(&mut self, state: State, env: &mut E, rng: &mut rand::rngs::ThreadRng) -> Action {
+    pub fn choose_action_soft(&mut self, state: State, env: &mut dyn Environment, rng: &mut rand::rngs::ThreadRng) -> Action {
         self.ensure_policy_initialized(state, env);
 
         let available_actions = env.available_actions();
@@ -85,7 +85,7 @@ impl MonteCarloControl {
         }
     }
 
-    pub fn on_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
+    pub fn on_policy_mc_control(&mut self, env: &mut dyn Environment, num_episodes: usize, max_steps: usize) {
         let mut rng = thread_rng();
         let mut i = 0;
         for _ in 0..num_episodes {
