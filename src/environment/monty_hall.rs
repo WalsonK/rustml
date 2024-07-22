@@ -1,6 +1,9 @@
 use rand::Rng;
 use std::fmt;
 
+use crate::environment::environment::{State, Action, Reward, Environment};
+
+
 pub struct MontyHall {
     pub winning_door: usize,
     pub chosen_door: Option<usize>,
@@ -8,6 +11,7 @@ pub struct MontyHall {
     pub nb_portes: usize,
     pub rewards: Vec<f32>,
     pub probabilities: Vec<f32>,
+    pub all_actions : Vec<Action>,
 }
 
 impl MontyHall {
@@ -15,6 +19,7 @@ impl MontyHall {
         let mut rng = rand::thread_rng();
         let winning_door = rng.gen_range(0..nb_portes);
         println!("La porte gagnante est la porte {}", winning_door);
+        let all_actions : Vec<Action> = vec![0; nb_portes];
 
         let mut monty_hall = MontyHall {
             winning_door,
@@ -23,6 +28,7 @@ impl MontyHall {
             nb_portes,
             rewards: Vec::new(),
             probabilities: Vec::new(),
+            all_actions,
         };
 
         monty_hall.init_rewards();
@@ -41,16 +47,6 @@ impl MontyHall {
         // Initialiser les probabilités pour chaque porte
         self.probabilities = vec![1.0 / self.nb_portes as f32; self.nb_portes];
     }
-
-    pub fn reset(&mut self) {
-        let mut rng = rand::thread_rng();
-        self.winning_door = rng.gen_range(0..self.nb_portes);
-        self.chosen_door = None;
-        self.opened_door = None;
-        self.init_rewards();
-        self.init_probabilities();
-    }
-
     pub fn valid_action(&self, action: usize) -> bool {
         match self.chosen_door {
             None => action < self.nb_portes,
@@ -58,7 +54,7 @@ impl MontyHall {
         }
     }
 
-    pub fn next_state(&mut self, action: usize) -> (bool, bool) {
+    fn next_state(&mut self, action: usize) -> (bool, bool) {
         if !self.valid_action(action) {
             return (false, false);
         }
@@ -76,6 +72,10 @@ impl MontyHall {
                     let opened_door = unopened_doors[rng.gen_range(0..unopened_doors.len())];
                     self.opened_door = Some(opened_door);
                 } else {
+                    if self.opened_door.unwrap() == action {
+                        // Player cannot choose the door that is already opened
+                        return (false, false);
+                    }
                     self.chosen_door = Some(action);
                 }
                 (true, true)
@@ -83,7 +83,8 @@ impl MontyHall {
         }
     }
 
-    pub fn reward(&self) -> f32 {
+
+    fn reward(&self) -> f32 {
         match (self.chosen_door, self.opened_door) {
             (Some(chosen), Some(_)) => {
                 if chosen == self.winning_door {
@@ -95,60 +96,116 @@ impl MontyHall {
             _ => 0.0,
         }
     }
-
-    pub fn step(&mut self, action: usize) -> (f32, bool) {
-        assert!(!self.is_game_over());
-        assert!(self.available_actions().contains(&action));
-
-        if let Some(chosen_door) = self.chosen_door {
-            if self.opened_door.is_some() && chosen_door == action {
-                // Player decides not to switch doors
-                return (self.reward(), self.done());
-            }
-        }
-
-        let (success, _) = self.next_state(action);
-        if !success {
-            return (0.0, false); // Return 0 reward and false if the action is invalid
-        }
-
-        if let Some(chosen_door) = self.chosen_door {
-            if chosen_door != action {
-                // Player decides to switch doors
-                self.chosen_door = Some(action);
-            }
-        }
-
-        (self.reward(), self.done())
-    }
-
-    pub fn done(&self) -> bool {
+    fn done(&self) -> bool {
         self.chosen_door.is_some() && self.opened_door.is_some()
     }
 
-    pub fn available_actions(&self) -> Vec<usize> {
-        match self.opened_door {
-            None => (0..self.nb_portes).collect(),
-            Some(opened) => (0..self.nb_portes).filter(|&x| x != opened).collect(),
+}
+
+impl Environment for MontyHall {
+         fn reset(&mut self) -> State{
+            let mut rng = rand::thread_rng();
+            self.winning_door = rng.gen_range(0..self.nb_portes);
+            self.chosen_door = None;
+            self.opened_door = None;
+            self.init_rewards();
+            self.init_probabilities();
+             self.state_id()
         }
-    }
 
-    pub fn is_game_over(&self) -> bool {
-        self.done()
-    }
 
-    pub fn score(&self) -> f32 {
-        if let (Some(chosen), Some(_)) = (self.chosen_door, self.opened_door) {
-            if chosen == self.winning_door {
-                return 1.0;
-            } else {
-                return 0.0;
+
+
+         fn step(&mut self, action: usize) -> (State, Reward, bool) {
+            assert!(!self.is_game_over());
+            assert!(self.available_actions().contains(&action));
+
+            if let Some(chosen_door) = self.chosen_door {
+                if self.opened_door.is_some() && chosen_door == action {
+                    // Player decides not to switch doors
+                    return (self.state_id(), 0.0, false);
+                }
+            }
+
+            let (success, _) = self.next_state(action);
+            if !success {
+                return (self.state_id(), 0.0, false);; // Return 0 reward and false if the action is invalid
+            }
+
+            if let Some(chosen_door) = self.chosen_door {
+                if chosen_door != action {
+                    // Player decides to switch doors
+                    self.chosen_door = Some(action);
+                }
+            }
+
+             (self.state_id(), 0.0, self.is_game_over())
+        }
+
+
+         fn available_actions(&self) -> Vec<usize> {
+            match self.opened_door {
+                None => (0..self.nb_portes).collect(),
+                Some(opened) => (0..self.nb_portes).filter(|&x| x != opened).collect(),
             }
         }
-        0.0
+
+         fn is_game_over(&self) -> bool {
+            self.done()
+        }
+
+         fn score(&self) -> f32 {
+            if let (Some(chosen), Some(_)) = (self.chosen_door, self.opened_door) {
+                if chosen == self.winning_door {
+                    return 1.0;
+                } else {
+                    return 0.0;
+                }
+            }
+            0.0
+        }
+
+    fn all_states(&self) -> Vec<State> {
+        (0..self.nb_portes as State).collect()
     }
 
+
+    fn terminal_states(&self) -> Vec<State> {
+        todo!()
+    }
+
+    fn set_state(&mut self, state: State) {
+        self.chosen_door = Some(state as usize);
+    }
+
+    fn display(&self) {
+        println!("{}", self);
+    }
+
+    fn state_id(&self) -> State {
+        self.chosen_door.unwrap_or(self.nb_portes) as State
+    }
+
+
+    fn all_action(&self) -> Vec<Action> {
+        self.all_actions.iter().map(|&action| action as Action).collect()
+    }
+
+    fn is_forbidden(&self, state_or_action: usize) -> bool{
+        false
+    }
+
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32 {
+        todo!()
+    }
+
+    fn random_state(&mut self) {
+        todo!()
+    }
 }
+
+
+
 
 
 impl fmt::Display for MontyHall {

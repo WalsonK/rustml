@@ -27,7 +27,7 @@ pub struct RPSGame {
     pub agent_score: i32,
     pub adversary_score: i32,
     pub rewards: Vec<Vec<Vec<Reward>>>,
-    pub probabilities: Vec<Vec<Vec<f32>>>,
+    pub probabilities: Vec<Vec<Vec<f64>>>,
     pub all_position: Vec<State>,
     pub all_actions: Vec<ActionType>,
     pub terminal_position: Vec<State>,
@@ -133,6 +133,13 @@ impl RPSGame {
 }
 
 impl Environment for RPSGame {
+    fn random_state(&mut self){
+
+    }
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32{
+        0.0
+    }
+
     fn reset(&mut self) -> State {
         self.agent_action = None;
         self.adversary_action = None;
