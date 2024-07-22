@@ -1,11 +1,7 @@
 extern crate rustml;
 
 use std::io;
-use rustml::environment::{
-    line_world, grid_world, tools, playable_monte_hall, secret_env0_dp,
-    two_round_rock_paper_scissors, secret_env0dp::SecretEnv0Dp, secret_env1dp::SecretEnv1Dp,
-    secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp
-};
+use rustml::environment::{line_world, grid_world, tools, playable_monte_hall, secret_env0_dp, two_round_rock_paper_scissors, secret_env0dp::SecretEnv0Dp, secret_env1dp::SecretEnv1Dp, secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp, monty_hall};
 use rustml::environment::environment::{Action, Environment};
 use rustml::environment::environment::Action as ActionType;
 use rustml::dynamic_programming::{policy_iteration, value_iteration};
@@ -16,16 +12,18 @@ use rustml::planning::dyna_q_plus::DynaQPlusModel;
 use rustml::td_learning::q_learning::QLearning;
 use rand::Rng;
 use rustml::dynamic_programming::playable_value_iteration::ValueIterationModel;
+use rustml::environment::monty_hall::playable_MontyHall;
+use rustml::monte_carlo;
 
 
 fn main() {
 
     // -------------------------------- ENV -------------------------------------
     // Charge la bibliothèque dynamique spécifique à votre environnement secret
-    //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
+     //let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
     //println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
     //env.display();
-    //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
+     //let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
     //println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     //env.display();
     //let mut env: Box<SecretEnv2Dp> = unsafe { SecretEnv2Dp::new() };
@@ -50,7 +48,7 @@ fn main() {
     */
 
     //      PLAYABLE MONTY HALL
-    let mut env = playable_monte_hall::playable_MontyHall::new(3);
+    let mut env =playable_MontyHall::new(3);
     //
     
     // two_round_rock_paper_scissors
@@ -105,7 +103,7 @@ fn main() {
     println!("Policy for value iter: {:?}", val_iter.policy);
 */
 
-    //     MONTE CARLO ES
+    /*     MONTE CARLO ES
      let mut model = monte_carlo_es::MonteCarloESModel::new(100000, 0.9, 50);
      // Entraînement du modèle avec Monte Carlo ES
      model.monte_carlo_es(&mut *env);
@@ -120,12 +118,12 @@ fn main() {
      //model.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
      //let mut model = monte_carlo_es::MonteCarloESModel::new(1000, 0.9, 2);
      //model.load_policy("policy_MONTE_CARLO_ES.json").unwrap();
-     //
+     */
 
-    /*      MONTE CARLO CONTROL
+    //      MONTE CARLO CONTROL
     let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
-    model.on_policy_mc_control(&mut *env, 10000, 100);
+    model.on_policy_mc_control(&mut *env, 5000, 3000);
     // Affichage des résultats après l'entraînement
     println!("Q-values: {:?}", model.q_values);
     println!("Policy: {:?}", model.policy);
@@ -139,7 +137,7 @@ fn main() {
     env.display();
 
      */
-    */
+    //
 
     /*      MONTE CARLO CONTROL OFF POLICY
     let mut model = monte_carlo_control_struct_off::MonteCarloControlOff::new(0.1, 0.9);
@@ -219,7 +217,7 @@ fn main() {
     env.display();
     loop {
         let state = env.state_id();
-        let action = if let Some(&action) = model.policy.get(&state) {
+        let action = if let Some(&action) = model.derived_policy.get(&state) {
             action
         } else {
             // Choisir une action aléatoire si aucune politique n'est trouvée pour cet état

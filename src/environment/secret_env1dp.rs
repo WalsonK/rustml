@@ -58,11 +58,13 @@ impl SecretEnv1Dp {
 }
 
 impl Environment for SecretEnv1Dp {
-    fn random_state(&mut self){
 
-    }
-    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32{
-        0.0
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32 {
+        unsafe {
+            let secret_env_1_transition_probability: Symbol<unsafe extern fn(usize, usize, usize, usize) -> f32> =
+                self.lib.get(b"secret_env_1_transition_probability").expect("Failed to load function `secret_env_1_transition_probability`");
+            secret_env_1_transition_probability(state, action, next_state, reward)
+        }
     }
 
     fn reset(&mut self) -> State {
@@ -176,6 +178,18 @@ impl Environment for SecretEnv1Dp {
 
     fn terminal_states(&self) -> Vec<State> {
         todo!()
+    }
+
+    fn random_state(&mut self) {
+        unsafe {
+            let secret_env_1_from_random_state: Symbol<unsafe extern fn() -> *mut c_void> =
+                self.lib.get(b"secret_env_1_from_random_state").expect("Failed to load function secret_env_0_from_random_state");
+
+            self.env = secret_env_1_from_random_state();
+            let secret_env_1_state_id: Symbol<unsafe extern fn(*const c_void) -> usize> =
+                self.lib.get(b"secret_env_1_state_id").expect("Failed to load function secret_env_0_state_id");
+            self.agent_pos = secret_env_1_state_id(self.env) as i64;
+        }
     }
 }
 

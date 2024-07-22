@@ -92,7 +92,7 @@ impl playable_MontyHall {
 
 
 }
-/*
+
 impl Environment for playable_MontyHall {
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
@@ -127,6 +127,10 @@ impl Environment for playable_MontyHall {
         (0..self.nb_portes as State).collect()
     }
 
+    fn terminal_states(&self) -> Vec<State> {
+        todo!()
+    }
+
     fn set_state(&mut self, state: State) {
         self.chosen_door = Some(state as usize);
     }
@@ -152,6 +156,14 @@ impl Environment for playable_MontyHall {
     fn is_forbidden(&self, state_or_action: usize) -> bool{
         false
     }
+
+    fn transition_probability(&self, state: usize, action: usize, next_state: usize, reward: usize) -> f32 {
+        todo!()
+    }
+
+    fn random_state(&mut self) {
+        todo!()
+    }
 }
 
 impl fmt::Display for playable_MontyHall {
@@ -170,4 +182,4 @@ impl fmt::Display for playable_MontyHall {
     }
 }
 
- */
+

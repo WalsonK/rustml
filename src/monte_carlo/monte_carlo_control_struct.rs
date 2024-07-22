@@ -95,6 +95,7 @@ impl MonteCarloControl {
             println!("{:?}",i);
             i+=1;
             let mut episode: Vec<EpisodeStep> = vec![];
+            //env.random_state();
             let mut state = env.reset();
             let mut done = false;
             let mut steps = 0;
