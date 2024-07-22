@@ -18,7 +18,6 @@ impl SecretEnv1Dp {
         let env = Self::create_new_env(&lib);
         let num_states = Self::get_num_states(&lib);
         let num_actions = Self::get_num_actions(&lib);
-        println!("{:?}", num_actions);
         let num_rewards = Self::get_num_rewards(&lib);
 
         Box::new(Self {

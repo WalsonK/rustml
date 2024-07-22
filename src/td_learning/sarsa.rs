@@ -13,7 +13,7 @@ pub struct SarsaModel {
 }
 
 impl SarsaModel {
-    pub fn new<E: Environment>(env: &mut E, alpha: f32, gamma:f32, epsilon:f64, nb_episode: usize) -> Box<SarsaModel>{
+    pub fn new(env: &mut dyn Environment, alpha: f32, gamma:f32, epsilon:f64, nb_episode: usize) -> Box<SarsaModel>{
         let ns = env.all_states().len();
         let na = env.available_actions().len();
         let mut model = Box::new(SarsaModel {
@@ -32,7 +32,7 @@ impl SarsaModel {
     }
 
     // Init Q with 0 for terminal State and Random for other
-    fn init_q<E: Environment>(&mut self, env: &mut E) {
+    fn init_q(&mut self, env: &mut dyn Environment) {
         let mut rng = rand::thread_rng();
         for i in 0..self.q_table.len() {
             let si: State = i as State;
