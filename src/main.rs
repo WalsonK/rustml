@@ -39,7 +39,7 @@ fn main() {
     env.display();
      */
 
-    //      Line world
+    /*      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
@@ -86,7 +86,7 @@ fn main() {
     //model.load_policy("policy_POLICY_ITERATION.json").unwrap();
     //model.print_policy();
     use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));
-    //
+    */
 
 
     /*      VALUE ITERATION

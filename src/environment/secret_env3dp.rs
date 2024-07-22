@@ -187,7 +187,15 @@ mod tools {
     use libloading::Library;
 
     pub unsafe fn secret_env_lib() -> Library {
-        let lib_path = r#"C:\Users\farin\CLionProjects\rustml2\src\libs\secret_envs.dll"#;
-        Library::new(lib_path).expect("Failed to load library")
+        #[cfg(target_os = "linux")]
+        let path = "src/libs/libsecret_envs.so";
+        #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+        let path = "src/libs/libsecret_envs_intel_macos.dylib";
+        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+        let path = "src/libs/libsecret_envs.dylib";
+        #[cfg(windows)]
+        let path = "src/libs/secret_envs.dll";
+
+        Library::new(path).expect("Failed to load the library")
     }
 }
