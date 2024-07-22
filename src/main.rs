@@ -39,12 +39,13 @@ fn main() {
     env.display();
      */
 
-    /*      Line world
+    //      Line world
     let mut env = line_world::LineWorld::new(4, false, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
     */
+
 
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
@@ -57,6 +58,7 @@ fn main() {
    // let mut env = monty_hall::MontyHall::new(3);
     //
 
+
     // two_round_rock_paper_scissors
     //let mut env = two_round_rock_paper_scissors::RPSGame::new();
 
@@ -64,6 +66,7 @@ fn main() {
 // -------------------------------- ALGO -------------------------------------
 
     /*     POLICY ITERATION
+
     let mut model = policy_iteration::PolicyIterationModel::new(
         env.all_position.clone(),
         env.all_actions.clone(),
@@ -83,7 +86,7 @@ fn main() {
     //model.load_policy("policy_POLICY_ITERATION.json").unwrap();
     //model.print_policy();
     use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));
-    */
+    //
 
 
     /*      VALUE ITERATION
@@ -170,6 +173,7 @@ fn main() {
     println!("Policy: {:?}", model.policy);
     println!("Model trained for : {:?}", duration);
     use_policy_in_game(&mut *env, Policy::Map(model.policy.clone()));
+
     model.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
     //model.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
     //println!("Policy  : {:?}", model.derived_policy);*/
@@ -202,6 +206,7 @@ fn main() {
     println!("Model trained for : {:?}", duration);
     use_policy_in_game(&mut *env, Policy::Map(model.policy.clone()));
      model.save_policy("policy_QLearning.json").unwrap();
+
     //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
     //model.load_policy("policy_QLearning.json").unwrap();
      //
@@ -252,3 +257,4 @@ fn main() {
     //let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
     //model.load_policy("policy_DYNQ_PLUS.json").unwrap();*/
 }
+
