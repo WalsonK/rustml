@@ -32,7 +32,7 @@ impl QLearning {
         })
     }
 
-    pub fn q_learning<E: Environment>(&mut self, env: &mut E) {
+    pub fn q_learning(&mut self, env: &mut dyn Environment) {
         let mut rng = thread_rng();
 
         for i in 0..self.iterations {

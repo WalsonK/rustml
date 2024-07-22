@@ -32,7 +32,7 @@ pub enum Policy {
 }
 
 // Fonction pour utiliser la politique dans le jeu
-pub fn use_policy_in_game<E: Environment>(env: &mut E, policy: Policy) {
+pub fn use_policy_in_game(env: &mut dyn Environment, policy: Policy) {
     println!("The Game start!");
     env.reset();
     env.display();

@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::{f32, io};
 use rand::Rng;
-use crate::environment::environment::{Action, Reward, State};
+use crate::environment::environment::{Action, Environment, Reward, State};
+use crate::environment::secret_env1dp::SecretEnv1Dp;
 
 pub struct PolicyIterationModel {
     pub states: Vec<State>,

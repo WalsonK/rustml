@@ -38,7 +38,7 @@ impl MonteCarloESModel {
         })
     }
 
-    pub fn monte_carlo_es<E: Environment>(&mut self, env: &mut E) {
+    pub fn monte_carlo_es(&mut self, env: &mut dyn Environment) {
         let mut rng = thread_rng();
         let mut i = 0;
         for _ in 0..self.num_episodes {

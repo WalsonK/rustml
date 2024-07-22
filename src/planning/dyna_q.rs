@@ -44,7 +44,7 @@ impl DynaQModel {
         })
     }
 
-    pub fn dyna_q<E: Environment>(&mut self, env: &mut E) {
+    pub fn dyna_q(&mut self, env: &mut dyn Environment) {
         let mut rng = thread_rng();
         let mut i = 0;
         for _ in 0..self.iterations {
