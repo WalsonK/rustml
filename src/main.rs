@@ -332,10 +332,10 @@ fn main() {
                 QLearning::new(100_000,  0.6, 0.7, 0.7)
             )},
             "dyna_q" => { Algo::DynaQ(
-                DynaQModel::new(10000,  0.95,  0.5,  0.8, 10)
+                DynaQModel::new(1000,  0.9,  0.9,  0.1, 10)
             )},
             "dyna_q+" => { Algo::DynaQPlus(
-                DynaQPlusModel::new(10000, 0.95, 0.1, 0.1, 10, 0.001)
+                DynaQPlusModel::new(1000, 0.95, 0.1, 0.1, 10, 0.001)
             )},
             _ => panic!("Unknown algorithm: {}", algorithm),
 
@@ -344,7 +344,9 @@ fn main() {
 
         match &mut algo {
             Algo::MonteCarloES(ref mut mce) => {
-                if load { mce.load_policy("policy_MONTE_CARLO_ES.json").unwrap(); }
+                if load {
+                    //mce.load_policy("policy_MONTE_CARLO_ES.json").unwrap();
+                    mce.load_q_values("Q_value_MONTE_CARLO_ES.bin").unwrap();}
                 else {
                     let start = Instant::now();
                     mce.monte_carlo_es(&mut *env);
@@ -354,11 +356,14 @@ fn main() {
                 println!("Q-values: {:?}", mce.q_values);
                 println!("Policy: {:?}", mce.policy);
 
-                if save { mce.save_policy("policy_MONTE_CARLO_ES.json").unwrap(); }
+                if save { mce.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
+                    mce.save_q_values("Q_value_MONTE_CARLO_ES.bin").unwrap();;}
                 use_policy_in_game(&mut *env, Policy::Map(mce.policy.clone()));
             },
             Algo::MonteCarloControlOn(ref mut mccon) => {
-                if load { mccon.load_policy("policy_MONTE_CARLO_CONTROL.json").unwrap(); }
+                if load {
+                    //mccon.load_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
+                    mccon.save_q_values("q_value_MONTE_CARLO_CONTRO.bin").unwrap();}
                 else {
                     let start = Instant::now();
                     mccon.on_policy_mc_control(&mut *env, 10000, 100);
@@ -368,11 +373,14 @@ fn main() {
                 println!("Q-values: {:?}", mccon.q_values);
                 println!("Policy: {:?}", mccon.policy);
 
-                if save { mccon.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();}
+                if save { mccon.save_policy("policy_MONTE_CARLO_CONTROL.json").unwrap();
+                    mccon.save_q_values("q_value_MONTE_CARLO_CONTRO.bin").unwrap();}
                 use_policy_in_game(&mut *env, Policy::Map(mccon.policy.clone()));
             }
             Algo::MonteCarloControlOff(ref mut mccoff) => {
-                if load { mccoff.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap(); }
+                if load {
+                    //mccoff.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
+                    mccoff.load_q_values("Q_Value_MONTE_CARLO_CONTROL_OFF.bin").unwrap();}
                 else {
                     let start = Instant::now();
                     mccoff.off_policy_mc_control(&mut *env, 10000, 100);
@@ -382,7 +390,9 @@ fn main() {
                 println!("Q-values: {:?}", mccoff.q_values);
                 println!("Policy: {:?}", mccoff.policy);
 
-                if save { mccoff.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap(); }
+                if save {
+                    mccoff.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
+                    mccoff.save_q_values("Q_Value_MONTE_CARLO_CONTROL_OFF.bin").unwrap();}
                 use_policy_in_game(&mut *env, Policy::Map(mccoff.policy.clone()));
             },
             Algo::Sarsa(ref mut sra) => {
@@ -399,7 +409,9 @@ fn main() {
                 use_policy_in_game(&mut *env, Policy::Array(sra.policy.clone()));
             },
             Algo::QLearning(ref mut ql) => {
-                if load { ql.load_policy("policy_QLearning.json").unwrap(); }
+                if load {
+                    //ql.load_policy("policy_QLearning.json").unwrap();
+                    ql.load_q_values("Q_value_QLearning.bin").unwrap();}
                 else {
                     let start = Instant::now();
                     ql.q_learning(&mut *env);
@@ -410,11 +422,14 @@ fn main() {
                 println!("Q-values: {:?}", ql.q_values);
                 ql.print_policy();
 
-                if save { ql.save_policy("policy_QLearning.json").unwrap(); }
+                if save { ql.save_policy("policy_QLearning.json").unwrap();
+                    ql.save_q_values("Q_value_QLearning.bin").unwrap();}
                 use_policy_in_game(&mut *env, Policy::Map(ql.policy.clone()))
             },
             Algo::DynaQ(ref mut dq) => {
-                if load { dq.load_policy( "policy_DYNQ.json").unwrap(); }
+                if load {
+                    //dq.load_policy( "policy_DYNQ.json").unwrap();
+                     dq.load_q_values("Q_value_DYNQ.bin").unwrap();}
                 else {
                     let start = Instant::now();
                     dq.dyna_q(&mut *env);
@@ -425,11 +440,16 @@ fn main() {
                 println!("Q-values: {:?}", dq.q_values);
                 dq.print_policy();
 
-                if save { dq.save_policy( "policy_DYNQ.json").unwrap(); }
+                if save {
+                    dq.save_policy( "policy_DYNQ.json").unwrap();
+                    dq.save_q_values("Q_value_DYNQ.bin").unwrap();}
                 use_policy_in_game(&mut *env, Policy::Map(dq.policy.clone()));
             },
             Algo::DynaQPlus(ref mut dqp) => {
-                if load { dqp.load_policy("policy_DYNQ_PLUS.json").unwrap(); }
+                if load {
+                    //dqp.load_policy("policy_DYNQ_PLUS.json").unwrap();
+                    dqp.load_q_values("Qlearing_Q_value_DYNQ_plus_.bin").unwrap();
+                }
                 else {
                     let start = Instant::now();
                     dqp.dyna_q_plus(&mut *env);
@@ -440,7 +460,9 @@ fn main() {
                 println!("Q-values: {:?}", dqp.q_values);
                 dqp.print_policy();
 
-                if save { dqp.save_policy("policy_DYNQ_PLUS.json").unwrap(); }
+                if save { dqp.save_policy("policy_DYNQ_PLUS.json").unwrap();
+                    dqp.save_q_values("Qlearing_Q_value_DYNQ_plus_.bin").unwrap()
+                }
                 use_policy_in_game(&mut *env, Policy::Map(dqp.policy.clone()));
             },
             _ => {}
@@ -448,5 +470,5 @@ fn main() {
     }
 
 
-    process("MontyHall",  "q_learning", false, false);
+    process("secretenv0",  "dyna_q", true, false);
 }

@@ -125,6 +125,27 @@ impl MonteCarloESModel {
 
         best_action
     }
+    pub fn derive_policy(&self) -> HashMap<State, Action> {
+        let mut policy = HashMap::new();
+        println!("Q-values: {:?}", self.q_values);
+
+        for (&(state, action), &q_value) in &self.q_values {
+            println!("State: {:?}, Action: {:?}, Q-value: {:?}", state, action, q_value);
+            if let Some(&best_action) = policy.get(&state) {
+                println!("Best action already in policy for state {:?}: {:?}", state, best_action);
+                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
+                    println!("Updating policy for state {:?} to action {:?} with Q-value {:?}", state, action, q_value);
+                    policy.insert(state, action);
+                }
+            } else {
+                println!("Inserting new policy for state {:?}: action {:?}", state, action);
+                policy.insert(state, action);
+            }
+        }
+
+        println!("Derived policy: {:?}", policy);
+        policy
+    }
 
     pub fn save_policy(&self, filename: &str) -> io::Result<()> {
         let file = File::create(filename)?;
@@ -135,6 +156,18 @@ impl MonteCarloESModel {
     pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
         let file = File::open(filename)?;
         self.policy = serde_json::from_reader(file)?;
+        Ok(())
+    }
+    pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::create(filename)?;
+        bincode::serialize_into(file, &self.q_values)?;
+        Ok(())
+    }
+
+    pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::open(filename)?;
+        self.q_values = bincode::deserialize_from(file)?;
+        self.policy = self.derive_policy();
         Ok(())
     }
 }
