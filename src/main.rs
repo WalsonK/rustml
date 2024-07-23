@@ -14,10 +14,12 @@ use rustml::td_learning::q_learning::QLearning;
 use rand::Rng;
 use std::time::Instant;
 use rustml::environment::monteHall::MontyHall;
+use serde::{Serialize, Deserialize};
+use std::fs::File;
 
 
 fn main() {
-    let mut env = MontyHall::new(3);
+
 
     /* Reset the game
     let state = game.reset();
@@ -41,11 +43,11 @@ fn main() {
      */
 
     // -------------------------------- ENV -------------------------------------
-    /*    Secret Env 0
+    //    Secret Env 0
     let mut env: Box<SecretEnv0Dp> = unsafe { SecretEnv0Dp::new() };
     println!("Env0, action : {:?}, state : {:}", env.all_action(), env.all_states().len());
     env.display();
-     */
+     //
     /*      Secret Env 1
     let mut env: Box<SecretEnv1Dp> = unsafe { SecretEnv1Dp::new() };
     println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
@@ -78,8 +80,9 @@ fn main() {
     */
 
     //      PLAYABLE MONTY HALL
-   // let mut env = monty_hall::MontyHall::new(3);
-    //
+    /* let mut env = monty_hall::MontyHall::new(3);
+     let mut env = MontyHall::new(3);
+    */
 
 
     // two_round_rock_paper_scissors
@@ -212,23 +215,34 @@ fn main() {
     use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));*/
 
     // Q Learning
-    let iterations = 100000;
+    let iterations = 10000;
     let gamma = 0.9;
     let alpha = 0.9;
     let epsilon = 0.1;
 
     let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
-    let start = Instant::now();
-    model.q_learning(&mut *env);
+    /*let start = Instant::now();
+    let q_values = model.q_learning(&mut *env);
+
     println!("Q-values: {:?}", model.q_values);
     let policy = model.derive_policy();
     let duration = start.elapsed();
     model.print_policy();
     println!("Model trained for : {:?}", duration);
-     model.save_policy("policy_QLearning.json").unwrap();
-    //
-    model.load_policy("policy_QLearning.json").unwrap();
+
+    // Sauvegarde des Q-values et de la politique
+    model.save_q_values("q_values.bin").unwrap();
+    model.save_policy("policy.json").unwrap();
+//
+    // Rechargement des Q-values et de la politique
+   */ model.load_q_values("q_values.bin").unwrap();
+    println!("Q-values: {:?}", model.q_values);
+    //model.load_policy("policy.json").unwrap();
+
+    //model.load_policy("policy_QLearning.json").unwrap();
     use_policy_in_game(&mut *env, Policy::Map(model.policy.clone()));
+//
+
 
     //
 

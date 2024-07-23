@@ -208,21 +208,3 @@ impl fmt::Display for MontyHall {
     }
 }
 
-// Example usage
-fn main() {
-    let mut game = MontyHall::new(3);
-
-    // Simulate a game where the player initially chooses door 1 and then decides to switch
-    let reward = game.play_game(1, true);
-    println!("{}", game);
-    println!("Reward: {}", reward);
-
-    // Reset the game for the next round
-    game.reset();
-    println!("{}", game);
-
-    // Simulate a game where the player initially chooses door 2 and then decides to keep the choice
-    let reward = game.play_game(2, false);
-    println!("{}", game);
-    println!("Reward: {}", reward);
-}

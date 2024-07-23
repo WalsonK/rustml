@@ -21,7 +21,7 @@ pub struct EpisodeStep {
 pub struct MonteCarloControl {
     pub epsilon: f64,
     pub gamma: f32,
-    pub derived_policy: HashMap<State, HashMap<Action, f64>>,
+    pub derived_policy: HashMap<State, HashMap<Action, Reward>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub returns: HashMap<(State, Action), Vec<Reward>>,
     pub policy: HashMap<State, Action>,
@@ -46,7 +46,7 @@ impl MonteCarloControl {
             let available_actions = env.all_action();
             for &action in &available_actions {
                 if !env.is_forbidden(action) {
-                    actions.insert(action, 1.0 / available_actions.len() as f64);
+                    actions.insert(action, 1.0 / available_actions.len() );
                     self.q_values.insert((state, action), 0.0);
                     self.returns.insert((state, action), vec![]);
                 }
@@ -147,7 +147,7 @@ impl MonteCarloControl {
 
     fn update_policy(&mut self, state: State, best_action: Action) {
         let actions = self.derived_policy.get_mut(&state).unwrap();
-        let num_actions = actions.len() as f64;
+        let num_actions = actions.len() ;
         let epsilon = self.epsilon;
         for (&action, prob) in actions.iter_mut() {
             if action == best_action {

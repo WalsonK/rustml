@@ -1,6 +1,7 @@
 extern crate rand;
 extern crate serde;
 extern crate serde_json;
+extern crate bincode;
 
 use rand::seq::SliceRandom;
 use rand::{Rng, thread_rng};
@@ -9,6 +10,7 @@ use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{self, Write, Read};
+use std::error::Error;
 
 #[derive(Serialize, Deserialize)]
 pub struct QLearning {
@@ -32,28 +34,23 @@ impl QLearning {
         })
     }
 
-    pub fn q_learning<E: Environment>(&mut self, env: &mut E) {
+    pub fn q_learning(&mut self, env: &mut dyn Environment) {
         let mut rng = thread_rng();
 
         for i in 0..self.iterations {
             println!("Iteration: {}", i);
-            // Get current nonterminal state S
             let mut state = env.reset();
 
             loop {
-                // Choose action A using epsilon-greedy policy
                 let available_actions = env.available_actions();
                 let action = self.epsilon_greedy(state, &available_actions, &mut rng);
 
-                // Take action A, observe reward R and next state S'
                 let (next_state, reward, done) = env.step(action);
 
-                // Update Q-value
                 let max_q_next = self.max_q_value(next_state, &available_actions);
                 let q = self.q_values.entry((state, action)).or_insert(0.0);
                 *q += self.alpha * (reward + self.gamma * max_q_next - *q);
 
-                // Move to the next state
                 state = next_state;
 
                 if done {
@@ -61,7 +58,7 @@ impl QLearning {
                 }
             }
         }
-        self.derive_and_assign_policy(); // Update policy after training
+        self.derive_and_assign_policy();
     }
 
     fn max_q_value(&self, state: State, actions: &[Action]) -> f32 {
@@ -91,17 +88,23 @@ impl QLearning {
 
     pub fn derive_policy(&self) -> HashMap<State, Action> {
         let mut policy = HashMap::new();
+        println!("Q-values: {:?}", self.q_values);
 
         for (&(state, action), &q_value) in &self.q_values {
+            println!("State: {:?}, Action: {:?}, Q-value: {:?}", state, action, q_value);
             if let Some(&best_action) = policy.get(&state) {
+                println!("Best action already in policy for state {:?}: {:?}", state, best_action);
                 if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
+                    println!("Updating policy for state {:?} to action {:?} with Q-value {:?}", state, action, q_value);
                     policy.insert(state, action);
                 }
             } else {
+                println!("Inserting new policy for state {:?}: action {:?}", state, action);
                 policy.insert(state, action);
             }
         }
 
+        println!("Derived policy: {:?}", policy);
         policy
     }
 
@@ -123,5 +126,19 @@ impl QLearning {
 
     pub fn derive_and_assign_policy(&mut self) {
         self.policy = self.derive_policy();
+    }
+
+    pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::create(filename)?;
+        bincode::serialize_into(file, &self.q_values)?;
+
+        Ok(())
+    }
+
+    pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::open(filename)?;
+        self.q_values = bincode::deserialize_from(file)?;
+        self.policy = self.derive_policy();
+        Ok(())
     }
 }
