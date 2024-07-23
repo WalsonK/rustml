@@ -13,9 +13,32 @@ use rustml::planning::dyna_q_plus::DynaQPlusModel;
 use rustml::td_learning::q_learning::QLearning;
 use rand::Rng;
 use std::time::Instant;
+use rustml::environment::monteHall::MontyHall;
 
 
 fn main() {
+    let mut env = MontyHall::new(3);
+
+    /* Reset the game
+    let state = game.reset();
+    println!("{}", game);
+
+    // Step 1: Initial choice
+    let (state, reward, done) = game.step(0); // Choose door 0
+    println!("{}", game);
+    assert!(!done);
+
+    // Step 2: Decide whether to switch or not
+    let (state, reward, done) = game.step(1); // Switch door
+    println!("{}", game);
+    assert!(done);
+    println!("Reward: {}", reward);
+
+    // Reset the game for the next round
+    game.reset();
+    println!("{}", game);
+
+     */
 
     // -------------------------------- ENV -------------------------------------
     /*    Secret Env 0
@@ -28,11 +51,11 @@ fn main() {
     println!("Env1, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     env.display();
      */
-    //      Secret Env 2
+    /*      Secret Env 2
     let mut env: Box<SecretEnv2Dp> = unsafe { SecretEnv2Dp::new() };
     println!("Env2, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
     env.display();
-     //
+     */
     /*      Secret Env 3
     let mut env: Box<SecretEnv3Dp> = unsafe { SecretEnv3Dp::new() };
     println!("Env3, action : {:?}, state : {:}",env.all_action(),env.all_states().len());
@@ -46,6 +69,7 @@ fn main() {
     let _ = env.display();
     */
 
+
     /*      Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
@@ -57,6 +81,7 @@ fn main() {
    // let mut env = monty_hall::MontyHall::new(3);
     //
 
+
     // two_round_rock_paper_scissors
     //let mut env = two_round_rock_paper_scissors::RPSGame::new();
 
@@ -64,6 +89,7 @@ fn main() {
 // -------------------------------- ALGO -------------------------------------
 
     /*     POLICY ITERATION
+
     let mut model = policy_iteration::PolicyIterationModel::new(
         env.all_position.clone(),
         env.all_actions.clone(),
@@ -109,7 +135,7 @@ fn main() {
 
 
     /*    MONTE CARLO ES
-    let mut model = monte_carlo_es::MonteCarloESModel::new(50000, 0.9, 20);
+    let mut model = monte_carlo_es::MonteCarloESModel::new(10000, 0.5, 20);
     // Entraînement du modèle avec Monte Carlo ES
     let start = Instant::now();
     model.monte_carlo_es(&mut *env);
@@ -120,13 +146,11 @@ fn main() {
     println!("Model trained for : {:?}", duration);
     // Tester la politique entraînée sur un état initial
     let state = env.reset();
-    let action = model.policy.get(&state).cloned().unwrap_or(0);
-    env.step(action);
-    env.display();
     //
 
-   model.save_policy("policy_MONTE_CARLO_ES_montyHall.json").unwrap();
-    //model.load_policy("policy_MONTE_CARLO_ES_montyHall.json").unwrap();
+   model.save_policy("policy_MONTE_CARLO_ES_MontyHall_new.json").unwrap();
+    //
+    model.load_policy("policy_MONTE_CARLO_ES_MontyHall_new.json").unwrap();
     use_policy_in_game(&mut *env, Policy::Map(model.policy.clone()));
 
     */
@@ -170,6 +194,7 @@ fn main() {
     println!("Policy: {:?}", model.policy);
     println!("Model trained for : {:?}", duration);
     use_policy_in_game(&mut *env, Policy::Map(model.policy.clone()));
+
     model.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
     //model.load_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
     //println!("Policy  : {:?}", model.derived_policy);*/
@@ -187,9 +212,9 @@ fn main() {
     use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));*/
 
     // Q Learning
-    let iterations = 100;
-    let gamma = 0.5;
-    let alpha = 0.7;
+    let iterations = 100000;
+    let gamma = 0.9;
+    let alpha = 0.9;
     let epsilon = 0.1;
 
     let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
@@ -200,11 +225,12 @@ fn main() {
     let duration = start.elapsed();
     model.print_policy();
     println!("Model trained for : {:?}", duration);
-    use_policy_in_game(&mut *env, Policy::Map(model.policy.clone()));
      model.save_policy("policy_QLearning.json").unwrap();
-    //let mut model = QLearning::new(iterations, gamma, alpha, epsilon);
-    //model.load_policy("policy_QLearning.json").unwrap();
-     //
+    //
+    model.load_policy("policy_QLearning.json").unwrap();
+    use_policy_in_game(&mut *env, Policy::Map(model.policy.clone()));
+
+    //
 
 
 
@@ -252,3 +278,4 @@ fn main() {
     //let mut model = DynaQPlusModel::new(iterations, gamma, alpha, epsilon, planning_steps, kappa);
     //model.load_policy("policy_DYNQ_PLUS.json").unwrap();*/
 }
+
