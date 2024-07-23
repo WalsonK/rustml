@@ -1,14 +1,16 @@
 extern crate rand;
 extern crate serde;
 extern crate serde_json;
+extern crate bincode;
 
 use rand::seq::SliceRandom;
-use rand::thread_rng;
-use serde::{Serialize, Deserialize};
+use rand::{Rng, thread_rng};
 use std::collections::HashMap;
+use crate::environment::environment::{State, Action, Reward, Environment};
+use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{self, Write, Read};
-use crate::environment::environment::{State, Action, Reward, Environment};
+use std::error::Error;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EpisodeStep {
@@ -38,7 +40,7 @@ impl MonteCarloESModel {
         })
     }
 
-    pub fn monte_carlo_es<E: Environment>(&mut self, env: &mut E) {
+    pub fn monte_carlo_es(&mut self, env: &mut dyn Environment) {
         let mut rng = thread_rng();
         let mut i = 0;
         for _ in 0..self.num_episodes {

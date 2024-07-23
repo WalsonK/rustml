@@ -1,6 +1,16 @@
-use rand::Rng;
+extern crate rand;
+extern crate serde;
+extern crate serde_json;
+extern crate bincode;
+
+use rand::seq::SliceRandom;
+use rand::{Rng, thread_rng};
+use std::collections::HashMap;
 use crate::environment::environment::{State, Action, Reward, Environment};
-use crate::environment::secret_env0dp::SecretEnv0Dp;
+use serde::{Serialize, Deserialize};
+use std::fs::File;
+use std::io::{self, Write, Read};
+use std::error::Error;
 
 pub struct ValueIterationModel {
     pub states: Vec<State>,

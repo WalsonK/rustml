@@ -6,7 +6,7 @@ type State = usize;
 type Action = usize;
 type Reward = f32;
 
-pub struct MontyHall {
+pub struct MonteHall {
     pub winning_door: usize,
     pub chosen_door: Option<usize>,
     pub opened_door: Option<usize>,
@@ -14,13 +14,13 @@ pub struct MontyHall {
     pub state: State,
 }
 
-impl MontyHall {
-    pub fn new(nb_portes: usize) -> Box<MontyHall> {
+impl MonteHall {
+    pub fn new(nb_portes: usize) -> Box<MonteHall> {
         let mut rng = rand::thread_rng();
         let winning_door = rng.gen_range(0..nb_portes);
         println!("La porte gagnante est la porte {}", winning_door);
 
-        Box::new(MontyHall {
+        Box::new(MonteHall {
             winning_door,
             chosen_door: None,
             opened_door: None,
@@ -91,7 +91,8 @@ impl MontyHall {
     }
 }
 
-impl Environment for MontyHall {
+impl Environment for MonteHall {
+
     fn reset(&mut self) -> State {
         let mut rng = rand::thread_rng();
         self.winning_door = rng.gen_range(0..self.nb_portes);
@@ -196,7 +197,7 @@ impl Environment for MontyHall {
     }
 }
 
-impl fmt::Display for MontyHall {
+impl fmt::Display for MonteHall {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let chosen_door = self.chosen_door.map_or("None".to_string(), |x| (x + 1).to_string());
         let opened_door = self.opened_door.map_or("None".to_string(), |x| (x + 1).to_string());

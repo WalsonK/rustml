@@ -1,14 +1,16 @@
 extern crate rand;
 extern crate serde;
 extern crate serde_json;
+extern crate bincode;
 
 use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::{Rng, thread_rng};
 use std::collections::HashMap;
 use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{self, Write, Read};
+use std::error::Error;
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -21,7 +23,7 @@ pub struct EpisodeStep {
 pub struct MonteCarloControl {
     pub epsilon: f64,
     pub gamma: f32,
-    pub derived_policy: HashMap<State, HashMap<Action, Reward>>,
+    pub derived_policy: HashMap<State, HashMap<Action, f64>>,
     pub q_values: HashMap<(State, Action), Reward>,
     pub returns: HashMap<(State, Action), Vec<Reward>>,
     pub policy: HashMap<State, Action>,
@@ -39,14 +41,14 @@ impl MonteCarloControl {
         })
     }
 
-    pub fn ensure_policy_initialized<E: Environment>(&mut self, state: State, env: &mut E) {
+    pub fn ensure_policy_initialized(&mut self, state: State, env: &mut dyn Environment) {
         if !self.derived_policy.contains_key(&state)
         {
             let mut actions = HashMap::new();
             let available_actions = env.all_action();
             for &action in &available_actions {
                 if !env.is_forbidden(action) {
-                    actions.insert(action, 1.0 / available_actions.len() );
+                    actions.insert(action, 1.0 / available_actions.len() as f64);
                     self.q_values.insert((state, action), 0.0);
                     self.returns.insert((state, action), vec![]);
                 }
@@ -55,7 +57,7 @@ impl MonteCarloControl {
         }
     }
 
-    pub fn choose_action_soft<E: Environment>(&mut self, state: State, env: &mut E, rng: &mut rand::rngs::ThreadRng) -> Action {
+    pub fn choose_action_soft(&mut self, state: State, env: &mut dyn Environment, rng: &mut rand::rngs::ThreadRng) -> Action {
         self.ensure_policy_initialized(state, env);
 
         let available_actions = env.available_actions();
@@ -86,7 +88,7 @@ impl MonteCarloControl {
         }
     }
 
-    pub fn on_policy_mc_control<E: Environment>(&mut self, env: &mut E, num_episodes: usize, max_steps: usize) {
+    pub fn on_policy_mc_control(&mut self, env: &mut dyn Environment, num_episodes: usize, max_steps: usize) {
         let mut rng = thread_rng();
         let mut i = 0;
         for _ in 0..num_episodes {
@@ -147,7 +149,7 @@ impl MonteCarloControl {
 
     fn update_policy(&mut self, state: State, best_action: Action) {
         let actions = self.derived_policy.get_mut(&state).unwrap();
-        let num_actions = actions.len() ;
+        let num_actions = actions.len() as f64;
         let epsilon = self.epsilon;
         for (&action, prob) in actions.iter_mut() {
             if action == best_action {
