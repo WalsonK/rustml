@@ -130,7 +130,7 @@ impl Environment for GridWorld {
     }
 
     fn reset(&mut self) -> State {
-        self.agent_position = rand::thread_rng().gen_range(0..self.all_position.len());
+        self.agent_position = rand::thread_rng().gen_range(1..self.all_position.len());
         self.agent_position as State
     }
 
@@ -298,11 +298,11 @@ mod tests {
             vec!['_', '_', '_', '_', '_']
         ]);
     }
-    /*#[test]
+    #[test]
     fn test_reset() {
         let mut env = setup_grid_world();
         env.agent_position = 4;
         env.reset();
         assert_eq!(env.agent_position, 2);
-    }*/
+    }
 }
