@@ -114,18 +114,13 @@ impl MonteCarloESModel {
 
     pub fn derive_policy(&self) -> HashMap<State, Action> {
         let mut policy = HashMap::new();
-        println!("Q-values: {:?}", self.q_values);
 
         for (&(state, action), &q_value) in &self.q_values {
-            println!("State: {:?}, Action: {:?}, Q-value: {:?}", state, action, q_value);
             if let Some(&best_action) = policy.get(&state) {
-                println!("Best action already in policy for state {:?}: {:?}", state, best_action);
                 if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
-                    println!("Updating policy for state {:?} to action {:?} with Q-value {:?}", state, action, q_value);
                     policy.insert(state, action);
                 }
             } else {
-                println!("Inserting new policy for state {:?}: action {:?}", state, action);
                 policy.insert(state, action);
             }
         }

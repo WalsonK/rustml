@@ -1,10 +1,18 @@
+extern crate rand;
+extern crate serde;
+extern crate serde_json;
+
 use std::collections::HashMap;
 use std::fs::File;
-use std::{f32, io};
+use std::error::Error;
 use rand::Rng;
 use rand::seq::SliceRandom;
+use serde::{Deserialize, Serialize};
 use crate::environment::environment::{Environment, State, Action, Reward};
+use std::io::{self, Write, Read};
 
+
+#[derive(Serialize, Deserialize)]
 pub struct SarsaModel {
     pub alpha: f32,
     pub gamma: f32,
@@ -151,5 +159,18 @@ impl SarsaModel {
         }
         self.policy = vec.clone();
         Ok(vec)
+    }
+
+    pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::create(filename)?;
+        bincode::serialize_into(file, &self.q_values)?;
+        Ok(())
+    }
+
+    pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::open(filename)?;
+        self.q_values = bincode::deserialize_from(file)?;
+        self.derive_policy();
+        Ok(())
     }
 }

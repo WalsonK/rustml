@@ -399,11 +399,15 @@ fn main() {
 
                 if save {
                     mccoff.save_policy("policy_MONTE_CARLO_CONTROL_OFF.json").unwrap();
-                    mccoff.save_q_values("Q_Value_MONTE_CARLO_CONTROL_OFF.bin").unwrap();}
+                    mccoff.save_q_values("Q_Value_MONTE_CARLO_CONTROL_OFF.bin").unwrap();
+                }
                 use_policy_in_game(&mut *env, Policy::Map(mccoff.policy.clone()));
             },
             Algo::Sarsa(ref mut sra) => {
-                if load { sra.load_policy("policy_SARSA.json").unwrap(); }
+                if load {
+                    //sra.load_policy("policy_SARSA.json").unwrap();
+                    sra.load_q_values("Q_Value_SARSA.bin").unwrap();
+                }
                 else {
                     let start = Instant::now();
                     sra.process_episode(&mut *env);
@@ -412,7 +416,10 @@ fn main() {
                 }
                 println!("Policy: {:?}", sra.policy);
 
-                if save { sra.save_policy("policy_SARSA.json").unwrap(); }
+                if save {
+                    sra.save_policy("policy_SARSA.json").unwrap();
+                    sra.save_q_values("Q_Value_SARSA.bin").unwrap();
+                }
                 use_policy_in_game(&mut *env, Policy::Array(sra.policy.clone()));
             },
             Algo::QLearning(ref mut ql) => {
@@ -477,6 +484,6 @@ fn main() {
     }
 
 
-    process("lineworld",  "sarsa", false, false);
+    process("gridworld",  "sarsa", false, true);
 }
 
