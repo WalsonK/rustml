@@ -6,6 +6,7 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
+use std::error::Error;
 use std::fs::File;
 use std::io::{self, Write, Read};
 use crate::environment::environment::{State, Action, Reward, Environment};
@@ -42,7 +43,9 @@ impl MonteCarloESModel {
         let mut rng = thread_rng();
         let mut i = 0;
         for _ in 0..self.num_episodes {
-            env.reset();
+            env.random_state();
+            env.state_id();
+            //env.reset();
             println!("{}", i);
             i = i + 1;
             let mut is_first_action = true;
@@ -109,6 +112,28 @@ impl MonteCarloESModel {
         }
     }
 
+    pub fn derive_policy(&self) -> HashMap<State, Action> {
+        let mut policy = HashMap::new();
+        println!("Q-values: {:?}", self.q_values);
+
+        for (&(state, action), &q_value) in &self.q_values {
+            println!("State: {:?}, Action: {:?}, Q-value: {:?}", state, action, q_value);
+            if let Some(&best_action) = policy.get(&state) {
+                println!("Best action already in policy for state {:?}: {:?}", state, best_action);
+                if q_value > *self.q_values.get(&(state, best_action)).unwrap_or(&f32::NEG_INFINITY) {
+                    println!("Updating policy for state {:?} to action {:?} with Q-value {:?}", state, action, q_value);
+                    policy.insert(state, action);
+                }
+            } else {
+                println!("Inserting new policy for state {:?}: action {:?}", state, action);
+                policy.insert(state, action);
+            }
+        }
+
+        println!("Derived policy: {:?}", policy);
+        policy
+    }
+
     fn find_best_action(&self, state: State) -> Action {
         let mut best_action = 0;
         let mut best_value = f32::NEG_INFINITY;
@@ -133,6 +158,19 @@ impl MonteCarloESModel {
     pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
         let file = File::open(filename)?;
         self.policy = serde_json::from_reader(file)?;
+        Ok(())
+    }
+
+    pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::create(filename)?;
+        bincode::serialize_into(file, &self.q_values)?;
+        Ok(())
+    }
+
+    pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::open(filename)?;
+        self.q_values = bincode::deserialize_from(file)?;
+        self.policy = self.derive_policy();
         Ok(())
     }
 }

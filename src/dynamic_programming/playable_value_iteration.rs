@@ -1,6 +1,5 @@
 use rand::Rng;
 use crate::environment::environment::{State, Action, Reward, Environment};
-use crate::environment::secret_env0dp::SecretEnv0Dp;
 
 pub struct ValueIterationModel {
     pub states: Vec<State>,

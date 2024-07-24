@@ -1,14 +1,16 @@
 extern crate rand;
 extern crate serde;
 extern crate serde_json;
+extern crate bincode;
 
 use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::{Rng, thread_rng};
 use std::collections::HashMap;
 use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{self, Write, Read};
+use std::error::Error;
 
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
@@ -178,6 +180,20 @@ impl MonteCarloControl {
     pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
         let file = File::open(filename)?;
         self.policy = serde_json::from_reader(file)?;
+        Ok(())
+    }
+
+    pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::create(filename)?;
+        bincode::serialize_into(file, &self.q_values)?;
+
+        Ok(())
+    }
+
+    pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
+        let file = File::open(filename)?;
+        self.q_values = bincode::deserialize_from(file)?;
+        self.derive_and_assign_policy();
         Ok(())
     }
 
