@@ -1,5 +1,6 @@
 extern crate rustml;
 
+use std::any::Any;
 use std::io;
 use rand::Rng;
 use std::time::Instant;
@@ -61,7 +62,7 @@ fn main() {
     */
 
     //      PLAYABLE MONTY HALL
-   // let mut env = monty_hall::MontyHall::new(3);
+    //let mut env = playable_monte_hall::playable_MontyHall::new(3);
     //
 
 
@@ -118,7 +119,7 @@ fn main() {
 
 
     /*    MONTE CARLO ES
-    let mut model = monte_carlo_es::MonteCarloESModel::new(50000, 0.9, 20);
+    let mut model = MonteCarloESModel::new(1000, 0.9, 20);
     // Entraînement du modèle avec Monte Carlo ES
     let start = Instant::now();
     model.monte_carlo_es(&mut *env);
@@ -134,8 +135,8 @@ fn main() {
     env.display();
     //
 
-   model.save_policy("policy_MONTE_CARLO_ES_montyHall.json").unwrap();
-    //model.load_policy("policy_MONTE_CARLO_ES_montyHall.json").unwrap();
+    //model.save_policy("policy_MONTE_CARLO_ES_montyHall.json").unwrap();
+    // model.load_policy("policy_MONTE_CARLO_ES_montyHall.json").unwrap();
     use_policy_in_game(&mut *env, Policy::Map(model.policy.clone()));
 
     */
@@ -144,7 +145,7 @@ fn main() {
 
 
     /*      MONTE CARLO CONTROL
-    let mut model = monte_carlo_control_struct::MonteCarloControl::new(0.1, 0.9);
+    let mut model = MonteCarloControl::new(0.1, 0.9);
     // Entraînement du modèle avec Monte Carlo Control
     let start = Instant::now();
     model.on_policy_mc_control(&mut *env, 10000, 100);
@@ -185,16 +186,19 @@ fn main() {
     //println!("Policy  : {:?}", model.derived_policy);*/
 
     /* SARSA
-    let mut model = sarsa::SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 100);
+    let mut model = SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 100);
     //tools::print_matrix(&env.all_position, &env.all_actions, &model.q_table)
     let start = Instant::now();
-    let best_policy = model.process_episode(true, &mut *env);
+    let best_policy = model.process_episode(&mut *env);
     let duration = start.elapsed();
+    println!("Q-values: {:?}", model.q_values);
     println!("Policy for policy iter: {:?}", best_policy);
     println!("Model trained for : {:?}", duration);
     env.reset();
 
-    use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));*/
+    use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));
+    //model.save_policy("policy_SARSA.json").unwrap();
+    */
 
     /* Q Learning
     let iterations = 100;
@@ -328,10 +332,10 @@ fn main() {
                 MonteCarloControlOff::new(0.1, 0.9)
             )},
             "sarsa" => { Algo::Sarsa(
-                SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 100)
+                SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 4)
             )},
             "q_learning" => { Algo::QLearning(
-                QLearning::new(100_000,  0.6, 0.7, 0.7)
+                QLearning::new(100,  0.6, 0.7, 0.7)
             )},
             "dyna_q" => { Algo::DynaQ(
                 DynaQModel::new(10000,  0.95,  0.5,  0.8, 10)
@@ -388,16 +392,16 @@ fn main() {
                 use_policy_in_game(&mut *env, Policy::Map(mccoff.policy.clone()));
             },
             Algo::Sarsa(ref mut sra) => {
-                if load { }
+                if load { sra.load_policy("policy_SARSA.json").unwrap(); }
                 else {
                     let start = Instant::now();
-                    sra.process_episode(true, &mut *env);
+                    sra.process_episode(&mut *env);
                     let duration = start.elapsed();
                     println!("Model trained for : {:?}", duration);
                 }
                 println!("Policy: {:?}", sra.policy);
 
-                if save { }
+                if save { sra.save_policy("policy_SARSA.json").unwrap(); }
                 use_policy_in_game(&mut *env, Policy::Array(sra.policy.clone()));
             },
             Algo::QLearning(ref mut ql) => {
@@ -450,6 +454,6 @@ fn main() {
     }
 
 
-    process("lineworld",  "dyna_q+", false, false);
+    process("lineworld",  "sarsa", false, false);
 }
 
