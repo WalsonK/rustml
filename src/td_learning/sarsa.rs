@@ -9,7 +9,7 @@ use rand::Rng;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use crate::environment::environment::{Environment, State, Action, Reward};
-use std::io::{self, Write, Read};
+use std::io::{self};
 
 
 #[derive(Serialize, Deserialize)]
@@ -28,7 +28,7 @@ impl SarsaModel {
     pub fn new(env: &mut dyn Environment, alpha: f32, gamma:f32, epsilon:f64, nb_episode: usize) -> Box<SarsaModel>{
         let ns = env.all_states().len();
         let na = env.available_actions().len();
-        let mut model = Box::new(SarsaModel {
+        let model = Box::new(SarsaModel {
             num_states: ns,
             num_actions: na,
             alpha,
@@ -73,7 +73,7 @@ impl SarsaModel {
                 if new_state == state { count += 1; }
                 else { count = 0; }
 
-                if (new_state == (self.num_states - 1) as State || count > 20) { break; }
+                if new_state == (self.num_states - 1) as State || count > 20 { break; }
             }
             println!("Episode n°{} end", num_episode);
         }
@@ -102,10 +102,9 @@ impl SarsaModel {
     fn chose_action(&mut self, env: &dyn Environment, state: State) -> Action {
         let available_actions = env.available_actions();
 
-        let mut best_action = 0 as Action;
         let mut rng = rand::thread_rng();
         let rand = rng.gen_range(0.0..=1.0);
-        best_action = if rand < self.epsilon {
+        let best_action = if rand < self.epsilon {
             // random
             *available_actions.choose(&mut rng).unwrap()
             //rng.gen_range(0..self.num_actions)

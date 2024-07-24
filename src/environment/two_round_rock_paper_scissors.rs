@@ -1,33 +1,32 @@
 use rand::Rng;
 use crate::environment::environment::{State, Action as ActionType, Reward, Environment};
-use std::io;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Action_game {
+pub enum ActionGame {
     Rock,
     Paper,
     Scissors,
 }
 
-impl Action_game {
-    fn beats(&self, other: Action_game) -> i32 {
+impl ActionGame {
+    fn beats(&self, other: ActionGame) -> i32 {
         match (self, other) {
-            (Action_game::Rock, Action_game::Scissors) | (Action_game::Scissors, Action_game::Paper) | (Action_game::Paper, Action_game::Rock) => 1,
-            (Action_game::Scissors, Action_game::Rock) | (Action_game::Paper, Action_game::Scissors) | (Action_game::Rock, Action_game::Paper) => -1,
+            (ActionGame::Rock, ActionGame::Scissors) | (ActionGame::Scissors, ActionGame::Paper) | (ActionGame::Paper, ActionGame::Rock) => 1,
+            (ActionGame::Scissors, ActionGame::Rock) | (ActionGame::Paper, ActionGame::Scissors) | (ActionGame::Rock, ActionGame::Paper) => -1,
             _ => 0,
         }
     }
 }
 
 pub struct RPSGame {
-    agent_action: Option<Action_game>,
-    adversary_action: Option<Action_game>,
-    first_agent_action: Option<Action_game>,
+    agent_action: Option<ActionGame>,
+    adversary_action: Option<ActionGame>,
+    first_agent_action: Option<ActionGame>,
     round: usize,
     pub agent_score: i32,
     pub adversary_score: i32,
     pub rewards: Vec<Vec<Vec<Reward>>>,
-    pub probabilities: Vec<Vec<Vec<f64>>>,
+    pub probabilities: Vec<Vec<Vec<f32>>>,
     pub all_position: Vec<State>,
     pub all_actions: Vec<ActionType>,
     pub terminal_position: Vec<State>,
@@ -64,16 +63,16 @@ impl RPSGame {
         for state in 0..3 {
             for action in 0..3 {
                 let agent_action = match action {
-                    0 => Action_game::Rock,
-                    1 => Action_game::Paper,
-                    2 => Action_game::Scissors,
+                    0 => ActionGame::Rock,
+                    1 => ActionGame::Paper,
+                    2 => ActionGame::Scissors,
                     _ => panic!("Invalid action"),
                 };
                 for next_state in 0..3 {
                     let adversary_action = match next_state {
-                        0 => Action_game::Rock,
-                        1 => Action_game::Paper,
-                        2 => Action_game::Scissors,
+                        0 => ActionGame::Rock,
+                        1 => ActionGame::Paper,
+                        2 => ActionGame::Scissors,
                         _ => panic!("Invalid state"),
                     };
                     self.rewards[state][action][next_state] = agent_action.beats(adversary_action) as Reward;
@@ -92,9 +91,9 @@ impl RPSGame {
         }
     }
 
-    pub fn choose_adversary_action(&self) -> Action_game {
+    pub fn choose_adversary_action(&self) -> ActionGame {
         if self.round == 0 {
-            let actions = [Action_game::Rock, Action_game::Paper, Action_game::Scissors];
+            let actions = [ActionGame::Rock, ActionGame::Paper, ActionGame::Scissors];
             let random_index = rand::thread_rng().gen_range(0..3);
             actions[random_index]
         } else {
@@ -105,9 +104,9 @@ impl RPSGame {
     fn play_two_rounds(&mut self, action: ActionType) {
         for _ in 0..2 {
             let agent_action = match action {
-                0 => Action_game::Rock,
-                1 => Action_game::Paper,
-                2 => Action_game::Scissors,
+                0 => ActionGame::Rock,
+                1 => ActionGame::Paper,
+                2 => ActionGame::Scissors,
                 _ => panic!("Invalid action"),
             };
 
@@ -153,9 +152,9 @@ impl Environment for RPSGame {
     // L'agent joue deux fois via la nouvelle méthode play_two_rounds
     fn step(&mut self, action: ActionType) -> (State, Reward, bool) {
         let agent_action = match action {
-            0 => Action_game::Rock,
-            1 => Action_game::Paper,
-            2 => Action_game::Scissors,
+            0 => ActionGame::Rock,
+            1 => ActionGame::Paper,
+            2 => ActionGame::Scissors,
             _ => panic!("Invalid action"),
         };
 

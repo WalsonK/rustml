@@ -129,7 +129,7 @@ impl Environment for MontyHall {
 
             let (success, _) = self.next_state(action);
             if !success {
-                return (self.state_id(), 0.0, false);; // Return 0 reward and false if the action is invalid
+                return (self.state_id(), 0.0, false); // Return 0 reward and false if the action is invalid
             }
 
             if let Some(chosen_door) = self.chosen_door {

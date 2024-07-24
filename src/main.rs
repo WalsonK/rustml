@@ -1,8 +1,5 @@
 extern crate rustml;
 
-use std::any::Any;
-use std::io;
-use rand::Rng;
 use std::time::Instant;
 use rustml::environment::{
     line_world, grid_world, playable_monte_hall, monteHall,
@@ -11,7 +8,6 @@ use rustml::environment::{
 };
 use rustml::environment::tools::{Policy, use_policy_in_game};
 use rustml::environment::environment::{Environment, Reward};
-use rustml::environment::environment::Action as ActionType;
 
 use rustml::monte_carlo::{
     monte_carlo_es::MonteCarloESModel, monte_carlo_control_struct::MonteCarloControl,
@@ -54,12 +50,12 @@ fn main() {
     */
 
 
-    /*      Grid world
+    //     Grid world
     let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
     let _ = env.display();
-    */
+    //
 
     //      PLAYABLE MONTY HALL
     //let mut env = playable_monte_hall::playable_MontyHall::new(3);
@@ -72,14 +68,14 @@ fn main() {
 
 // -------------------------------- ALGO -------------------------------------
 
-    /*     POLICY ITERATION
+    //     POLICY ITERATION
 
-    let mut model = policy_iteration::PolicyIterationModel::new(
+    let mut model = PolicyIterationModel::new(
         env.all_position.clone(),
         env.all_actions.clone(),
         env.rewards.clone(),
         env.probabilities.clone(),
-        0.999,
+        0.1,
         env.terminal_position.clone()
     );
     let start = Instant::now();
@@ -93,11 +89,11 @@ fn main() {
     //model.load_policy("policy_POLICY_ITERATION.json").unwrap();
     //model.print_policy();
     use_policy_in_game(&mut *env, Policy::Array(best_policy.clone()));
-    */
+    //
 
 
     /*      VALUE ITERATION
-    let mut model = value_iteration::ValueIterationModel::new(
+    let mut model = ValueIterationModel::new(
         env.all_position.clone() ,
         env.all_actions.clone(),
         env.rewards.clone(),
@@ -333,7 +329,7 @@ fn main() {
                 MonteCarloControlOff::new(0.1, 0.9)
             )},
             "sarsa" => { Algo::Sarsa(
-                SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 4)
+                SarsaModel::new(&mut *env, 0.1, 0.9, 0.9, 10)
             )},
             "q_learning" => { Algo::QLearning(
                 QLearning::new(100,  0.6, 0.7, 0.7)
@@ -363,8 +359,10 @@ fn main() {
                 println!("Q-values: {:?}", mce.q_values);
                 println!("Policy: {:?}", mce.policy);
 
-                if save { mce.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
-                    mce.save_q_values("Q_value_MONTE_CARLO_ES.bin").unwrap();;}
+                if save {
+                    mce.save_policy("policy_MONTE_CARLO_ES.json").unwrap();
+                    mce.save_q_values("Q_value_MONTE_CARLO_ES.bin").unwrap();
+                }
                 use_policy_in_game(&mut *env, Policy::Map(mce.policy.clone()));
             },
             Algo::MonteCarloControlOn(ref mut mccon) => {
@@ -484,6 +482,6 @@ fn main() {
     }
 
 
-    process("gridworld",  "sarsa", false, true);
+    //process("lineworld",  "sarsa", false, false);
 }
 

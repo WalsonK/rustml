@@ -10,7 +10,7 @@ use rand::prelude::IteratorRandom;
 use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
-use std::io::{self, Write, Read};
+use std::io::{self};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EpisodeStep {

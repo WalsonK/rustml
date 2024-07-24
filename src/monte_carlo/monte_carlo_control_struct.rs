@@ -4,12 +4,12 @@ extern crate serde_json;
 extern crate bincode;
 
 use rand::seq::SliceRandom;
-use rand::{Rng, thread_rng};
+use rand::{thread_rng};
 use std::collections::HashMap;
 use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
-use std::io::{self, Write, Read};
+use std::io::{self};
 use std::error::Error;
 
 #[derive(Clone, Debug)]

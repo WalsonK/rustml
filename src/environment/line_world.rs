@@ -1,6 +1,5 @@
 use rand::Rng;
 use crate::environment::environment::{State, Action, Reward, Environment};
-use crate::environment::tools;
 
 
 pub struct LineWorld {
@@ -8,8 +7,8 @@ pub struct LineWorld {
     pub all_position: Vec<State>,
     pub terminal_position: Vec<State>,
     pub all_actions: Vec<Action>,
-    pub rewards: Vec<Vec<Vec<f64>>>,
-    pub probabilities: Vec<Vec<Vec<f64>>>,
+    pub rewards: Vec<Vec<Vec<Reward>>>,
+    pub probabilities: Vec<Vec<Vec<f32>>>,
 }
 
 impl LineWorld {
@@ -63,7 +62,7 @@ impl LineWorld {
                 let next_state = if self.state_id() == 0 { 0 } else { self.state_id() };
                 let reward = self.score();
 
-                self.rewards[position_index][action_index][next_state] = reward as f64;
+                self.rewards[position_index][action_index][next_state] = reward;
 
                 self.agent_position = position_index;
             }

@@ -3,7 +3,7 @@ use std::fs::File;
 use std::{io};
 use rand::Rng;
 use serde_json;
-use crate::environment::environment::{Action, Reward, State};
+use crate::environment::environment::{Reward};
 
 pub struct ValueIterationModel {
     pub states: Vec<usize>, // Changed to usize for consistency

@@ -1,5 +1,4 @@
 extern crate rand;
-use rand::Rng;
 
 pub type State = usize;
 pub type Action = usize;

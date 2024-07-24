@@ -10,7 +10,7 @@ use rand::prelude::IteratorRandom;
 use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
-use std::io::{self, Write, Read};
+use std::io::{self};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EpisodeStep {
@@ -53,7 +53,7 @@ impl DynaQModel {
             let mut state = env.reset();
             println!("{}", i);
             i += 1;
-            while true {
+            loop {
                 // Choose action A using epsilon-greedy policy
                 let available_actions = env.available_actions();
                 let action = self.epsilon_greedy(state, &available_actions, &mut rng);

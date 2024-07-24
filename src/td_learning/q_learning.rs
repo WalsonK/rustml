@@ -9,7 +9,7 @@ use std::error::Error;
 use crate::environment::environment::{State, Action, Reward, Environment};
 use serde::{Serialize, Deserialize};
 use std::fs::File;
-use std::io::{self, Write, Read};
+use std::io::{self};
 
 #[derive(Serialize, Deserialize)]
 pub struct QLearning {
