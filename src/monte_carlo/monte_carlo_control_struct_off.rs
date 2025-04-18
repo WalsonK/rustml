@@ -10,7 +10,7 @@ use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::{self};
 use crate::environment::environment::{State, Action, Reward, Environment};
-
+/*
 #[derive(Clone, Debug)]
 pub struct EpisodeStep {
     pub state: State,
@@ -167,7 +167,7 @@ impl MonteCarloControlOff {
         Ok(())
     }
 
-    pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
+    /*pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
         let file = File::create(filename)?;
         bincode::serialize_into(file, &self.q_values)?;
 
@@ -179,9 +179,10 @@ impl MonteCarloControlOff {
         self.q_values = bincode::deserialize_from(file)?;
         self.derive_and_assign_policy();
         Ok(())
-    }
+    }*/
 
     pub fn print_policy(&self) {
         println!("Derived Policy: {:?}", self.policy);
     }
 }
+*/

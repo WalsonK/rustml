@@ -2,7 +2,7 @@ extern crate rand;
 extern crate serde;
 extern crate serde_json;
 
-use rand::seq::SliceRandom;
+use rand::seq::{IteratorRandom, SliceRandom};
 use rand::thread_rng;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
@@ -59,12 +59,13 @@ impl MonteCarloESModel {
 
                 // Assurer que chaque état a une politique initiale
                 if !self.policy.contains_key(&state) {
-                    self.policy.insert(state, *available_actions.choose(&mut rng).unwrap());
+                    let action = available_actions.clone().into_iter().choose(&mut rng).unwrap();
+                    self.policy.insert(state, action);
                 }
 
                 let action = if is_first_action {
                     is_first_action = false;
-                    *available_actions.choose(&mut rng).unwrap()
+                    available_actions.into_iter().choose(&mut rng).unwrap()
                 } else {
                     *self.policy.get(&state).unwrap()
                 };
@@ -144,28 +145,28 @@ impl MonteCarloESModel {
         best_action
     }
 
-    pub fn save_policy(&self, filename: &str) -> io::Result<()> {
-        let file = File::create(filename)?;
-        serde_json::to_writer(file, &self.policy)?;
-        Ok(())
-    }
+    /* pub fn save_policy(&self, filename: &str) -> io::Result<()> {
+         let file = File::create(filename)?;
+         serde_json::to_writer(file, &self.policy)?;
+         Ok(())
+     }
 
-    pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
-        let file = File::open(filename)?;
-        self.policy = serde_json::from_reader(file)?;
-        Ok(())
-    }
+     pub fn load_policy(&mut self, filename: &str) -> io::Result<()> {
+         let file = File::open(filename)?;
+         self.policy = serde_json::from_reader(file)?;
+         Ok(())
+     }
 
-    pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
-        let file = File::create(filename)?;
-        bincode::serialize_into(file, &self.q_values)?;
-        Ok(())
-    }
+     pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
+         let file = File::create(filename)?;
+         bincode::serialize_into(file, &self.q_values)?;
+         Ok(())
+     }
 
-    pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
-        let file = File::open(filename)?;
-        self.q_values = bincode::deserialize_from(file)?;
-        self.policy = self.derive_policy();
-        Ok(())
-    }
+     pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
+         let file = File::open(filename)?;
+         self.q_values = bincode::deserialize_from(file)?;
+         self.policy = self.derive_policy();
+         Ok(())
+     }*/
 }
