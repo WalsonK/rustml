@@ -1,7 +1,7 @@
 extern crate rustml;
 
 use std::time::Instant;
-use rustml::environment::{
+/*use rustml::environment::{
     line_world, grid_world, playable_monte_hall, monteHall,
     two_round_rock_paper_scissors, secret_env0dp::SecretEnv0Dp, secret_env1dp::SecretEnv1Dp,
     secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp,
@@ -17,7 +17,7 @@ use rustml::dynamic_programming::{policy_iteration::PolicyIterationModel, value_
 use rustml::td_learning::{sarsa::SarsaModel, q_learning::QLearning};
 use rustml::planning::{dyna_q::DynaQModel, dyna_q_plus::DynaQPlusModel};
 
-
+*/
 fn main() {
 
     // -------------------------------- ENV -------------------------------------
@@ -51,10 +51,10 @@ fn main() {
 
 
     //     Grid world
-    let mut env = grid_world::GridWorld::new(3, 5, 1);
+    //let mut env = grid_world::GridWorld::new(3, 5, 1);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.probabilities);
     //tools::print_matrix(&env.all_position, &env.all_actions, &env.rewards);
-    let _ = env.display();
+    // let _ = env.display();
     //
 
     //      PLAYABLE MONTY HALL
@@ -68,7 +68,7 @@ fn main() {
 
 // -------------------------------- ALGO -------------------------------------
 
-    //     POLICY ITERATION
+    /*//     POLICY ITERATION
 
     let mut model = PolicyIterationModel::new(
         env.all_position.clone(),
@@ -276,9 +276,9 @@ fn main() {
         QLearning(Box<QLearning>),
         DynaQ(Box<DynaQModel>),
         DynaQPlus(Box<DynaQPlusModel>)
-    }
+    }*/
 
-    fn process(environment: &str, algorithm: &str, save: bool, load: bool) {
+    /*fn process(environment: &str, algorithm: &str, save: bool, load: bool) {
         let mut env: Box<dyn Environment> = match environment {
             "secretenv0" => unsafe { SecretEnv0Dp::new() },
             "secretenv1" => unsafe { SecretEnv1Dp::new() },
@@ -480,7 +480,7 @@ fn main() {
             _ => {}
         }
     }
-
+*/
 
     //process("lineworld",  "sarsa", false, false);
 }

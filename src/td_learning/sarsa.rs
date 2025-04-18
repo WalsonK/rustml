@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::environment::environment::{Environment, State, Action, Reward};
 use std::io::{self};
 
-
+/*
 #[derive(Serialize, Deserialize)]
 pub struct SarsaModel {
     pub alpha: f32,
@@ -106,7 +106,7 @@ impl SarsaModel {
         let rand = rng.gen_range(0.0..=1.0);
         let best_action = if rand < self.epsilon {
             // random
-            *available_actions.choose(&mut rng).unwrap()
+            *available_actions.into_iter().choose(&mut rng).unwrap()
             //rng.gen_range(0..self.num_actions)
         } else {
             // best action
@@ -160,16 +160,16 @@ impl SarsaModel {
         Ok(vec)
     }
 
-    pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
-        let file = File::create(filename)?;
-        bincode::serialize_into(file, &self.q_values)?;
-        Ok(())
-    }
-
-    pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
-        let file = File::open(filename)?;
-        self.q_values = bincode::deserialize_from(file)?;
-        self.derive_policy();
-        Ok(())
-    }
+/*pub fn save_q_values(&self, filename: &str) -> Result<(), Box<dyn Error>> {
+    let file = File::create(filename)?;
+    bincode::serialize_into(file, &self.q_values)?;
+    Ok(())
 }
+
+pub fn load_q_values(&mut self, filename: &str) -> Result<(), Box<dyn Error>> {
+    let file = File::open(filename)?;
+    self.q_values = bincode::deserialize_from(file)?;
+    self.derive_policy();
+    Ok(())
+}*/
+}*/

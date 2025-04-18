@@ -1,72 +1,60 @@
-use super::pmc_struct::*;
+use super::nn_struct::NeuralNetwork;
 use rand::Rng;
 
 #[no_mangle]
-pub(crate) extern "C" fn init(arr: *const i32, len: i32) -> Box<PMC> {
-    // convert arr to slice
+pub(crate) extern "C" fn init(arr: *const i32, len: i32) -> Box<NeuralNetwork> {
+    // Convert the raw pointer to a slice
     let arr_slice = unsafe { std::slice::from_raw_parts(arr, len as usize) };
 
-    // PMC model Initialisation
-    let mut model = Box::new(PMC {
-        layers: (len - 1) as usize,
+    // Initialize the neural_network model
+    let mut model = Box::new(NeuralNetwork {
+        num_layers: len as usize,
         neurons_per_layer: arr_slice.iter().map(|&x| x as usize).collect(),
-        weights : Vec::new(),
-        neuron_data: Vec::new(),
+        weights: Vec::new(),
+        activations: Vec::new(),
         deltas: Vec::new()
     });
 
-    // Weights Initialisation
-    let mut rng = rand::thread_rng();
-    for layer in 0..=model.layers {
-        let mut layer_weights = Vec::new();
+    // Create a random number generator
+    let mut rng = rand::rng();
 
+    for layer in 0..model.num_layers {
         if layer == 0 {
-            model.weights.push(layer_weights);
+            // No weights for the input layer, just initialize an empty vector
+            model.weights.push(Vec::new());
         } else {
-            for _ in 0..=model.neurons_per_layer[layer - 1] {
-                let mut neuron_weights = Vec::new();
-
-                for j in 0..=model.neurons_per_layer[layer] {
-                    let weight = if j == 0 { 0.0f32 } else { rng.gen_range(-1.0..=1.0) };
-                    neuron_weights.push(weight);
-                }
-                layer_weights.push(neuron_weights);
-            }
+            // Initialize weights with bias terms
+            let previous_layer_neurons = model.neurons_per_layer[layer - 1];
+            let current_layer_neurons = model.neurons_per_layer[layer];
+            let layer_weights: Vec<Vec<f32>> = (0..=previous_layer_neurons)
+                .map(|_| {
+                    (0..=current_layer_neurons)
+                        .map(|j| if j == 0 { 0.0f32 } else { rng.random_range(-1.0..=1.0) })
+                        .collect()
+                })
+                .collect();
             model.weights.push(layer_weights);
         }
-    }
 
-    // Neuron Data Initialisation
-    for layer in 0..=model.layers {
-        let mut layer_data = Vec::new();
-        for i in 0..=model.neurons_per_layer[layer] {
-            let value = if i == 0 { 1.0 } else { 0.0 };
-            layer_data.push(value);
-        }
-        model.neuron_data.push(layer_data);
-    }
-
-    // Deltas Initialisation
-    for layer in 0..=model.layers {
-        let mut layer_deltas = Vec::new();
-        for _ in 0..=model.neurons_per_layer[layer]{
-            let delta: f32 = 0.0;
-            layer_deltas.push(delta);
-        }
+        // Initialize activations and deltas for the current layer
+        let current_layer_neurons = model.neurons_per_layer[layer];
+        let layer_activations: Vec<f32> = (0..=current_layer_neurons)
+            .map(|i| if i == 0 { 1.0 } else { 0.0 })
+            .collect();
+        let layer_deltas: Vec<f32> = vec![0.0; current_layer_neurons + 1];
+        model.activations.push(layer_activations);
         model.deltas.push(layer_deltas);
     }
 
-
     model
-
 }
 
 #[cfg(test)]
-mod init_tests {
+mod init_tests_simple {
     use super::*;
 
     // TEST DATA
-    fn setup_model() -> Box<PMC> {
+    fn setup_model() -> Box<NeuralNetwork> {
         // Init Data
         let slice: &[i32] = &[3, 2, 1];
         let ptr: *const i32 = slice.as_ptr();
@@ -86,7 +74,7 @@ mod init_tests {
     fn init_weight() {
         let model = setup_model();
         // layers
-        assert_eq!(model.layers, 2);
+        assert_eq!(model.num_layers, 2);
         // Weights[0]
         assert!(model.weights[0].is_empty());
         // Weights[1]
@@ -113,13 +101,13 @@ mod init_tests {
     fn init_neuron_data() {
         let model = setup_model();
         // Len
-        assert_eq!(model.neuron_data.len(), 3);
+        assert_eq!(model.activations.len(), 3);
         // First Layer
-        assert_eq!(model.neuron_data[0], vec![1.0, 0.0, 0.0, 0.0]);
+        assert_eq!(model.activations[0], vec![1.0, 0.0, 0.0, 0.0]);
         // Second Layer
-        assert_eq!(model.neuron_data[1], vec![1.0, 0.0, 0.0]);
+        assert_eq!(model.activations[1], vec![1.0, 0.0, 0.0]);
         // Third Layer
-        assert_eq!(model.neuron_data[2], vec![1.0, 0.0]);
+        assert_eq!(model.activations[2], vec![1.0, 0.0]);
     }
 
     #[test]
