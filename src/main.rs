@@ -1,15 +1,14 @@
 extern crate rustml;
-
+/*
 use std::time::Instant;
-/*use rustml::environment::{
+use rustml::environment::{
     line_world, grid_world, playable_monte_hall, monteHall,
     two_round_rock_paper_scissors, secret_env0dp::SecretEnv0Dp, secret_env1dp::SecretEnv1Dp,
     secret_env2dp::SecretEnv2Dp, secret_env3dp::SecretEnv3Dp,
 };
 use rustml::environment::tools::{Policy, use_policy_in_game};
 use rustml::environment::environment::{Environment, Reward};
-
-use rustml::monte_carlo::{
+use rustml::reinforce_learning::monte_carlo::{
     monte_carlo_es::MonteCarloESModel, monte_carlo_control_struct::MonteCarloControl,
     monte_carlo_control_struct_off::MonteCarloControlOff
 };
