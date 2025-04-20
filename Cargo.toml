@@ -11,6 +11,9 @@ serde_json = "1.0.120"
 serde = { version = "1.0.204", features = ["derive"] }
 bincode = "2.0.1"
 
+[lib]
+name = "rustml"
+crate-type = ["cdylib"]
 
 [[bin]]
 name = "rustml"
