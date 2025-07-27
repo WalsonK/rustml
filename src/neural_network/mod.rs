@@ -1,6 +1,7 @@
-pub mod pmc_struct;
 pub mod create;
+pub mod nn_struct;
 pub mod delete;
 pub mod propagate;
-pub mod predict;
 pub mod train;
+pub mod predict;
+mod tester;
