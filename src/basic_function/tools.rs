@@ -35,6 +35,16 @@ pub fn argmax(vector: &Vec<f32>) -> i32 {
     max_index as i32
 }
 
+pub fn euclidean_distance(p1: &Vec<f32>, p2: &Vec<f32>) -> f32 {
+    let mut sum_of_squares = 0.0;
+    for i in 0..p1.len() {
+        let diff = p1[i] - p2[i];
+        sum_of_squares += diff * diff;
+    }
+
+    sum_of_squares.sqrt()
+}
+
 pub fn clone_neural_network_ptr(original_model : *mut NeuralNetwork) -> *mut NeuralNetwork {
     let clone = unsafe {
         let original = &*original_model;      // Convert raw pointer to reference
